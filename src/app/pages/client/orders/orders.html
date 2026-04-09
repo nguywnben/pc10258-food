@@ -1,0 +1,99 @@
+<p class="mb-3 text-sm text-ink-light">4 đơn gần đây (dữ liệu mẫu).</p>
+<div class="mb-5 flex flex-wrap items-center gap-2" role="toolbar" aria-label="Lọc đơn hàng">
+  <button type="button" class="rounded-full bg-brand px-3 py-1.5 text-xs font-semibold text-white">Tất cả</button>
+  <button type="button" class="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-ink transition hover:border-brand">Đang giao</button>
+  <button type="button" class="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-ink transition hover:border-brand">Hoàn thành</button>
+</div>
+
+<ul class="grid w-full grid-cols-1 gap-4 md:grid-cols-2 xl:gap-5" aria-label="Danh sách đơn hàng">
+  <li class="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white">
+    <div class="flex flex-wrap items-start justify-between gap-3 border-b border-gray-50 bg-gray-50/50 px-4 py-3">
+      <div>
+        <p class="font-mono text-sm font-bold text-ink">#PC-5821</p>
+        <p class="text-xs text-ink-light">16/03/2026 · 10:15 · Thanh toán khi nhận</p>
+      </div>
+      <span class="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">Đang giao</span>
+    </div>
+    <div class="flex flex-1 flex-col px-4 py-3">
+      <ul class="flex-1 space-y-1.5 text-sm text-ink">
+        <li class="flex justify-between gap-4"><span>Pizza Neapolitan × 1</span><span class="shrink-0 text-ink-light">145.000₫</span></li>
+        <li class="flex justify-between gap-4"><span>Burger bò phô mai × 2</span><span class="shrink-0 text-ink-light">178.000₫</span></li>
+      </ul>
+      <div class="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
+        <p class="text-sm">Tổng <span class="text-lg font-extrabold text-brand">323.000₫</span></p>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-ink transition hover:border-brand hover:text-brand">Chi tiết</button>
+          <a href="/messages" class="rounded-xl border border-brand bg-white px-3 py-2 text-xs font-semibold text-brand transition hover:bg-brand/5">Chat shipper</a>
+        </div>
+      </div>
+    </div>
+  </li>
+
+  <li class="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white">
+    <div class="flex flex-wrap items-start justify-between gap-3 border-b border-gray-50 bg-gray-50/50 px-4 py-3">
+      <div>
+        <p class="font-mono text-sm font-bold text-ink">#PC-5790</p>
+        <p class="text-xs text-ink-light">14/03/2026 · 19:42 · Ví PC10258</p>
+      </div>
+      <span class="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">Đã giao</span>
+    </div>
+    <div class="flex flex-1 flex-col px-4 py-3">
+      <ul class="flex-1 space-y-1.5 text-sm text-ink">
+        <li class="flex justify-between gap-4"><span>Kem vani × 2</span><span class="shrink-0 text-ink-light">50.000₫</span></li>
+        <li class="flex justify-between gap-4"><span>Bánh rán vòng × 3</span><span class="shrink-0 text-ink-light">45.000₫</span></li>
+      </ul>
+      <div class="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
+        <p class="text-sm">Tổng <span class="text-lg font-extrabold text-ink">95.000₫</span></p>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-ink transition hover:border-brand hover:text-brand">Chi tiết</button>
+          <button type="button" class="rounded-xl bg-brand px-3 py-2 text-xs font-bold text-white transition hover:bg-brand-hover">Đặt lại</button>
+        </div>
+      </div>
+    </div>
+  </li>
+
+  <li class="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white">
+    <div class="flex flex-wrap items-start justify-between gap-3 border-b border-gray-50 bg-gray-50/50 px-4 py-3">
+      <div>
+        <p class="font-mono text-sm font-bold text-ink">#PC-5601</p>
+        <p class="text-xs text-ink-light">10/03/2026 · 12:08 · Thanh toán khi nhận</p>
+      </div>
+      <span class="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">Đã giao</span>
+    </div>
+    <div class="flex flex-1 flex-col px-4 py-3">
+      <ul class="flex-1 space-y-1.5 text-sm text-ink">
+        <li class="flex justify-between gap-4"><span>Combo pizza gia đình × 1</span><span class="shrink-0 text-ink-light">420.000₫</span></li>
+        <li class="flex justify-between gap-4"><span>Phí giao</span><span class="shrink-0 text-ink-light">15.000₫</span></li>
+      </ul>
+      <div class="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
+        <p class="text-sm">Tổng <span class="text-lg font-extrabold text-ink">435.000₫</span></p>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-ink transition hover:border-brand hover:text-brand">Chi tiết</button>
+          <button type="button" class="rounded-xl bg-brand px-3 py-2 text-xs font-bold text-white transition hover:bg-brand-hover">Đặt lại</button>
+        </div>
+      </div>
+    </div>
+  </li>
+
+  <li class="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white">
+    <div class="flex flex-wrap items-start justify-between gap-3 border-b border-gray-50 bg-gray-50/50 px-4 py-3">
+      <div>
+        <p class="font-mono text-sm font-bold text-ink">#PC-5512</p>
+        <p class="text-xs text-ink-light">05/03/2026 · 08:20 · Đã hủy bởi khách</p>
+      </div>
+      <span class="rounded-full bg-gray-200 px-2.5 py-1 text-xs font-semibold text-ink-light">Đã hủy</span>
+    </div>
+    <div class="flex flex-1 flex-col px-4 py-3">
+      <ul class="flex-1 space-y-1.5 text-sm text-ink">
+        <li class="flex justify-between gap-4"><span>Pizza California × 1</span><span class="shrink-0 text-ink-light">—</span></li>
+      </ul>
+      <div class="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
+        <p class="text-sm text-ink-light">Không thu phí</p>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-ink transition hover:border-brand hover:text-brand">Chi tiết</button>
+        </div>
+      </div>
+    </div>
+  </li>
+</ul>
+

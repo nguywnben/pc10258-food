@@ -1,0 +1,328 @@
+<!-- Page Title -->
+<div class="mb-6">
+  <h1 class="text-xl font-bold text-ink">Form mẫu</h1>
+  <p class="mt-0.5 text-sm text-ink-light">Tổng hợp các dạng form phổ biến dùng trong hệ thống quản trị.</p>
+</div>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- 1. Form thêm sản phẩm mới                       -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="card-admin mb-8 p-6 animate-fade-in-up">
+  <h2 class="mb-1 text-base font-bold text-ink flex items-center gap-2">
+    <svg class="h-5 w-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+    Thêm sản phẩm mới
+  </h2>
+  <p class="mb-5 text-xs text-ink-light">Nhập thông tin sản phẩm để đưa vào thực đơn.</p>
+
+  <form class="grid grid-cols-1 gap-5 md:grid-cols-2" (submit)="$event.preventDefault()">
+    <!-- Tên sản phẩm -->
+    <div>
+      <label for="product-name" class="form-label">Tên sản phẩm <span class="text-red-400">*</span></label>
+      <input id="product-name" type="text" class="form-input" placeholder="VD: Pizza Neapolitan" />
+    </div>
+    <!-- Danh mục -->
+    <div>
+      <label for="product-category" class="form-label">Danh mục <span class="text-red-400">*</span></label>
+      <select id="product-category" class="form-select">
+        <option value="" disabled selected>— Chọn danh mục —</option>
+        <option>Pizza</option>
+        <option>Burger</option>
+        <option>Bánh rán</option>
+        <option>Mexico</option>
+        <option>Món Á</option>
+        <option>Kem</option>
+        <option>Đồ uống</option>
+      </select>
+    </div>
+    <!-- Giá -->
+    <div>
+      <label for="product-price" class="form-label">Giá bán (₫) <span class="text-red-400">*</span></label>
+      <input id="product-price" type="number" class="form-input" placeholder="VD: 145000" />
+    </div>
+    <!-- Giá giảm -->
+    <div>
+      <label for="product-price-sale" class="form-label">Giá khuyến mãi (₫)</label>
+      <input id="product-price-sale" type="number" class="form-input" placeholder="Để trống nếu không giảm giá" />
+    </div>
+    <!-- Mô tả ngắn -->
+    <div class="col-span-1 md:col-span-2">
+      <label for="product-desc" class="form-label">Mô tả ngắn</label>
+      <textarea id="product-desc" class="form-textarea" rows="3" placeholder="Mô tả món ăn trong 2–3 câu..."></textarea>
+    </div>
+    <!-- Ảnh -->
+    <div>
+      <label class="form-label">Ảnh sản phẩm</label>
+      <label for="product-image" class="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 px-6 py-8 text-center transition hover:border-brand hover:bg-brand/5">
+        <svg class="mb-2 h-8 w-8 text-ink-lighter" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+        <span class="text-sm font-medium text-ink-light">Kéo thả hoặc <span class="text-brand font-semibold">chọn ảnh</span></span>
+        <span class="mt-1 text-[11px] text-ink-lighter">PNG, JPG, WEBP — tối đa 2MB</span>
+        <input id="product-image" type="file" class="hidden" accept="image/*" />
+      </label>
+    </div>
+    <!-- Tuỳ chọn -->
+    <div class="flex flex-col gap-4">
+      <div>
+        <label class="form-label">Trạng thái</label>
+        <div class="flex items-center gap-4">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="product-status" class="form-radio" checked /> 
+            <span class="text-sm">Đang bán</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="product-status" class="form-radio" /> 
+            <span class="text-sm">Tạm ẩn</span>
+          </label>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Tuỳ chọn</label>
+        <div class="flex flex-col gap-2">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" class="form-checkbox" checked />
+            <span class="text-sm">Giao miễn phí</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" class="form-checkbox" />
+            <span class="text-sm">Sản phẩm nổi bật</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" class="form-checkbox" />
+            <span class="text-sm">Cho phép ghi chú</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <!-- Buttons -->
+    <div class="col-span-1 flex items-center gap-3 border-t border-gray-100 pt-5 md:col-span-2">
+      <button type="submit" class="btn btn-brand">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+        Thêm sản phẩm
+      </button>
+      <button type="reset" class="btn btn-outline">Đặt lại</button>
+    </div>
+  </form>
+</section>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- 2. Form đăng nhập mẫu                           -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="card-admin mb-8 p-6 animate-fade-in-up animate-delay-1">
+  <h2 class="mb-1 text-base font-bold text-ink flex items-center gap-2">
+    <svg class="h-5 w-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+    Form đăng nhập
+  </h2>
+  <p class="mb-5 text-xs text-ink-light">Mẫu form đăng nhập cho quản trị viên.</p>
+
+  <div class="mx-auto max-w-sm">
+    <form (submit)="$event.preventDefault()" class="flex flex-col gap-4">
+      <div>
+        <label for="login-email" class="form-label">Email</label>
+        <input id="login-email" type="email" class="form-input" placeholder="admin@pc10258food.vn" />
+      </div>
+      <div>
+        <label for="login-password" class="form-label">Mật khẩu</label>
+        <input id="login-password" type="password" class="form-input" placeholder="••••••••" />
+      </div>
+      <div class="flex items-center justify-between">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" class="form-checkbox" />
+          <span class="text-sm text-ink-light">Ghi nhớ đăng nhập</span>
+        </label>
+        <a
+          href="#"
+          class="text-xs font-semibold text-brand hover:text-brand-hover"
+          (click)="$event.preventDefault()"
+          >Quên mật khẩu?</a>
+      </div>
+      <button type="submit" class="btn btn-brand w-full justify-center">Đăng nhập</button>
+    </form>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- 3. Form liên hệ / phản hồi                      -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="card-admin mb-8 p-6 animate-fade-in-up animate-delay-2">
+  <h2 class="mb-1 text-base font-bold text-ink flex items-center gap-2">
+    <svg class="h-5 w-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+    Gửi phản hồi / liên hệ
+  </h2>
+  <p class="mb-5 text-xs text-ink-light">Form nhiều trường với validation cơ bản.</p>
+
+  <form class="grid grid-cols-1 gap-5 md:grid-cols-2" (submit)="$event.preventDefault()">
+    <div>
+      <label for="contact-fullname" class="form-label">Họ và tên <span class="text-red-400">*</span></label>
+      <input id="contact-fullname" type="text" class="form-input" placeholder="Nguyễn Văn A" />
+    </div>
+    <div>
+      <label for="contact-email" class="form-label">Email <span class="text-red-400">*</span></label>
+      <input id="contact-email" type="email" class="form-input" placeholder="email@example.com" />
+    </div>
+    <div>
+      <label for="contact-phone" class="form-label">Số điện thoại</label>
+      <input id="contact-phone" type="tel" class="form-input" placeholder="0901 234 567" />
+    </div>
+    <div>
+      <label for="contact-subject" class="form-label">Chủ đề <span class="text-red-400">*</span></label>
+      <select id="contact-subject" class="form-select">
+        <option value="" disabled selected>— Chọn chủ đề —</option>
+        <option>Góp ý sản phẩm</option>
+        <option>Báo lỗi hệ thống</option>
+        <option>Yêu cầu hỗ trợ</option>
+        <option>Hợp tác kinh doanh</option>
+        <option>Khác</option>
+      </select>
+    </div>
+    <div class="col-span-1 md:col-span-2">
+      <label for="contact-message" class="form-label">Nội dung <span class="text-red-400">*</span></label>
+      <textarea id="contact-message" class="form-textarea" rows="4" placeholder="Nhập nội dung phản hồi của bạn..."></textarea>
+    </div>
+    <div class="col-span-1 md:col-span-2">
+      <label class="form-label">Tệp đính kèm</label>
+      <label for="contact-file" class="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3 transition hover:border-brand hover:bg-brand/5">
+        <svg class="h-5 w-5 text-ink-lighter" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+        <span class="text-sm text-ink-light">Chọn tệp đính kèm <span class="text-ink-lighter">(tuỳ chọn)</span></span>
+        <input id="contact-file" type="file" class="hidden" />
+      </label>
+    </div>
+    <div class="col-span-1 flex items-center gap-3 border-t border-gray-100 pt-5 md:col-span-2">
+      <button type="submit" class="btn btn-brand">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        Gửi phản hồi
+      </button>
+      <button type="reset" class="btn btn-outline">Xoá nội dung</button>
+    </div>
+  </form>
+</section>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- 4. Form cài đặt hệ thống (Toggle & Range)       -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="card-admin mb-8 p-6 animate-fade-in-up animate-delay-3">
+  <h2 class="mb-1 text-base font-bold text-ink flex items-center gap-2">
+    <svg class="h-5 w-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.573-1.066z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    Cài đặt hệ thống
+  </h2>
+  <p class="mb-5 text-xs text-ink-light">Dạng form chứa toggle switch, radio, checkbox và slider.</p>
+
+  <form (submit)="$event.preventDefault()" class="space-y-5 max-w-2xl">
+    <!-- Toggle items -->
+    <div class="flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3.5">
+      <div>
+        <p class="text-sm font-semibold text-ink">Chế độ bảo trì</p>
+        <p class="text-xs text-ink-light">Tạm khoá trang khách hàng khi bảo trì hệ thống.</p>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3.5">
+      <div>
+        <p class="text-sm font-semibold text-ink">Gửi email thông báo</p>
+        <p class="text-xs text-ink-light">Tự động gửi email khi có đơn hàng mới.</p>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" checked />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3.5">
+      <div>
+        <p class="text-sm font-semibold text-ink">Cho phép đăng ký mới</p>
+        <p class="text-xs text-ink-light">Khách hàng có thể tự tạo tài khoản trên hệ thống.</p>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" checked />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3.5">
+      <div>
+        <p class="text-sm font-semibold text-ink">Hiển thị giá khuyến mãi</p>
+        <p class="text-xs text-ink-light">Hiện giá giảm trên trang sản phẩm.</p>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" checked />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <!-- Range slider -->
+    <div class="rounded-xl border border-gray-100 px-4 py-3.5">
+      <label for="delivery-radius" class="text-sm font-semibold text-ink">Bán kính giao hàng (km)</label>
+      <p class="mb-3 text-xs text-ink-light">Phạm vi tối đa nhận đơn giao hàng.</p>
+      <input id="delivery-radius" type="range" min="1" max="20" value="10"
+             class="w-full accent-brand" />
+      <div class="mt-1 flex justify-between text-[11px] text-ink-lighter">
+        <span>1 km</span><span>5 km</span><span>10 km</span><span>15 km</span><span>20 km</span>
+      </div>
+    </div>
+
+    <!-- Save -->
+    <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
+      <button type="submit" class="btn btn-brand">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+        Lưu cài đặt
+      </button>
+      <button type="button" class="btn btn-ghost">Huỷ thay đổi</button>
+    </div>
+  </form>
+</section>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- 5. Form tạo khuyến mãi                          -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="card-admin mb-8 p-6 animate-fade-in-up animate-delay-4">
+  <h2 class="mb-1 text-base font-bold text-ink flex items-center gap-2">
+    <svg class="h-5 w-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+    Tạo mã khuyến mãi
+  </h2>
+  <p class="mb-5 text-xs text-ink-light">Thiết lập chương trình giảm giá cho khách hàng.</p>
+
+  <form class="grid grid-cols-1 gap-5 md:grid-cols-3" (submit)="$event.preventDefault()">
+    <div>
+      <label for="promo-code" class="form-label">Mã khuyến mãi <span class="text-red-400">*</span></label>
+      <input id="promo-code" type="text" class="form-input uppercase" placeholder="VD: FOOD20" />
+    </div>
+    <div>
+      <label for="promo-type" class="form-label">Loại giảm <span class="text-red-400">*</span></label>
+      <select id="promo-type" class="form-select">
+        <option>Giảm theo %</option>
+        <option>Giảm cố định (₫)</option>
+        <option>Miễn phí giao hàng</option>
+      </select>
+    </div>
+    <div>
+      <label for="promo-value" class="form-label">Giá trị giảm <span class="text-red-400">*</span></label>
+      <input id="promo-value" type="number" class="form-input" placeholder="VD: 20" />
+    </div>
+    <div>
+      <label for="promo-min" class="form-label">Đơn tối thiểu (₫)</label>
+      <input id="promo-min" type="number" class="form-input" placeholder="VD: 150000" />
+    </div>
+    <div>
+      <label for="promo-start" class="form-label">Ngày bắt đầu</label>
+      <input id="promo-start" type="date" class="form-input" />
+    </div>
+    <div>
+      <label for="promo-end" class="form-label">Ngày kết thúc</label>
+      <input id="promo-end" type="date" class="form-input" />
+    </div>
+    <div>
+      <label for="promo-limit" class="form-label">Số lần sử dụng tối đa</label>
+      <input id="promo-limit" type="number" class="form-input" placeholder="VD: 100" />
+    </div>
+    <div class="col-span-1 md:col-span-2">
+      <label for="promo-desc" class="form-label">Mô tả chương trình</label>
+      <input id="promo-desc" type="text" class="form-input" placeholder="VD: Giảm 20% cho đơn từ 150k" />
+    </div>
+    <div class="col-span-1 flex items-center gap-3 border-t border-gray-100 pt-5 md:col-span-3">
+      <button type="submit" class="btn btn-brand">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+        Tạo mã khuyến mãi
+      </button>
+      <button type="reset" class="btn btn-outline">Đặt lại</button>
+    </div>
+  </form>
+</section>

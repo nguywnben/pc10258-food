@@ -1,0 +1,57 @@
+<div class="mx-auto w-full max-w-2xl space-y-6">
+  <nav id="pay-breadcrumb" class="text-sm text-ink-light" aria-label="Breadcrumb">
+    <a href="/wallet#so-du-lich-su" class="font-medium text-brand transition hover:text-brand-hover">Ví &amp; số dư</a>
+    <span class="mx-2 text-ink-lighter">/</span>
+    <a href="/wallet#nap-tien" class="font-medium text-brand transition hover:text-brand-hover">Nạp tiền</a>
+    <span class="mx-2 text-ink-lighter">/</span>
+    <span class="text-ink">Thanh toán</span>
+  </nav>
+
+  <section class="rounded-3xl border border-gray-100 bg-white p-6 sm:p-7">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h1 id="pay-title" class="text-xl font-bold text-ink sm:text-2xl">Xác nhận thanh toán</h1>
+        <p id="pay-subtitle" class="mt-1 text-sm text-ink-light">Kiểm tra thông tin trước khi hoàn tất (demo).</p>
+      </div>
+      <div class="rounded-xl bg-gray-50 px-3 py-2 text-right ring-1 ring-gray-100">
+        <p class="text-[10px] font-medium uppercase tracking-wide text-ink-lighter">Mã giao dịch</p>
+        <p id="pay-ref" class="font-mono text-sm font-bold text-ink">PC-PAY-10258</p>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      <div class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4">
+        <p class="text-xs font-medium text-ink-light">Loại</p>
+        <p id="pay-kind" class="mt-1 text-sm font-semibold text-ink">Nạp tiền vào ví</p>
+      </div>
+      <div class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4">
+        <p class="text-xs font-medium text-ink-light">Phương thức</p>
+        <p id="pay-method-label" class="mt-1 text-sm font-semibold text-ink">Chuyển khoản ngân hàng</p>
+      </div>
+    </div>
+
+    <div class="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-brand/5 px-5 py-4 ring-1 ring-brand/20">
+      <span class="text-sm font-medium text-ink">Số tiền thanh toán</span>
+      <span id="pay-amount" class="text-xl font-extrabold text-brand tabular-nums">100.000₫</span>
+    </div>
+
+    <div id="pay-qr-block" class="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 p-6 text-center">
+      <div class="mx-auto flex h-36 w-36 items-center justify-center rounded-xl bg-white text-ink-lighter ring-1 ring-gray-100">
+        <svg class="h-16 w-16 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.5v4.5m0 4.5v4.5m0-9h4.5m-4.5 4.5h4.5m4.5-9h4.5m-4.5 4.5h4.5m-4.5-4.5v4.5m0 4.5h4.5m-4.5 4.5v-4.5m4.5 4.5h4.5m-4.5-4.5h4.5"/></svg>
+      </div>
+      <p class="mt-3 text-xs text-ink-light">Mã QR minh họa — ứng dụng thật sẽ hiển thị mã quét từ cổng thanh toán.</p>
+      <p id="pay-transfer-note" class="mt-2 font-mono text-[11px] text-ink-light">Nội dung CK: <span class="font-semibold text-ink">PC10258 NAP <span id="pay-note-suffix">100K</span></span></p>
+    </div>
+
+    <label class="mt-6 flex cursor-pointer items-start gap-3 rounded-xl border border-gray-100 bg-white p-4 transition hover:border-gray-200">
+      <input id="pay-agree" type="checkbox" class="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-brand focus:ring-brand" />
+      <span class="text-sm text-ink-light">Tôi xác nhận đã kiểm tra số tiền và phương thức. Đây là luồng demo, không trừ tiền thật.</span>
+    </label>
+
+    <div class="mt-6 flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+      <a id="pay-back-link" href="/wallet#nap-tien" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:border-gray-300 hover:bg-gray-50">Chỉnh sửa</a>
+      <button id="pay-confirm" type="button" class="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50">Hoàn tất thanh toán</button>
+    </div>
+  </section>
+</div>
+

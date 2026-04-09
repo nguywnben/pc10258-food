@@ -1,0 +1,214 @@
+<aside
+  id="left-sidebar"
+  class="flex min-h-0 min-w-0 flex-col border-r border-gray-100 bg-white px-4 py-5"
+  aria-label="Menu quản trị"
+>
+  <!-- Logo -->
+  <div class="mb-7 flex items-center gap-3 px-1">
+    <div
+      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-sm font-extrabold text-white"
+    >
+      PC
+    </div>
+    <div class="leading-tight">
+      <span class="text-base font-bold text-ink">PC10258</span>
+      <span class="block text-[11px] font-medium text-ink-light">Quản trị viên</span>
+    </div>
+  </div>
+
+  <nav
+    class="custom-scroll flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto"
+    aria-label="Điều hướng quản trị"
+  >
+    <p class="mb-1 px-3 text-[10px] font-semibold tracking-wider text-ink-lighter uppercase">Chính</p>
+
+    <a
+      routerLink="/admin/dashboard"
+      routerLinkActive="sidebar-link-active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
+    >
+      <svg
+        class="h-5 w-5 shrink-0 text-ink-lighter"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"
+        />
+      </svg>
+      Bảng điều khiển
+    </a>
+
+    <a
+      routerLink="/admin/forms"
+      routerLinkActive="sidebar-link-active"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
+    >
+      <svg
+        class="h-5 w-5 shrink-0 text-ink-lighter"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+        />
+      </svg>
+      Form mẫu
+    </a>
+
+    <a
+      routerLink="/admin/tables"
+      routerLinkActive="sidebar-link-active"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
+    >
+      <svg
+        class="h-5 w-5 shrink-0 text-ink-lighter"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M3 10h18M3 14h18M3 6h18M3 18h18"
+        />
+      </svg>
+      Bảng mẫu
+    </a>
+
+    <p class="mb-1 mt-5 px-3 text-[10px] font-semibold tracking-wider text-ink-lighter uppercase">
+      Quản lý
+    </p>
+
+    <button
+      type="button"
+      class="flex w-full cursor-default items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink opacity-80 transition hover:bg-gray-50"
+    >
+      <svg
+        class="h-5 w-5 shrink-0 text-ink-lighter"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+        />
+      </svg>
+      Đơn hàng
+    </button>
+    <button
+      type="button"
+      class="flex w-full cursor-default items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink opacity-80 transition hover:bg-gray-50"
+    >
+      <svg
+        class="h-5 w-5 shrink-0 text-ink-lighter"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m3 5.197V21"
+        />
+      </svg>
+      Khách hàng
+    </button>
+    <button
+      type="button"
+      class="flex w-full cursor-default items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink opacity-80 transition hover:bg-gray-50"
+    >
+      <svg
+        class="h-5 w-5 shrink-0 text-ink-lighter"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+        />
+      </svg>
+      Sản phẩm
+    </button>
+    <button
+      type="button"
+      class="flex w-full cursor-default items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink opacity-80 transition hover:bg-gray-50"
+    >
+      <svg
+        class="h-5 w-5 shrink-0 text-ink-lighter"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+        />
+      </svg>
+      Khuyến mãi
+    </button>
+
+    <p class="mb-1 mt-5 px-3 text-[10px] font-semibold tracking-wider text-ink-lighter uppercase">Khác</p>
+
+    <button
+      type="button"
+      class="flex w-full cursor-default items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink opacity-80 transition hover:bg-gray-50"
+    >
+      <svg
+        class="h-5 w-5 shrink-0 text-ink-lighter"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.573-1.066z"
+        />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+        />
+      </svg>
+      Cài đặt
+    </button>
+  </nav>
+
+  <div class="mt-4 flex flex-col gap-1 border-t border-gray-100 pt-4">
+    <button
+      type="button"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-500 transition hover:bg-red-50"
+      (click)="logout()"
+    >
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1"
+        />
+      </svg>
+      Đăng xuất
+    </button>
+  </div>
+</aside>

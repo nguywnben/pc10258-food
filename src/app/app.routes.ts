@@ -1,3 +1,88 @@
 import { Routes } from '@angular/router';
+import { ClientLayout } from './layouts/client/client';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  {
+    path: 'admin',
+    loadComponent: () => import('./layouts/admin/admin').then(m => m.AdminLayout),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./pages/admin/dashboard/dashboard').then(m => m.AdminDashboard),
+      },
+      {
+        path: 'forms',
+        loadComponent: () =>
+          import('./pages/admin/form-samples/form-samples').then(m => m.AdminFormSamples),
+      },
+      {
+        path: 'tables',
+        loadComponent: () =>
+          import('./pages/admin/table-samples/table-samples').then(m => m.AdminTableSamples),
+      },
+      { path: '**', redirectTo: 'dashboard' },
+    ],
+  },
+  {
+    path: '',
+    component: ClientLayout,
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/client/home/home').then(m => m.Home),
+      },
+      {
+        path: 'help',
+        loadComponent: () => import('./pages/client/help/help').then(m => m.Help),
+      },
+      {
+        path: 'wallet',
+        loadComponent: () => import('./pages/client/wallet/wallet').then(m => m.Wallet),
+      },
+      {
+        path: 'account',
+        loadComponent: () => import('./pages/client/account/account').then(m => m.Account),
+      },
+      {
+        path: 'payment',
+        loadComponent: () => import('./pages/client/payment/payment').then(m => m.Payment),
+      },
+      {
+        path: 'orders',
+        loadComponent: () => import('./pages/client/orders/orders').then(m => m.Orders),
+      },
+      {
+        path: 'messages',
+        loadComponent: () => import('./pages/client/messages/messages').then(m => m.Messages),
+      },
+      {
+        path: 'favorites',
+        loadComponent: () => import('./pages/client/favorites/favorites').then(m => m.Favorites),
+      },
+      {
+        path: 'upgrade',
+        loadComponent: () => import('./pages/client/upgrade/upgrade').then(m => m.Upgrade),
+      },
+      {
+        path: 'upgrade-success',
+        loadComponent: () =>
+          import('./pages/client/upgrade-success/upgrade-success').then(m => m.UpgradeSuccess),
+      },
+      {
+        path: 'login',
+        loadComponent: () => import('./pages/client/login/login').then(m => m.Login),
+      },
+      {
+        path: 'register',
+        loadComponent: () => import('./pages/client/register/register').then(m => m.Register),
+      }
+    ],
+  },
+  {
+    path: '**',
+    redirectTo: '',
+    pathMatch: 'full',
+  },
+];

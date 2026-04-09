@@ -1,0 +1,47 @@
+<div class="mx-auto w-full max-w-lg">
+  <section class="rounded-3xl border border-gray-100 bg-white p-6 sm:p-7">
+    <h1 class="text-2xl font-bold">Chào mừng trở lại</h1>
+    <p class="mt-1 text-sm text-ink-light">Đăng nhập để xem đơn hàng và quản lý tài khoản.</p>
+
+    <form class="mt-6 space-y-4" onsubmit="return false;">
+      <div>
+        <label for="login-email" class="mb-1 block text-xs font-medium text-ink-light">Email hoặc số điện thoại</label>
+        <input
+          id="login-email"
+          type="text"
+          autocomplete="username"
+          placeholder="Ví dụ: khach@example.com"
+          class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-ink outline-none transition focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20"
+        />
+      </div>
+
+      <div>
+        <label for="login-password" class="mb-1 block text-xs font-medium text-ink-light">Mật khẩu</label>
+        <input
+          id="login-password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="••••••••"
+          class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-ink outline-none transition focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20"
+        />
+      </div>
+
+      <label class="flex items-center gap-2 text-sm text-ink-light">
+        <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand/20" />
+        Ghi nhớ đăng nhập
+      </label>
+
+      <button type="submit" class="w-full rounded-xl bg-brand py-2.5 text-sm font-bold text-white transition hover:bg-brand-hover">
+        Đăng nhập
+      </button>
+
+      <div class="flex items-center justify-between gap-3">
+        <a href="#" class="text-sm font-semibold text-ink-light transition hover:text-brand">Quên mật khẩu?</a>
+        <a href="/register" class="text-sm font-semibold text-brand transition hover:opacity-90">Đăng ký</a>
+      </div>
+    </form>
+
+    <p class="mt-5 text-xs text-ink-light">Lưu ý: Đây là trang giao diện mẫu. Chức năng đăng nhập chưa được kết nối.</p>
+  </section>
+</div>
+

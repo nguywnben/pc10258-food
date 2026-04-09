@@ -1,0 +1,30 @@
+<div class="grid h-full min-h-0 grid-cols-[240px_1fr] overflow-hidden">
+    @if (isAuthLayoutRoute()) {
+      <app-auth-sidebar></app-auth-sidebar>
+    } @else {
+      <app-left-sidebar></app-left-sidebar>
+    }
+    
+    <div class="flex min-h-0 min-w-0 flex-col overflow-hidden bg-surface-muted">
+        <app-header></app-header>
+        
+        <div
+          class="grid min-h-0 min-w-0 flex-1 overflow-hidden"
+          [ngClass]="showRightSidebar() ? 'grid-cols-[minmax(0,1fr)_300px]' : 'grid-cols-1'"
+        >
+            <main
+              id="main-content"
+              class="custom-scroll min-h-0 overflow-y-auto bg-surface-muted"
+              [ngClass]="mainPaddingClass()"
+            >
+                <router-outlet></router-outlet>
+                @if (!isAuthLayoutRoute()) {
+                  <app-footer></app-footer>
+                }
+            </main>
+            @if (showRightSidebar()) {
+              <app-right-sidebar></app-right-sidebar>
+            }
+        </div>
+    </div>
+</div>

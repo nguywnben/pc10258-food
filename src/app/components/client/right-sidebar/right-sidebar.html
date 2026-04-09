@@ -1,0 +1,193 @@
+<aside
+  id="right-sidebar"
+  class="custom-scroll flex h-full min-h-0 flex-col overflow-y-auto border-l border-gray-100 bg-white px-4 py-4"
+>
+  <!-- Số dư ví — cùng giao diện trang chủ cho mọi route -->
+  <div class="mb-4 rounded-2xl bg-brand/10 px-4 py-4">
+    <div class="block rounded-xl">
+      <p class="text-xs font-medium text-ink-light">Số dư ví</p>
+      <p class="mt-1 text-2xl font-extrabold text-brand">520.000₫</p>
+    </div>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <a
+        routerLink="/wallet"
+        fragment="nap-tien"
+        class="inline-flex rounded-full border border-white/80 bg-white px-3 py-1 text-[12px] font-semibold text-ink transition hover:bg-gray-50"
+      >
+        Nạp tiền
+      </a>
+      <a
+        routerLink="/wallet"
+        fragment="so-du-lich-su"
+        class="inline-flex rounded-full border border-white/80 bg-white px-3 py-1 text-[12px] font-semibold text-ink transition hover:bg-gray-50"
+        aria-label="Ví và số dư — lịch sử"
+      >
+        Ví số dư
+      </a>
+    </div>
+  </div>
+
+  <!-- Địa chỉ giao -->
+  <div class="mb-5 rounded-2xl border border-gray-100 bg-gray-50/80 px-4 py-3">
+    <p class="text-xs font-medium text-ink-light">Địa chỉ giao</p>
+    <p class="mt-1 text-sm font-semibold text-ink">123 Đường ABC, P. Bến Nghé, Q.1, TP.HCM</p>
+    <div class="mt-2 flex flex-wrap gap-3">
+      <button type="button" class="text-xs font-semibold text-brand transition hover:text-brand-hover">Đổi</button>
+      <button type="button" class="text-xs font-medium text-ink-light transition hover:text-ink">Thêm chi tiết +</button>
+    </div>
+  </div>
+
+  @if (isFavoritesRoute()) {
+    <p class="mb-3 text-sm text-ink-light">
+      Giỏ hàng hiển thị trên trang
+      <a routerLink="/" class="font-medium text-brand hover:underline">Tổng quan</a>. Thêm món từ danh sách yêu thích rồi quay lại để thanh toán.
+    </p>
+    <a
+      routerLink="/"
+      class="mt-auto w-full rounded-2xl border-2 border-brand bg-white py-3 text-center text-sm font-bold text-brand transition hover:bg-brand/5"
+    >
+      Mở giỏ hàng
+    </a>
+  } @else {
+    <!-- Danh sách giỏ -->
+    <h3 class="mb-1 text-base font-bold">Giỏ hàng của tôi</h3>
+    <p class="mb-3 text-sm text-ink-light">Bạn có 6 món trong giỏ. Xem menu bên trái để chọn thêm món.</p>
+
+    <div class="custom-scroll mb-2 max-h-80 min-h-[200px] shrink-0 space-y-4 overflow-y-auto pr-1">
+      <div class="flex items-center gap-3">
+        <img src="assets/images/neapolitan.png" alt="Neapolitan" class="h-14 w-14 rounded-xl object-cover" />
+        <div class="flex-1">
+          <p class="text-sm font-medium text-ink">Pizza Neapolitan</p>
+          <div class="mt-1 flex items-center justify-between">
+            <div class="flex items-center gap-2 rounded-full border border-gray-200 px-2 py-0.5">
+              <button class="text-sm font-bold text-ink-light transition hover:text-brand" aria-label="Giảm số lượng">−</button>
+              <span class="min-w-[16px] text-center text-sm font-semibold">1</span>
+              <button class="text-sm font-bold text-ink-light transition hover:text-brand" aria-label="Tăng số lượng">+</button>
+            </div>
+            <span class="text-sm font-semibold text-ink">155.000₫</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <img src="assets/images/sicilian.png" alt="Sicilian" class="h-14 w-14 rounded-xl object-cover" />
+        <div class="flex-1">
+          <p class="text-sm font-medium text-ink">Pizza Sicilian</p>
+          <div class="mt-1 flex items-center justify-between">
+            <div class="flex items-center gap-2 rounded-full border border-gray-200 px-2 py-0.5">
+              <button class="text-sm font-bold text-ink-light transition hover:text-brand" aria-label="Giảm số lượng">−</button>
+              <span class="min-w-[16px] text-center text-sm font-semibold">2</span>
+              <button class="text-sm font-bold text-ink-light transition hover:text-brand" aria-label="Tăng số lượng">+</button>
+            </div>
+            <span class="text-sm font-semibold text-ink">145.000₫</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <img src="assets/images/california.png" alt="California" class="h-14 w-14 rounded-xl object-cover" />
+        <div class="flex-1">
+          <p class="text-sm font-medium text-ink">Pizza California</p>
+          <div class="mt-1 flex items-center justify-between">
+            <div class="flex items-center gap-2 rounded-full border border-gray-200 px-2 py-0.5">
+              <button class="text-sm font-bold text-ink-light transition hover:text-brand" aria-label="Giảm số lượng">−</button>
+              <span class="min-w-[16px] text-center text-sm font-semibold">1</span>
+              <button class="text-sm font-bold text-ink-light transition hover:text-brand" aria-label="Tăng số lượng">+</button>
+            </div>
+            <span class="text-sm font-semibold text-ink">120.000₫</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <img src="assets/images/burger_bo_pho_mai.png" alt="Burger bò phô mai" class="h-14 w-14 rounded-xl object-cover" />
+        <div class="flex-1">
+          <p class="text-sm font-medium text-ink">Burger bò phô mai</p>
+          <div class="mt-1 flex items-center justify-between">
+            <div class="flex items-center gap-2 rounded-full border border-gray-200 px-2 py-0.5">
+              <button class="text-sm font-bold text-ink-light transition hover:text-brand" aria-label="Giảm số lượng">−</button>
+              <span class="min-w-[16px] text-center text-sm font-semibold">2</span>
+              <button class="text-sm font-bold text-ink-light transition hover:text-brand" aria-label="Tăng số lượng">+</button>
+            </div>
+            <span class="text-sm font-semibold text-ink">89.000₫</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <img src="assets/images/banh_ran_vong.png" alt="Bánh rán vòng" class="h-14 w-14 rounded-xl object-cover" />
+        <div class="flex-1">
+          <p class="text-sm font-medium text-ink">Bánh rán vòng</p>
+          <div class="mt-1 flex items-center justify-between">
+            <div class="flex items-center gap-2 rounded-full border border-gray-200 px-2 py-0.5">
+              <button class="text-sm font-bold text-ink-light transition hover:text-brand" aria-label="Giảm số lượng">−</button>
+              <span class="min-w-[16px] text-center text-sm font-semibold">3</span>
+              <button class="text-sm font-bold text-ink-light transition hover:text-brand" aria-label="Tăng số lượng">+</button>
+            </div>
+            <span class="text-sm font-semibold text-ink">35.000₫</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <img src="assets/images/kem_vani.png" alt="Kem vani" class="h-14 w-14 rounded-xl object-cover" />
+        <div class="flex-1">
+          <p class="text-sm font-medium text-ink">Kem vani</p>
+          <div class="mt-1 flex items-center justify-between">
+            <div class="flex items-center gap-2 rounded-full border border-gray-200 px-2 py-0.5">
+              <button class="text-sm font-bold text-ink-light transition hover:text-brand" aria-label="Giảm số lượng">−</button>
+              <span class="min-w-[16px] text-center text-sm font-semibold">1</span>
+              <button class="text-sm font-bold text-ink-light transition hover:text-brand" aria-label="Tăng số lượng">+</button>
+            </div>
+            <span class="text-sm font-semibold text-ink">25.000₫</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="my-4 border-gray-100" />
+
+    <div class="mb-4">
+      <label for="promo-input" class="mb-1.5 block text-xs font-medium text-ink-light">Mã giảm giá</label>
+      <div class="flex gap-2">
+        <input
+          id="promo-input"
+          type="text"
+          placeholder="Nhập mã"
+          class="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+          maxlength="20"
+        />
+        <button type="button" class="shrink-0 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">
+          Áp dụng
+        </button>
+      </div>
+    </div>
+
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between">
+        <span class="text-ink-light">Tạm tính</span>
+        <span class="font-medium">565.000₫</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-ink-light">Giảm giá</span>
+        <span class="font-medium text-green-500">-45.000₫</span>
+      </div>
+    </div>
+
+    <hr class="my-4 border-gray-100" />
+
+    <div class="flex items-center justify-between">
+      <span class="text-base font-bold">Tổng cộng</span>
+      <span class="text-xl font-extrabold">570.000₫</span>
+    </div>
+
+    <a
+      id="btn-continue-payment"
+      routerLink="/payment"
+      [queryParams]="{ type: 'order', amount: '570000', label: 'Thanh toán giỏ hàng' }"
+      class="mt-5 flex w-full items-center justify-center rounded-2xl bg-brand py-3.5 text-sm font-bold text-white transition hover:bg-brand-hover"
+    >
+      Thanh toán
+    </a>
+  }
+</aside>

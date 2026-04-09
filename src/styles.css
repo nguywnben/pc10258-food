@@ -1,3 +1,31 @@
-/* You can add global styles to this file, and also import other style files */
+/* Tailwind utilities are loaded from CDN in `src/index.html` to match `food/index.html`.
+   This file only keeps extra small helper styles if needed. */
 
-@import 'tailwindcss';
+/* Một thanh cuộn: khóa cuộn document, để vùng .custom-scroll trong layout cuộn. */
+html {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-size: 16px;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+app-root {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+}
+
+.filter-sort,
+.filter-price {
+  cursor: pointer;
+  user-select: none;
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease,
+    opacity 150ms ease;
+}
+

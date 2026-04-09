@@ -1,0 +1,123 @@
+<!-- min-h: giữ cùng chiều cao thanh header dù có/không ô tìm — tránh cảm giác header/nội dung "nhảy" lên khi đổi trang. -->
+<header
+  class="box-border flex min-h-[4.5rem] shrink-0 flex-wrap items-center border-b border-gray-100 bg-white px-6 py-3.5"
+  [ngClass]="headerGapClass()"
+>
+  <div class="min-w-0 shrink-0">
+    @if (isFavoritesRoute()) {
+      <p class="text-xs text-ink-light">Món đã lưu</p>
+      <p class="text-base font-bold text-ink">Yêu thích của bạn</p>
+    } @else if (isMessagesRoute()) {
+      <p class="text-xs text-ink-light">Hội thoại</p>
+      <p class="text-base font-bold text-ink">Tin nhắn</p>
+    } @else if (isOrdersRoute()) {
+      <p class="text-xs text-ink-light">Đơn đã đặt</p>
+      <p class="text-base font-bold text-ink">Lịch sử đơn hàng</p>
+    } @else if (isAccountRoute()) {
+      <p class="text-xs text-ink-light">Khách hàng</p>
+      <p class="text-base font-bold text-ink">Thông tin &amp; hồ sơ</p>
+    } @else if (isPaymentRoute()) {
+      <p class="text-xs text-ink-light">Ví &amp; giao dịch</p>
+      <p class="text-base font-bold text-ink">Thanh toán</p>
+    } @else if (isWalletRoute()) {
+      <p class="text-xs text-ink-light">Ví &amp; giao dịch</p>
+      <p class="text-base font-bold text-ink">Ví &amp; số dư</p>
+    } @else if (isUpgradeRoute()) {
+      <p class="text-xs text-ink-light">Tài khoản</p>
+      <p class="text-base font-bold text-ink">Nâng cấp</p>
+    } @else if (isUpgradeSuccessRoute()) {
+      <p class="text-xs text-ink-light">Tài khoản</p>
+      <p class="text-base font-bold text-ink">Thành công</p>
+    } @else if (isHelpRoute()) {
+      <p class="text-xs text-ink-light">Trợ giúp</p>
+      <p class="text-base font-bold text-ink">Câu hỏi thường gặp</p>
+    } @else if (isLoginRoute()) {
+      <p class="text-xs text-ink-light">Tài khoản</p>
+      <p class="text-base font-bold text-ink">Đăng nhập</p>
+    } @else if (isRegisterRoute()) {
+      <p class="text-xs text-ink-light">Tài khoản</p>
+      <p class="text-base font-bold text-ink">Đăng ký</p>
+    } @else {
+      <p class="text-xs text-ink-light">Chào buổi sáng,</p>
+      <p class="text-base font-bold text-ink">Khách hàng — chào mừng trở lại!</p>
+    }
+  </div>
+
+  @if (showSearch()) {
+  <div class="relative flex h-10 min-h-10 min-w-0 max-w-md flex-1 items-center">
+    @if (isOrdersRoute()) {
+      <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-ink-lighter">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z" />
+        </svg>
+      </span>
+      <input
+        id="search-input"
+        type="search"
+        placeholder="Tìm theo mã đơn..."
+        class="h-10 w-full rounded-full border border-gray-200 bg-gray-50 pl-10 pr-4 text-sm text-ink outline-none transition focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20"
+      />
+    } @else {
+      <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-ink-lighter">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z" />
+        </svg>
+      </span>
+
+      @if (isMessagesRoute()) {
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Tìm hội thoại..."
+          class="h-10 w-full rounded-full border border-gray-200 bg-gray-50 pl-11 pr-4 text-sm text-ink outline-none transition focus:border-brand/50 focus:bg-white focus:ring-2 focus:ring-brand/10"
+        />
+      } @else {
+        <input
+          id="search-input"
+          type="search"
+          [attr.placeholder]="searchPlaceholder()"
+          class="h-10 w-full rounded-full border border-gray-200 bg-gray-50 pl-11 pr-4 text-sm text-ink outline-none transition focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20"
+        />
+      }
+    }
+  </div>
+  }
+
+  <div
+    class="flex shrink-0 items-center gap-3"
+    [ngClass]="isLoginRoute() || isRegisterRoute() ? 'relative ml-auto' : 'ml-auto'"
+  >
+    <div class="flex shrink-0 flex-col items-end leading-tight">
+      <span id="header-current-datetime" class="text-[11px] text-ink-lighter">Đang lấy giờ...</span>
+      <span id="header-current-location" class="text-[11px] font-medium text-ink-light">Đang lấy vị trí...</span>
+    </div>
+
+    <button
+      type="button"
+      class="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white text-ink-light transition hover:border-brand hover:text-brand"
+      aria-label="Thông báo"
+    >
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path
+          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+        />
+      </svg>
+    </button>
+
+    <a
+      routerLink="/account"
+      [attr.aria-current]="isAccountRoute() ? 'page' : null"
+      class="group shrink-0 rounded-full ring-2 ring-gray-200 ring-offset-2 ring-offset-white transition duration-200 hover:ring-brand/45 focus-visible:outline-none focus-visible:ring-brand/50"
+      aria-label="Hồ sơ"
+      title="Hồ sơ"
+    >
+      <img
+        src="assets/images/user_avatar.png"
+        alt=""
+        class="h-10 w-10 rounded-full object-cover transition duration-200 group-hover:scale-105 group-active:scale-100"
+        width="40"
+        height="40"
+      />
+    </a>
+  </div>
+</header>

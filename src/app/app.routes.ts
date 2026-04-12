@@ -22,6 +22,17 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/admin/table-samples/table-samples').then(m => m.AdminTableSamples),
       },
+      {
+        path: 'categories',
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'list' },
+          {
+            path: 'list',
+            loadComponent: () =>
+              import('./pages/admin/categories/list').then(m => m.AdminCategoriesList),
+          },
+        ],
+      },
       { path: '**', redirectTo: 'dashboard' },
     ],
   },

@@ -1,630 +1,194 @@
-<!-- Banner khuyến mãi -->
 <section class="mb-8 overflow-hidden rounded-3xl bg-brand px-8 py-7 text-white">
-    <div class="flex flex-wrap items-center justify-between gap-6">
-        <div class="max-w-xl">
-            <p class="text-sm font-medium text-white/90">Ưu đãi trong tuần</p>
-      <h2 class="mt-1 text-2xl font-extrabold leading-tight md:text-3xl">Giảm tới 20% khi đặt combo gia đình — giao nhanh
-        10–15 phút.</h2>
-            <button type="button"
-        class="mt-5 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-brand transition hover:bg-white/95">Xem combo</button>
-        </div>
-        <span class="text-7xl select-none" aria-hidden="true">👨‍🍳</span>
+  <div class="flex flex-wrap items-center justify-between gap-6">
+    <div class="max-w-xl">
+      <p class="text-sm font-medium text-white/90">Ưu đãi trong tuần</p>
+      <h2 class="mt-1 text-2xl font-extrabold leading-tight md:text-3xl">
+        Giảm tới 20% khi đặt combo gia đình — giao nhanh 10-15 phút.
+      </h2>
+      <button
+        type="button"
+        class="mt-5 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-brand transition hover:bg-white/95"
+      >
+        Xem combo
+      </button>
     </div>
+    <span class="select-none text-7xl" aria-hidden="true">👨‍🍳</span>
+  </div>
 </section>
 
-<!-- Danh mục -->
 <div class="mb-4 flex items-center justify-between gap-4">
-    <h2 class="text-lg font-bold text-ink">Danh mục</h2>
-    <a href="#" class="text-sm font-semibold text-brand transition hover:text-brand-hover">Xem tất cả ›</a>
+  <h2 class="text-lg font-bold text-ink">Danh mục</h2>
+  <a routerLink="/favorites" class="text-sm font-semibold text-brand transition hover:text-brand-hover">Yêu thích ›</a>
 </div>
 
-<!-- ── Category Carousel ── -->
-<section class="mb-8 flex items-center gap-5" aria-label="Danh mục món ăn">
-    <!-- Tất cả -->
-    <button type="button"
-        class="flex flex-col items-center gap-1.5 rounded-2xl bg-brand px-5 py-3 text-white transition hover:opacity-90"
-        aria-pressed="true">
-        <span class="text-2xl">📋</span>
-        <span class="text-xs font-semibold">Tất cả</span>
+<section class="mb-8 flex flex-wrap items-center gap-3" aria-label="Danh mục món ăn">
+  <button
+    type="button"
+    (click)="onSelectCategory(null)"
+    [attr.aria-pressed]="selectedCategoryId() === null"
+    class="flex flex-col items-center gap-1.5 rounded-2xl px-4 py-3 text-xs font-semibold transition"
+    [class.bg-brand]="selectedCategoryId() === null"
+    [class.text-white]="selectedCategoryId() === null"
+    [class.bg-white]="selectedCategoryId() !== null"
+    [class.text-ink]="selectedCategoryId() !== null"
+  >
+    <span class="text-xl">📋</span>
+    <span>Tất cả</span>
+  </button>
+
+  @for (category of categories(); track category.id) {
+    <button
+      type="button"
+      (click)="onSelectCategory(category.id)"
+      [attr.aria-pressed]="selectedCategoryId() === category.id"
+      class="flex flex-col items-center gap-1.5 rounded-2xl px-4 py-3 text-xs font-semibold transition"
+      [class.bg-brand]="selectedCategoryId() === category.id"
+      [class.text-white]="selectedCategoryId() === category.id"
+      [class.bg-white]="selectedCategoryId() !== category.id"
+      [class.text-ink]="selectedCategoryId() !== category.id"
+    >
+      <span class="text-xl">{{ category.icon || '🍽️' }}</span>
+      <span>{{ category.name }}</span>
     </button>
-    <!-- Pizza -->
-    <button type="button"
-        class="flex flex-col items-center gap-1.5 rounded-2xl bg-white px-5 py-3 text-ink transition hover:bg-brand/10 hover:text-brand"
-        aria-pressed="false">
-        <span class="text-2xl">🍕</span>
-        <span class="text-xs font-medium">Pizza</span>
-    </button>
-    <!-- Donut -->
-    <button type="button"
-        class="flex flex-col items-center gap-1.5 rounded-2xl bg-white px-5 py-3 text-ink transition hover:bg-brand/10 hover:text-brand"
-        aria-pressed="false">
-        <span class="text-2xl">🍩</span>
-        <span class="text-xs font-medium">Bánh rán</span>
-    </button>
-    <!-- Burger -->
-    <button type="button"
-        class="flex flex-col items-center gap-1.5 rounded-2xl bg-white px-5 py-3 text-ink transition hover:bg-brand/10 hover:text-brand"
-        aria-pressed="false">
-        <span class="text-2xl">🍔</span>
-        <span class="text-xs font-medium">Burger</span>
-    </button>
-  <!-- Mexican -->
-  <button type="button"
-    class="flex flex-col items-center gap-1.5 rounded-2xl bg-white px-5 py-3 text-ink transition hover:bg-brand/10 hover:text-brand"
-    aria-pressed="false">
-    <span class="text-2xl">🌮</span>
-    <span class="text-xs font-medium">Mexico</span>
-    </button>
-    <!-- Asian -->
-    <button type="button"
-        class="flex flex-col items-center gap-1.5 rounded-2xl bg-white px-5 py-3 text-ink transition hover:bg-brand/10 hover:text-brand"
-        aria-pressed="false">
-        <span class="text-2xl">🍜</span>
-        <span class="text-xs font-medium">Á</span>
-    </button>
-  <!-- Icecream -->
-  <button type="button"
-    class="flex flex-col items-center gap-1.5 rounded-2xl bg-white px-5 py-3 text-ink transition hover:bg-brand/10 hover:text-brand"
-    aria-pressed="false">
-    <span class="text-2xl">🍦</span>
-    <span class="text-xs font-medium">Kem</span>
-    </button>
+  }
 </section>
 
-<!-- ── Nội dung Tất cả ── -->
-<div>
-    <div class="mb-2 flex items-center justify-between gap-4">
-        <h2 class="text-lg font-bold">Món nổi bật</h2>
-        <a href="#" class="text-sm font-semibold text-brand transition hover:text-brand-hover">Xem tất cả ›</a>
-    </div>
-    <p class="mb-4 text-sm text-ink-light">Món ngon đủ loại, giao nhanh 10–15 phút.</p>
-
-    <!-- Bộ lọc -->
-    <div class="mb-6 flex flex-wrap items-center gap-4">
-        <div class="flex flex-wrap items-center gap-2">
-            <span class="text-xs font-medium text-ink-light">Sắp xếp:</span>
-            <div class="flex flex-wrap gap-2" role="group" aria-label="Sắp xếp sản phẩm">
-                <button type="button"
-                    class="filter-sort rounded-full border border-brand bg-brand/10 px-3 py-1.5 text-xs font-medium text-brand transition hover:border-brand hover:text-brand"
-                    data-sort="popular">Phổ biến</button>
-                <button type="button"
-                    class="filter-sort rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-ink-light transition hover:border-brand hover:text-brand"
-                    data-sort="price-asc">Giá thấp → cao</button>
-                <button type="button"
-                    class="filter-sort rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-ink-light transition hover:border-brand hover:text-brand"
-                    data-sort="price-desc">Giá cao → thấp</button>
-                <button type="button"
-                    class="filter-sort rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-ink-light transition hover:border-brand hover:text-brand"
-                    data-sort="new">Mới nhất</button>
-            </div>
-        </div>
-
-    <div class="h-4 w-px bg-gray-200"></div>
-
-    <div class="flex flex-wrap items-center gap-2">
-      <span class="text-xs font-medium text-ink-light">Khoảng giá:</span>
-      <select
-        class="filter-price rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
-        aria-label="Lọc theo giá">
-        <option value="">Tất cả</option>
-        <option value="0-50">Dưới 50.000₫</option>
-        <option value="50-100">50.000₫ – 100.000₫</option>
-        <option value="100-200">100.000₫ – 200.000₫</option>
-        <option value="200">Trên 200.000₫</option>
-      </select>
-        </div>
-    </div>
-
-    <h3 class="mb-3 text-sm font-semibold text-ink-light">Pizza</h3>
-    <section class="mb-8 grid grid-cols-3 gap-5">
-        <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-            <div class="relative h-44 overflow-hidden">
-                <img src="assets/images/neapolitan.png" alt="Pizza Neapolitan" class="h-full w-full object-cover" />
-                <span
-                    class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-                    4.5 (25+)</span>
-                <button type="button"
-                    class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-                    aria-label="Thêm vào yêu thích">
-                    <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-                        viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-                    </svg>
-                </button>
-            </div>
-            <div class="p-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="font-semibold">Pizza Neapolitan. <span class="ml-0.5 text-blue-400">●</span></h3>
-                    <span class="font-bold text-ink">145.000₫</span>
-                </div>
-                <p class="product-desc mt-1 text-xs text-ink-light">Đế mỏng Ý, sốt cà chua và phô mai tươi.</p>
-                <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-                    <span>🚚 Giao miễn phí</span>
-                    <span>⏱ 10–15 phút</span>
-                </div>
-            </div>
-        </article>
-
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/california.png" alt="Pizza California" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.8 (20+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Pizza California. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">165.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Kiểu California, nhiều rau tươi và phô mai.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 10–15 phút</span>
-        </div>
-      </div>
-    </article>
-
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/sicilian.png" alt="Pizza Sicilian" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.2 (22+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Pizza Sicilian. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">155.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Đế dày Sicilian, sốt đậm đà, phô mai kéo sợi.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 10–15 phút</span>
-        </div>
-      </div>
-    </article>
-  </section>
-
-  <h3 class="mb-3 text-sm font-semibold text-ink-light">Burger</h3>
-  <section class="mb-8 grid grid-cols-3 gap-5">
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/burger_bo_pho_mai.png" alt="Burger bò phô mai" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.6 (30+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Burger bò phô mai. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">89.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Burger bò Úc, phô mai tan chảy, ăn kèm rau.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 15–20 phút</span>
-        </div>
-      </div>
-    </article>
-
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/burger_ga_gion.png" alt="Burger gà giòn" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.4 (18+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Burger gà giòn. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">75.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Gà giòn, sốt đặc biệt, ăn kèm khoai tây.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 12–18 phút</span>
-        </div>
-      </div>
-    </article>
-
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/burger_doi.png" alt="Burger đôi" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.7 (24+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Burger đôi. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">129.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Hai nhân bò nướng, phô mai kép, no bụng.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 15–20 phút</span>
-        </div>
-      </div>
-    </article>
-  </section>
-
-  <h3 class="mb-3 text-sm font-semibold text-ink-light">Bánh rán</h3>
-  <section class="mb-8 grid grid-cols-3 gap-5">
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/banh_ran_vong.png" alt="Bánh rán vòng" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.5 (20+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Bánh rán vòng. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">35.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Bánh rán vòng giòn rụm, rắc đường.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 10–15 phút</span>
-        </div>
-      </div>
-    </article>
-
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/donut_socola.png" alt="Donut socola" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.8 (28+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Donut socola. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">42.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Donut phủ socola đắng, béo ngậy.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 10–15 phút</span>
-        </div>
-      </div>
-    </article>
-
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/banh_ran_nhan_kem.png" alt="Bánh rán nhân kem" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.6 (15+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Bánh rán nhân kem. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">38.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Bánh rán nhân kem lạnh, ngọt mát.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 10–15 phút</span>
-        </div>
-      </div>
-    </article>
-  </section>
-
-  <h3 class="mb-3 text-sm font-semibold text-ink-light">Mexico</h3>
-  <section class="mb-8 grid grid-cols-3 gap-5">
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/taco_thit_bo.png" alt="Taco thịt bò" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.7 (22+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Taco thịt bò. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">55.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Bánh taco thịt bò Mexico, rau tươi.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 12–18 phút</span>
-        </div>
-      </div>
-    </article>
-
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/burrito_ga.png" alt="Burrito gà" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.5 (19+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Burrito gà. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">65.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Cuộn bột mì, nhân gà, đậu, cơm.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 15–20 phút</span>
-        </div>
-      </div>
-    </article>
-  </section>
-
-  <h3 class="mb-3 text-sm font-semibold text-ink-light">Món Á</h3>
-  <section class="mb-8 grid grid-cols-3 gap-5">
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/pho_bo.png" alt="Phở bò" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.9 (45+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Phở bò. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">55.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Nước dùng bò hầm, bánh phở tươi, rau thơm.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 15–20 phút</span>
-        </div>
-      </div>
-    </article>
-
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/bun_bo_hue.png" alt="Bún bò Huế" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.7 (32+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Bún bò Huế. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">50.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Bún bò cay đậm đà kiểu Huế.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 12–18 phút</span>
-        </div>
-      </div>
-    </article>
-    </section>
-
-  <h3 class="mb-3 text-sm font-semibold text-ink-light">Kem</h3>
-  <section class="mb-8 grid grid-cols-3 gap-5">
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/kem_vani.png" alt="Kem vani" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.8 (26+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Kem vani. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">25.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Kem vani truyền thống, mát lạnh.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 10–15 phút</span>
-        </div>
-      </div>
-    </article>
-
-    <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white">
-      <div class="relative h-44 overflow-hidden">
-        <img src="assets/images/kem_socola.png" alt="Kem socola" class="h-full w-full object-cover" />
-        <span
-          class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐
-          4.6 (21+)</span>
-        <button type="button"
-          class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-          aria-label="Thêm vào yêu thích">
-          <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Kem socola. <span class="ml-0.5 text-blue-400">●</span></h3>
-          <span class="font-bold text-ink">28.000₫</span>
-        </div>
-        <p class="product-desc mt-1 text-xs text-ink-light">Kem socola đậm đà, béo ngậy.</p>
-        <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-          <span>🚚 Giao miễn phí</span>
-          <span>⏱ 10–15 phút</span>
-        </div>
-      </div>
-    </article>
-  </section>
+<div class="mb-2 flex items-center justify-between gap-4">
+  <h2 class="text-lg font-bold">Món nổi bật</h2>
+  <span class="text-sm text-ink-light">{{ products().length }} món</span>
 </div>
+<p class="mb-4 text-sm text-ink-light">Dữ liệu được lấy động từ database.</p>
+
+<div class="mb-6 flex flex-wrap items-center gap-4">
+  <div class="flex flex-wrap items-center gap-2">
+    <span class="text-xs font-medium text-ink-light">Sắp xếp:</span>
+    <div class="flex flex-wrap gap-2">
+      <button
+        type="button"
+        class="rounded-full border px-3 py-1.5 text-xs font-medium transition"
+        [class.border-brand]="selectedSort() === 'popular'"
+        [class.bg-brand/10]="selectedSort() === 'popular'"
+        [class.text-brand]="selectedSort() === 'popular'"
+        [class.border-gray-200]="selectedSort() !== 'popular'"
+        [class.bg-white]="selectedSort() !== 'popular'"
+        [class.text-ink-light]="selectedSort() !== 'popular'"
+        (click)="onSortChange('popular')"
+      >
+        Phổ biến
+      </button>
+      <button
+        type="button"
+        class="rounded-full border px-3 py-1.5 text-xs font-medium transition"
+        [class.border-brand]="selectedSort() === 'price-asc'"
+        [class.bg-brand/10]="selectedSort() === 'price-asc'"
+        [class.text-brand]="selectedSort() === 'price-asc'"
+        [class.border-gray-200]="selectedSort() !== 'price-asc'"
+        [class.bg-white]="selectedSort() !== 'price-asc'"
+        [class.text-ink-light]="selectedSort() !== 'price-asc'"
+        (click)="onSortChange('price-asc')"
+      >
+        Giá thấp → cao
+      </button>
+      <button
+        type="button"
+        class="rounded-full border px-3 py-1.5 text-xs font-medium transition"
+        [class.border-brand]="selectedSort() === 'price-desc'"
+        [class.bg-brand/10]="selectedSort() === 'price-desc'"
+        [class.text-brand]="selectedSort() === 'price-desc'"
+        [class.border-gray-200]="selectedSort() !== 'price-desc'"
+        [class.bg-white]="selectedSort() !== 'price-desc'"
+        [class.text-ink-light]="selectedSort() !== 'price-desc'"
+        (click)="onSortChange('price-desc')"
+      >
+        Giá cao → thấp
+      </button>
+      <button
+        type="button"
+        class="rounded-full border px-3 py-1.5 text-xs font-medium transition"
+        [class.border-brand]="selectedSort() === 'new'"
+        [class.bg-brand/10]="selectedSort() === 'new'"
+        [class.text-brand]="selectedSort() === 'new'"
+        [class.border-gray-200]="selectedSort() !== 'new'"
+        [class.bg-white]="selectedSort() !== 'new'"
+        [class.text-ink-light]="selectedSort() !== 'new'"
+        (click)="onSortChange('new')"
+      >
+        Mới nhất
+      </button>
+    </div>
+  </div>
+
+  <div class="h-4 w-px bg-gray-200"></div>
+
+  <div class="flex flex-wrap items-center gap-2">
+    <span class="text-xs font-medium text-ink-light">Khoảng giá:</span>
+    <select
+      [value]="selectedPriceRange()"
+      (change)="onPriceRangeChange($any($event.target).value)"
+      class="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+    >
+      <option value="">Tất cả</option>
+      <option value="0-50000">Dưới 50.000₫</option>
+      <option value="50000-100000">50.000₫ - 100.000₫</option>
+      <option value="100000-200000">100.000₫ - 200.000₫</option>
+      <option value="200000+">Trên 200.000₫</option>
+    </select>
+  </div>
+</div>
+
+@if (errorMessage()) {
+  <p class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ errorMessage() }}</p>
+}
+
+@if (productsLoading()) {
+  <div class="rounded-2xl border border-gray-100 bg-white px-4 py-8 text-center text-sm text-ink-light">
+    Đang tải danh sách món...
+  </div>
+} @else {
+  <section class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3" aria-label="Lưới sản phẩm">
+    @for (product of products(); track product.id) {
+      <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white" [class.is-in-favorites]="isFavorite(product.id)">
+        <div class="relative h-44 overflow-hidden">
+          <img
+            [src]="product.image_url || 'assets/images/user_avatar.png'"
+            [alt]="product.name"
+            class="h-full w-full object-cover"
+          />
+          <span class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">
+            ⭐ {{ product.rating }} ({{ product.review_count }}+)
+          </span>
+          <button
+            type="button"
+            (click)="toggleFavorite(product); $event.stopPropagation()"
+            class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
+            [attr.aria-label]="isFavorite(product.id) ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'"
+          >
+            <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4">
+          <div class="flex items-center justify-between gap-3">
+            <h3 class="line-clamp-1 font-semibold">{{ product.name }}</h3>
+            <span class="font-bold text-ink">{{ formatPrice(product.price) }}</span>
+          </div>
+          <p class="product-desc mt-1 text-xs text-ink-light">{{ product.description || 'Món ngon được cập nhật từ hệ thống.' }}</p>
+          <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
+            <span>{{ product.delivery_info || '🚚 Giao miễn phí' }}</span>
+            <span>⏱ {{ product.delivery_time || '10-15 phút' }}</span>
+          </div>
+        </div>
+      </article>
+    }
+  </section>
+
+  @if (products().length === 0) {
+    <p class="rounded-2xl border border-dashed border-gray-200 bg-white px-4 py-8 text-center text-sm text-ink-light">
+      Không có sản phẩm phù hợp bộ lọc hiện tại.
+    </p>
+  }
+}

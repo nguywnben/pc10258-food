@@ -6,251 +6,70 @@
     </p>
   </div>
   <a
-    href="/"
+    routerLink="/"
     class="shrink-0 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-brand hover:text-brand"
   >
     ← Về menu chính
   </a>
 </div>
 
-<p class="mb-4 text-xs font-medium text-ink-light">6 món</p>
+@if (errorMessage()) {
+  <p class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ errorMessage() }}</p>
+}
 
-<section
-  class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
-  aria-label="Danh sách món yêu thích"
->
-  <article class="card-hover is-in-favorites cursor-pointer overflow-hidden rounded-2xl bg-white">
-    <div class="relative h-44 overflow-hidden">
-      <img src="assets/images/neapolitan.png" alt="Pizza Neapolitan" class="h-full w-full object-cover" />
-      <span class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐ 4.5 (25+)</span>
-      <button
-        type="button"
-        class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-        aria-label="Bỏ yêu thích"
-      >
-        <svg
-          class="fav-heart-outline h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-        </svg>
-        <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-          <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-        </svg>
-      </button>
-    </div>
-    <div class="p-4">
-      <div class="flex items-center justify-between">
-        <h3 class="font-semibold">
-          Pizza Neapolitan. <span class="ml-0.5 text-blue-400">●</span>
-        </h3>
-        <span class="font-bold text-ink">145.000₫</span>
-      </div>
-      <p class="product-desc mt-1 text-xs text-ink-light">Đế mỏng Ý, sốt cà chua và phô mai tươi.</p>
-      <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-        <span>🚚 Giao miễn phí</span>
-        <span>⏱ 10–15 phút</span>
-      </div>
-    </div>
-  </article>
+@if (loading()) {
+  <p class="rounded-2xl border border-gray-100 bg-white px-4 py-8 text-center text-sm text-ink-light">
+    Đang tải danh sách yêu thích...
+  </p>
+} @else {
+  <p class="mb-4 text-xs font-medium text-ink-light">{{ favorites().length }} món</p>
 
-  <article class="card-hover is-in-favorites cursor-pointer overflow-hidden rounded-2xl bg-white">
-    <div class="relative h-44 overflow-hidden">
-      <img src="assets/images/california.png" alt="Pizza California" class="h-full w-full object-cover" />
-      <span class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐ 4.8 (20+)</span>
-      <button
-        type="button"
-        class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-        aria-label="Bỏ yêu thích"
-      >
-        <svg
-          class="fav-heart-outline h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-        </svg>
-        <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-          <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-        </svg>
-      </button>
-    </div>
-    <div class="p-4">
-      <div class="flex items-center justify-between">
-        <h3 class="font-semibold">
-          Pizza California. <span class="ml-0.5 text-blue-400">●</span>
-        </h3>
-        <span class="font-bold text-ink">165.000₫</span>
-      </div>
-      <p class="product-desc mt-1 text-xs text-ink-light">Kiểu California, nhiều rau tươi và phô mai.</p>
-      <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-        <span>🚚 Giao miễn phí</span>
-        <span>⏱ 10–15 phút</span>
-      </div>
-    </div>
-  </article>
-
-  <article class="card-hover is-in-favorites cursor-pointer overflow-hidden rounded-2xl bg-white">
-    <div class="relative h-44 overflow-hidden">
-      <img src="assets/images/burger_bo_pho_mai.png" alt="Burger bò phô mai" class="h-full w-full object-cover" />
-      <span class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐ 4.6 (30+)</span>
-      <button
-        type="button"
-        class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-        aria-label="Bỏ yêu thích"
-      >
-        <svg
-          class="fav-heart-outline h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-        </svg>
-        <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-          <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-        </svg>
-      </button>
-    </div>
-    <div class="p-4">
-      <div class="flex items-center justify-between">
-        <h3 class="font-semibold">
-          Burger bò phô mai. <span class="ml-0.5 text-blue-400">●</span>
-        </h3>
-        <span class="font-bold text-ink">89.000₫</span>
-      </div>
-      <p class="product-desc mt-1 text-xs text-ink-light">Burger bò Úc, phô mai tan chảy, ăn kèm rau.</p>
-      <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-        <span>🚚 Giao miễn phí</span>
-        <span>⏱ 15–20 phút</span>
-      </div>
-    </div>
-  </article>
-
-  <article class="card-hover is-in-favorites cursor-pointer overflow-hidden rounded-2xl bg-white">
-    <div class="relative h-44 overflow-hidden">
-      <img src="assets/images/kem_vani.png" alt="Kem vani" class="h-full w-full object-cover" />
-      <span class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐ 4.8 (26+)</span>
-      <button
-        type="button"
-        class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-        aria-label="Bỏ yêu thích"
-      >
-        <svg
-          class="fav-heart-outline h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-        </svg>
-        <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-          <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-        </svg>
-      </button>
-    </div>
-    <div class="p-4">
-      <div class="flex items-center justify-between">
-        <h3 class="font-semibold">
-          Kem vani. <span class="ml-0.5 text-blue-400">●</span>
-        </h3>
-        <span class="font-bold text-ink">25.000₫</span>
-      </div>
-      <p class="product-desc mt-1 text-xs text-ink-light">Kem vani truyền thống, mát lạnh.</p>
-      <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-        <span>🚚 Giao miễn phí</span>
-        <span>⏱ 10–15 phút</span>
-      </div>
-    </div>
-  </article>
-
-  <article class="card-hover is-in-favorites cursor-pointer overflow-hidden rounded-2xl bg-white">
-    <div class="relative h-44 overflow-hidden">
-      <img src="assets/images/sicilian.png" alt="Pizza Sicilian" class="h-full w-full object-cover" />
-      <span class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐ 4.2 (22+)</span>
-      <button
-        type="button"
-        class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-        aria-label="Bỏ yêu thích"
-      >
-        <svg
-          class="fav-heart-outline h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-        </svg>
-        <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-          <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-        </svg>
-      </button>
-    </div>
-    <div class="p-4">
-      <div class="flex items-center justify-between">
-        <h3 class="font-semibold">
-          Pizza Sicilian. <span class="ml-0.5 text-blue-400">●</span>
-        </h3>
-        <span class="font-bold text-ink">155.000₫</span>
-      </div>
-      <p class="product-desc mt-1 text-xs text-ink-light">Đế dày Sicilian, sốt đậm đà, phô mai kéo sợi.</p>
-      <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-        <span>🚚 Giao miễn phí</span>
-        <span>⏱ 10–15 phút</span>
-      </div>
-    </div>
-  </article>
-
-  <article class="card-hover is-in-favorites cursor-pointer overflow-hidden rounded-2xl bg-white">
-    <div class="relative h-44 overflow-hidden">
-      <img src="assets/images/banh_ran_vong.png" alt="Bánh rán vòng" class="h-full w-full object-cover" />
-      <span class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">⭐ 4.5 (20+)</span>
-      <button
-        type="button"
-        class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
-        aria-label="Bỏ yêu thích"
-      >
-        <svg
-          class="fav-heart-outline h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-        </svg>
-        <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-          <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-        </svg>
-      </button>
-    </div>
-    <div class="p-4">
-      <div class="flex items-center justify-between">
-        <h3 class="font-semibold">
-          Bánh rán vòng. <span class="ml-0.5 text-blue-400">●</span>
-        </h3>
-        <span class="font-bold text-ink">35.000₫</span>
-      </div>
-      <p class="product-desc mt-1 text-xs text-ink-light">Bánh rán vòng giòn rụm, rắc đường.</p>
-      <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
-        <span>🚚 Giao miễn phí</span>
-        <span>⏱ 10–15 phút</span>
-      </div>
-    </div>
-  </article>
-</section>
-
+  @if (favorites().length === 0) {
+    <p class="rounded-2xl border border-dashed border-gray-200 bg-white px-4 py-8 text-center text-sm text-ink-light">
+      Danh sách yêu thích đang trống.
+    </p>
+  } @else {
+    <section class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3" aria-label="Danh sách món yêu thích">
+      @for (item of favorites(); track item.id) {
+        <article class="card-hover is-in-favorites cursor-pointer overflow-hidden rounded-2xl bg-white">
+          <div class="relative h-44 overflow-hidden">
+            <img
+              [src]="item.product.image_url || 'assets/images/user_avatar.png'"
+              [alt]="item.product.name"
+              class="h-full w-full object-cover"
+            />
+            <span class="absolute left-3 top-3 rounded-lg bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-ink backdrop-blur">
+              ⭐ {{ item.product.rating }} ({{ item.product.review_count }}+)
+            </span>
+            <button
+              type="button"
+              (click)="removeFavorite(item); $event.stopPropagation()"
+              class="product-fav-btn absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-brand backdrop-blur transition hover:bg-brand hover:text-white"
+              aria-label="Bỏ yêu thích"
+            >
+              <svg class="fav-heart-outline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              <svg class="fav-heart-filled h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+              </svg>
+            </button>
+          </div>
+          <div class="p-4">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="line-clamp-1 font-semibold">{{ item.product.name }}</h3>
+              <span class="font-bold text-ink">{{ formatPrice(item.product.price) }}</span>
+            </div>
+            <p class="product-desc mt-1 text-xs text-ink-light">
+              {{ item.product.description || 'Món ngon được cập nhật từ hệ thống.' }}
+            </p>
+            <div class="mt-1.5 flex items-center gap-3 text-[11px] text-ink-light">
+              <span>{{ item.product.delivery_info || '🚚 Giao miễn phí' }}</span>
+              <span>⏱ {{ item.product.delivery_time || '10-15 phút' }}</span>
+            </div>
+          </div>
+        </article>
+      }
+    </section>
+  }
+}

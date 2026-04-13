@@ -3,11 +3,12 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CategoriesService, Category } from '../../../services/categories.service';
+import { DeleteModalComponent } from '../../../components/delete-modal/delete-modal.component';
 
 @Component({
   selector: 'app-admin-categories-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, DeleteModalComponent],
   templateUrl: './list.html',
 })
 export class AdminCategoriesList {
@@ -25,6 +26,8 @@ export class AdminCategoriesList {
   readonly showErrorToast = signal(false);
   readonly errorToastMessage = signal('Không thể xóa danh mục.');
   readonly deletingCategoryId = signal<number | null>(null);
+  readonly showDeleteModal = signal(false);
+  readonly selectedCategory = signal<Category | null>(null);
   readonly totalCategories = computed(() => this.categories().length);
   readonly sortedCategories = computed(() => {
     const cats = [...this.categories()];
@@ -68,14 +71,15 @@ export class AdminCategoriesList {
   }
 
   deleteCategory(category: Category): void {
-    const confirmed = typeof window === 'undefined'
-      ? true
-      : window.confirm(`Bạn có chắc chắn muốn xóa danh mục "${category.name}"?`);
+    this.selectedCategory.set(category);
+    this.showDeleteModal.set(true);
+  }
 
-    if (!confirmed) {
-      return;
-    }
+  confirmDeleteCategory(): void {
+    const category = this.selectedCategory();
+    if (!category) return;
 
+    this.showDeleteModal.set(false);
     this.deletingCategoryId.set(category.id);
 
     this.categoriesService.delete(category.id).subscribe({
@@ -84,13 +88,20 @@ export class AdminCategoriesList {
         this.successToastMessage.set('Xóa danh mục thành công');
         this.openSuccessToast();
         this.deletingCategoryId.set(null);
+        this.selectedCategory.set(null);
       },
       error: (err: unknown) => {
         this.errorToastMessage.set(this.parseDeleteError(err));
         this.openErrorToast();
         this.deletingCategoryId.set(null);
+        this.selectedCategory.set(null);
       },
     });
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal.set(false);
+    this.selectedCategory.set(null);
   }
 
   dismissSuccessToast(): void {

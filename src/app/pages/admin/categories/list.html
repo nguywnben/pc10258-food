@@ -130,3 +130,12 @@
     }
   </div>
 </section>
+
+<app-delete-modal
+  [isOpen]="showDeleteModal()"
+  [isLoading]="deletingCategoryId() !== null"
+  title="Xác nhận xóa danh mục"
+  message="Bạn có chắc chắn muốn xóa danh mục này không? Hành động này không thể hoàn tác."
+  (confirm)="confirmDeleteCategory()"
+  (cancel)="closeDeleteModal()"
+></app-delete-modal>

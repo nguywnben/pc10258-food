@@ -4,11 +4,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CategoriesService, Category } from '../../../services/categories.service';
 import { DeleteModalComponent } from '../../../components/delete-modal/delete-modal.component';
+import { PaginationComponent } from '../../../components/pagination/pagination.component';
 
 @Component({
   selector: 'app-admin-categories-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, RouterLink, DeleteModalComponent],
+  imports: [DatePipe, RouterLink, DeleteModalComponent, PaginationComponent],
   templateUrl: './list.html',
 })
 export class AdminCategoriesList {
@@ -17,6 +18,7 @@ export class AdminCategoriesList {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly itemsPerPage = 10;
 
   readonly categories = signal<Category[]>([]);
   readonly loading = signal(true);
@@ -28,6 +30,7 @@ export class AdminCategoriesList {
   readonly deletingCategoryId = signal<number | null>(null);
   readonly showDeleteModal = signal(false);
   readonly selectedCategory = signal<Category | null>(null);
+  readonly currentPage = signal(1);
   readonly totalCategories = computed(() => this.categories().length);
   readonly sortedCategories = computed(() => {
     const cats = [...this.categories()];
@@ -36,6 +39,12 @@ export class AdminCategoriesList {
       const dateB = new Date(b.created_at).getTime();
       return dateB - dateA; // descending order (newest first)
     });
+  });
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.sortedCategories().length / this.itemsPerPage)));
+  readonly activePage = computed(() => Math.min(Math.max(this.currentPage(), 1), this.totalPages()));
+  readonly paginatedCategories = computed(() => {
+    const startIndex = (this.activePage() - 1) * this.itemsPerPage;
+    return this.sortedCategories().slice(startIndex, startIndex + this.itemsPerPage);
   });
 
   constructor() {
@@ -54,6 +63,9 @@ export class AdminCategoriesList {
       });
 
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const page = Number(params.get('page') ?? '1');
+      this.currentPage.set(Number.isInteger(page) && page > 0 ? page : 1);
+
       if (params.get('created') === '1') {
         this.successToastMessage.set('Thêm danh mục thành công');
         this.openSuccessToast();
@@ -85,6 +97,7 @@ export class AdminCategoriesList {
     this.categoriesService.delete(category.id).subscribe({
       next: () => {
         this.categories.update((items) => items.filter((item) => item.id !== category.id));
+        this.ensureCurrentPageInRange();
         this.successToastMessage.set('Xóa danh mục thành công');
         this.openSuccessToast();
         this.deletingCategoryId.set(null);
@@ -102,6 +115,15 @@ export class AdminCategoriesList {
   closeDeleteModal(): void {
     this.showDeleteModal.set(false);
     this.selectedCategory.set(null);
+  }
+
+  goToPage(page: number): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   dismissSuccessToast(): void {
@@ -145,6 +167,12 @@ export class AdminCategoriesList {
     this.toastTimer = setTimeout(() => {
       this.dismissErrorToast();
     }, 3500);
+  }
+
+  private ensureCurrentPageInRange(): void {
+    if (this.currentPage() > this.totalPages()) {
+      this.goToPage(this.totalPages());
+    }
   }
 
   private parseDeleteError(err: unknown): string {

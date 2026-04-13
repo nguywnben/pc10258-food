@@ -58,6 +58,17 @@ export const routes: Routes = [
           },
         ],
       },
+      {
+        path: 'products',
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'list' },
+          {
+            path: 'list',
+            loadComponent: () =>
+              import('./pages/admin/products/list').then(m => m.AdminProductsList),
+          },
+        ],
+      },
       { path: '**', redirectTo: 'dashboard' },
     ],
   },

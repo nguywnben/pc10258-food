@@ -1,15 +1,16 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CategoriesService, Category } from '../../../services/categories.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { CategoriesService, Category, CreateCategoryPayload, UpdateCategoryPayload } from '../../../services/categories.service';
+import { CategoryModalComponent, CategoryModalSaveEvent } from '../../../components/category-modal/category-modal.component';
 import { DeleteModalComponent } from '../../../components/delete-modal/delete-modal.component';
 import { PaginationComponent } from '../../../components/pagination/pagination.component';
 
 @Component({
   selector: 'app-admin-categories-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, RouterLink, DeleteModalComponent, PaginationComponent],
+  imports: [DatePipe, DeleteModalComponent, PaginationComponent, CategoryModalComponent],
   templateUrl: './list.html',
 })
 export class AdminCategoriesList {
@@ -30,6 +31,9 @@ export class AdminCategoriesList {
   readonly deletingCategoryId = signal<number | null>(null);
   readonly showDeleteModal = signal(false);
   readonly selectedCategory = signal<Category | null>(null);
+  readonly showCategoryModal = signal(false);
+  readonly editingCategory = signal<Category | null>(null);
+  readonly savingCategory = signal(false);
   readonly currentPage = signal(1);
   readonly totalCategories = computed(() => this.categories().length);
   readonly sortedCategories = computed(() => {
@@ -66,20 +70,62 @@ export class AdminCategoriesList {
       const page = Number(params.get('page') ?? '1');
       this.currentPage.set(Number.isInteger(page) && page > 0 ? page : 1);
 
-      if (params.get('created') === '1') {
-        this.successToastMessage.set('Thêm danh mục thành công');
-        this.openSuccessToast();
-      }
-
-      if (params.get('updated') === '1') {
-        this.successToastMessage.set('Cập nhật danh mục thành công');
-        this.openSuccessToast();
-      }
     });
   }
 
   trackByCategoryId(_: number, category: Category): number {
     return category.id;
+  }
+
+  openCreateModal(): void {
+    this.editingCategory.set(null);
+    this.showCategoryModal.set(true);
+  }
+
+  openEditModal(category: Category): void {
+    this.editingCategory.set(category);
+    this.showCategoryModal.set(true);
+  }
+
+  closeCategoryModal(): void {
+    this.showCategoryModal.set(false);
+    this.editingCategory.set(null);
+    this.savingCategory.set(false);
+  }
+
+  saveCategory(event: CategoryModalSaveEvent): void {
+    const category = event.category;
+    const payload = event.payload as CreateCategoryPayload | UpdateCategoryPayload;
+
+    this.savingCategory.set(true);
+
+    const request = category
+      ? this.categoriesService.update(category.id, payload as UpdateCategoryPayload)
+      : this.categoriesService.create(payload as CreateCategoryPayload);
+
+    request.subscribe({
+      next: (savedCategory) => {
+        if (category) {
+          this.categories.update((items) =>
+            items.map((item) => (item.id === savedCategory.id ? savedCategory : item)),
+          );
+          this.successToastMessage.set('Cập nhật danh mục thành công');
+        } else {
+          this.categories.update((items) => [savedCategory, ...items]);
+          this.successToastMessage.set('Thêm danh mục thành công');
+          this.goToPage(1);
+        }
+
+        this.savingCategory.set(false);
+        this.closeCategoryModal();
+        this.openSuccessToast();
+      },
+      error: (err: unknown) => {
+        this.errorToastMessage.set(this.parseSaveError(err, !!category));
+        this.savingCategory.set(false);
+        this.openErrorToast();
+      },
+    });
   }
 
   deleteCategory(category: Category): void {
@@ -135,7 +181,7 @@ export class AdminCategoriesList {
 
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { created: null, updated: null },
+      queryParams: { page: this.activePage() },
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
@@ -203,5 +249,41 @@ export class AdminCategoriesList {
     }
 
     return apiMessage || 'Không thể xóa danh mục. Vui lòng thử lại.';
+  }
+
+  private parseSaveError(err: unknown, isUpdate: boolean): string {
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'status' in err &&
+      (err as { status?: number }).status === 401
+    ) {
+      return 'Bạn chưa đăng nhập hoặc token đã hết hạn.';
+    }
+
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'status' in err &&
+      (err as { status?: number }).status === 403
+    ) {
+      return isUpdate
+        ? 'Tài khoản hiện tại không có quyền sửa danh mục.'
+        : 'Tài khoản hiện tại không có quyền thêm danh mục.';
+    }
+
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'error' in err &&
+      typeof (err as { error?: unknown }).error === 'object' &&
+      (err as { error?: { message?: string } }).error?.message
+    ) {
+      return (err as { error: { message: string } }).error.message;
+    }
+
+    return isUpdate
+      ? 'Không thể cập nhật danh mục. Vui lòng thử lại.'
+      : 'Không thể thêm danh mục. Vui lòng thử lại.';
   }
 }

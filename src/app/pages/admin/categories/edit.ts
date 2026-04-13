@@ -53,6 +53,16 @@ export class AdminCategoriesEdit {
 				this.loading.set(false);
 			},
 			error: (err: unknown) => {
+				const status =
+					typeof err === 'object' && err !== null && 'status' in err
+						? (err as { status?: number }).status
+						: undefined;
+
+				if (status === 404) {
+					void this.router.navigate(['/not-found']);
+					return;
+				}
+
 				this.error.set(this.parseError(err, false));
 				this.loading.set(false);
 			},

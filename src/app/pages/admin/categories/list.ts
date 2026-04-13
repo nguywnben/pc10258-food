@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CategoriesService, Category } from './categories.service';
+import { CategoriesService, Category } from '../../../services/categories.service';
 
 @Component({
   selector: 'app-admin-categories-list',

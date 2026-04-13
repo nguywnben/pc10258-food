@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CategoriesService, CreateCategoryPayload } from './categories.service';
+import { CategoriesService, CreateCategoryPayload } from '../../../services/categories.service';
 import { debounceTime, map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 

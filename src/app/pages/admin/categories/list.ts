@@ -21,6 +21,7 @@ export class AdminCategoriesList {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly showSuccessToast = signal(false);
+  readonly successToastMessage = signal('Thêm danh mục thành công');
   readonly totalCategories = computed(() => this.categories().length);
   readonly sortedCategories = computed(() => {
     const cats = [...this.categories()];
@@ -48,6 +49,12 @@ export class AdminCategoriesList {
 
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       if (params.get('created') === '1') {
+        this.successToastMessage.set('Thêm danh mục thành công');
+        this.openSuccessToast();
+      }
+
+      if (params.get('updated') === '1') {
+        this.successToastMessage.set('Cập nhật danh mục thành công');
         this.openSuccessToast();
       }
     });
@@ -66,7 +73,7 @@ export class AdminCategoriesList {
 
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { created: null },
+      queryParams: { created: null, updated: null },
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });

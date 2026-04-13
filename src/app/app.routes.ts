@@ -36,6 +36,11 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./pages/admin/categories/create').then(m => m.AdminCategoriesCreate),
           },
+          {
+            path: 'edit/:id',
+            loadComponent: () =>
+              import('./pages/admin/categories/edit').then(m => m.AdminCategoriesEdit),
+          },
         ],
       },
       { path: '**', redirectTo: 'dashboard' },

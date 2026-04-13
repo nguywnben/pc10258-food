@@ -42,6 +42,17 @@ export class CategoriesService {
       .pipe(map((response) => response.data ?? []));
   }
 
+  checkNameExists(name: string, excludeId?: number): Observable<boolean> {
+    return this.getAll().pipe(
+      map((categories) => {
+        const trimmedName = name.trim().toLowerCase();
+        return categories.some(
+          (cat) => cat.name.toLowerCase() === trimmedName && (!excludeId || cat.id !== excludeId),
+        );
+      }),
+    );
+  }
+
   getById(id: number): Observable<Category> {
     return this.http
       .get<ApiResponse<Category>>(`${this.apiBaseUrl}/categories/${id}`)

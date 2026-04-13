@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CategoriesService, CreateCategoryPayload } from './categories.service';
+import { debounceTime, map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
 
 @Component({
 	selector: 'app-admin-categories-create',
@@ -19,7 +21,11 @@ export class AdminCategoriesCreate {
 	readonly success = signal<string | null>(null);
 
 	readonly form = this.fb.nonNullable.group({
-		name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
+		name: [
+			'',
+			[Validators.required, Validators.minLength(3), Validators.maxLength(100)],
+			[this.createDuplicateNameValidator()],
+		],
 		icon: ['', [Validators.required, Validators.maxLength(10)]],
 		sort_order: ['', [Validators.required, Validators.min(1)]],
 	});
@@ -34,6 +40,18 @@ export class AdminCategoriesCreate {
 
 	get sortOrder() {
 		return this.form.controls.sort_order;
+	}
+
+	private createDuplicateNameValidator() {
+		return (control: AbstractControl): Observable<ValidationErrors | null> => {
+			if (!control.value) {
+				return of(null);
+			}
+			return this.categoriesService.checkNameExists(control.value).pipe(
+				debounceTime(300),
+				map((exists) => (exists ? { duplicateName: true } : null)),
+			);
+		};
 	}
 
 	submit(): void {

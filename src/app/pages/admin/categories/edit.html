@@ -1,110 +1,135 @@
 <div class="mb-6">
-	<h1 class="text-xl font-bold text-ink">Sửa danh mục</h1>
-	<p class="mt-0.5 text-sm text-ink-light">Cập nhật thông tin danh mục hiện có.</p>
+  <h1 class="text-xl font-bold text-ink">Sửa danh mục</h1>
+  <p class="mt-0.5 text-sm text-ink-light">Cập nhật thông tin danh mục hiện có.</p>
 </div>
 
 <section class="card-admin mb-8 p-6 animate-fade-in-up">
-	<h2 class="mb-1 flex items-center gap-2 text-base font-bold text-ink">
-		<svg class="h-5 w-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-			<path d="M4 21h4l10.5-10.5a2.121 2.121 0 10-3-3L5.5 18H4v3z" />
-		</svg>
-		Form sửa danh mục
-	</h2>
-	<p class="mb-5 text-xs text-ink-light">Chỉnh sửa tên danh mục, biểu tượng và thứ tự hiển thị.</p>
+  <h2 class="mb-1 flex items-center gap-2 text-base font-bold text-ink">
+    <svg
+      class="h-5 w-5 text-brand"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+    >
+      <path d="M4 21h4l10.5-10.5a2.121 2.121 0 10-3-3L5.5 18H4v3z" />
+    </svg>
+    Form sửa danh mục
+  </h2>
+  <p class="mb-5 text-xs text-ink-light">Chỉnh sửa tên danh mục, biểu tượng và thứ tự hiển thị.</p>
 
-	@if (loading()) {
-		<div class="rounded-xl border border-gray-200 bg-white px-4 py-6 text-sm text-ink-light">
-			Đang tải dữ liệu danh mục...
-		</div>
-	} @else {
-		<form [formGroup]="form" class="grid grid-cols-1 gap-5 md:grid-cols-2" (ngSubmit)="submit()">
-			<div>
-				<label for="category-name" class="form-label">Tên danh mục <span class="text-red-400">*</span></label>
-				<input
-					id="category-name"
-					type="text"
-					class="form-input"
-					formControlName="name"
-					placeholder="VD: Pizza"
-				/>
-				@if (name.invalid && (name.dirty || name.touched)) {
-					@if (name.hasError('required')) {
-						<p class="mt-1 text-xs text-red-500">Vui lòng nhập tên danh mục.</p>
-					}
-					@if (name.hasError('minlength')) {
-						<p class="mt-1 text-xs text-red-500">Tên danh mục phải có ít nhất 3 ký tự.</p>
-					}
-					@if (name.hasError('maxlength')) {
-						<p class="mt-1 text-xs text-red-500">Tên danh mục tối đa 100 ký tự.</p>
-					}
-				}
-			</div>
+  @if (loading()) {
+    <div class="rounded-xl border border-gray-200 bg-white px-4 py-6 text-sm text-ink-light">
+      Đang tải dữ liệu danh mục...
+    </div>
+  } @else {
+    <form [formGroup]="form" class="grid grid-cols-1 gap-5 md:grid-cols-2" (ngSubmit)="submit()">
+      <div>
+        <label for="category-name" class="form-label"
+          >Tên danh mục <span class="text-red-400">*</span></label
+        >
+        <input
+          id="category-name"
+          type="text"
+          class="form-input"
+          formControlName="name"
+          placeholder="VD: Pizza"
+        />
+        @if (name.invalid && (name.dirty || name.touched)) {
+          @if (name.hasError('required')) {
+            <p class="mt-1 text-xs text-red-500">Vui lòng nhập tên danh mục.</p>
+          }
+          @if (name.hasError('minlength')) {
+            <p class="mt-1 text-xs text-red-500">Tên danh mục phải có ít nhất 3 ký tự.</p>
+          }
+          @if (name.hasError('maxlength')) {
+            <p class="mt-1 text-xs text-red-500">Tên danh mục tối đa 100 ký tự.</p>
+          }
+          @if (name.hasError('duplicateName')) {
+            <p class="mt-1 text-xs text-red-500">Tên danh mục này đã tồn tại.</p>
+          }
+        }
+      </div>
 
-			<div>
-				<label for="category-icon" class="form-label">Biểu tượng (icon) <span class="text-red-400">*</span></label>
-				<input
-					id="category-icon"
-					type="text"
-					class="form-input"
-					formControlName="icon"
-					placeholder="VD: 🍕"
-				/>
-				@if (icon.invalid && (icon.dirty || icon.touched)) {
-					@if (icon.hasError('required')) {
-						<p class="mt-1 text-xs text-red-500">Vui lòng nhập biểu tượng.</p>
-					}
-					@if (icon.hasError('maxlength')) {
-						<p class="mt-1 text-xs text-red-500">Biểu tượng tối đa 10 ký tự.</p>
-					}
-				}
-			</div>
+      <div>
+        <label for="category-icon" class="form-label"
+          >Biểu tượng (icon) <span class="text-red-400">*</span></label
+        >
+        <input
+          id="category-icon"
+          type="text"
+          class="form-input"
+          formControlName="icon"
+          placeholder="VD: 🍕"
+        />
+        @if (icon.invalid && (icon.dirty || icon.touched)) {
+          @if (icon.hasError('required')) {
+            <p class="mt-1 text-xs text-red-500">Vui lòng nhập biểu tượng.</p>
+          }
+          @if (icon.hasError('maxlength')) {
+            <p class="mt-1 text-xs text-red-500">Biểu tượng tối đa 10 ký tự.</p>
+          }
+        }
+      </div>
 
-			<div>
-				<label for="category-sort-order" class="form-label">Thứ tự hiển thị <span class="text-red-400">*</span></label>
-				<input
-					id="category-sort-order"
-					type="text"
-					class="form-input"
-					formControlName="sort_order"
-					placeholder="VD: 1"
-				/>
-				@if (sortOrder.invalid && (sortOrder.dirty || sortOrder.touched)) {
-					@if (sortOrder.hasError('required')) {
-						<p class="mt-1 text-xs text-red-500">Thứ tự hiển thị là bắt buộc.</p>
-					}
-					@if (sortOrder.hasError('min')) {
-						<p class="mt-1 text-xs text-red-500">Thứ tự hiển thị phải lớn hơn 0.</p>
-					}
-				}
-			</div>
+      <div>
+        <label for="category-sort-order" class="form-label"
+          >Thứ tự hiển thị <span class="text-red-400">*</span></label
+        >
+        <input
+          id="category-sort-order"
+          type="text"
+          class="form-input"
+          formControlName="sort_order"
+          placeholder="VD: 1"
+        />
+        @if (sortOrder.invalid && (sortOrder.dirty || sortOrder.touched)) {
+          @if (sortOrder.hasError('required')) {
+            <p class="mt-1 text-xs text-red-500">Thứ tự hiển thị là bắt buộc.</p>
+          }
+          @if (sortOrder.hasError('min')) {
+            <p class="mt-1 text-xs text-red-500">Thứ tự hiển thị phải lớn hơn 0.</p>
+          }
+        }
+      </div>
 
-			<div class="md:col-span-2">
-				@if (error()) {
-					<div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-						{{ error() }}
-					</div>
-				}
-				@if (success()) {
-					<div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-600">
-						{{ success() }}
-					</div>
-				}
-			</div>
+      <div class="md:col-span-2">
+        @if (error()) {
+          <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            {{ error() }}
+          </div>
+        }
+        @if (success()) {
+          <div
+            class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-600"
+          >
+            {{ success() }}
+          </div>
+        }
+      </div>
 
-			<div class="col-span-1 flex items-center gap-3 border-t border-gray-100 pt-5 md:col-span-2">
-				<button type="submit" class="btn btn-brand" [disabled]="submitting()">
-					<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-						<path d="M5 13l4 4L19 7" />
-					</svg>
-					@if (submitting()) {
-						Đang cập nhật...
-					} @else {
-						Cập nhật danh mục
-					}
-				</button>
+      <div class="col-span-1 flex items-center gap-3 border-t border-gray-100 pt-5 md:col-span-2">
+        <button type="submit" class="btn btn-brand" [disabled]="submitting()">
+          <svg
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path d="M5 13l4 4L19 7" />
+          </svg>
+          @if (submitting()) {
+            Đang cập nhật...
+          } @else {
+            Cập nhật danh mục
+          }
+        </button>
 
-				<button type="button" class="btn btn-outline" (click)="navigateToList()">Quay lại danh sách</button>
-			</div>
-		</form>
-	}
+        <button type="button" class="btn btn-outline" (click)="navigateToList()">
+          Quay lại danh sách
+        </button>
+      </div>
+    </form>
+  }
 </section>

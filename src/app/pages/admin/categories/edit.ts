@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CategoriesService, UpdateCategoryPayload } from './categories.service';
+import { debounceTime, map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
 
 @Component({
 	selector: 'app-admin-categories-edit',
@@ -22,7 +24,11 @@ export class AdminCategoriesEdit {
 	readonly categoryId = signal<number | null>(null);
 
 	readonly form = this.fb.nonNullable.group({
-		name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
+		name: [
+			'',
+			[Validators.required, Validators.minLength(3), Validators.maxLength(100)],
+			[this.createDuplicateNameValidator()],
+		],
 		icon: ['', [Validators.required, Validators.maxLength(10)]],
 		sort_order: ['', [Validators.required, Validators.min(1)]],
 	});
@@ -63,6 +69,19 @@ export class AdminCategoriesEdit {
 
 	get sortOrder() {
 		return this.form.controls.sort_order;
+	}
+
+	private createDuplicateNameValidator() {
+		return (control: AbstractControl): Observable<ValidationErrors | null> => {
+			if (!control.value) {
+				return of(null);
+			}
+			const currentId = this.categoryId();
+			return this.categoriesService.checkNameExists(control.value, currentId ?? undefined).pipe(
+				debounceTime(300),
+				map((exists) => (exists ? { duplicateName: true } : null)),
+			);
+		};
 	}
 
 	submit(): void {

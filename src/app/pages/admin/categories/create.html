@@ -32,6 +32,9 @@
         @if (name.hasError('maxlength')) {
           <p class="mt-1 text-xs text-red-500">Tên danh mục tối đa 100 ký tự.</p>
         }
+        @if (name.hasError('duplicateName')) {
+          <p class="mt-1 text-xs text-red-500">Tên danh mục này đã tồn tại.</p>
+        }
       }
     </div>
 

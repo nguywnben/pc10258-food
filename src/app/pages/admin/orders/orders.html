@@ -1,0 +1,67 @@
+<div class="mb-6">
+  <h1 class="text-xl font-bold text-ink">Quản lý Đơn hàng</h1>
+  <p class="mt-0.5 text-sm text-ink-light">Kiểm soát và xử lý tất cả đơn đặt hàng của hệ thống.</p>
+</div>
+
+<section class="card-admin mb-8 overflow-hidden animate-fade-in-up">
+  <div class="flex items-center justify-between px-5 py-4">
+    <div><h2 class="text-sm font-bold text-ink">Bảng đơn hàng</h2><p class="text-xs text-ink-light">Thay đổi trạng thái để báo hiệu cho Shipper/Khách.</p></div>
+    <div class="flex items-center gap-2">
+      <input type="search" [(ngModel)]="searchQuery" (input)="applySearch()" placeholder="Tìm tên khách..." class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 w-44" />
+    </div>
+  </div>
+  <div class="overflow-x-auto min-h-[300px]">
+    <table class="admin-table">
+      <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Thanh toán</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thời gian</th><th>Cập nhật Status</th></tr></thead>
+      <tbody>
+        @for (order of filteredOrders; track order.id) {
+          <tr>
+            <td class="font-semibold text-brand">#{{ order.order_code || order.id }}</td>
+            <td>
+              <div class="flex items-center gap-2">
+                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-brand/10 text-[10px] font-bold text-brand">
+                  {{ order.user?.full_name ? order.user.full_name.charAt(0).toUpperCase() : 'U' }}
+                </div>
+                {{ order.user?.full_name || 'Khách chưa rõ' }}
+              </div>
+            </td>
+            <td><span class="badge badge-neutral">{{ order.payment_method }}</span></td>
+            <td class="font-semibold">{{ order.total | number:'1.0-0' }}₫</td>
+            <td>
+              <span class="badge" 
+                 [ngClass]="{
+                   'badge-warning': order.status === 'pending',
+                   'badge-info': order.status === 'preparing' || order.status === 'delivering',
+                   'badge-success': order.status === 'completed',
+                   'badge-danger': order.status === 'cancelled'
+                 }">
+                {{ order.status === 'pending' ? 'Chờ xác nhận' :
+                   order.status === 'preparing' ? 'Đang chuẩn bị' :
+                   order.status === 'delivering' ? 'Đang giao' :
+                   order.status === 'completed' ? 'Hoàn thành' : 'Đã huỷ' }}
+              </span>
+            </td>
+            <td class="text-ink-light">{{ order.updatedAt | date:'dd/MM HH:mm' }}</td>
+            <td>
+              <select 
+                class="rounded border border-gray-300 px-2 py-1 text-xs outline-none"
+                [ngModel]="order.status"
+                (ngModelChange)="updateStatus(order, $event)"
+                [disabled]="order.status === 'completed' || order.status === 'cancelled'"
+              >
+                <option value="pending">Chờ xác nhận</option>
+                <option value="preparing">Đang chuẩn bị</option>
+                <option value="delivering">Đang giao</option>
+                <option value="completed">Hoàn thành</option>
+                <option value="cancelled">Huỷ đơn</option>
+              </select>
+            </td>
+          </tr>
+        }
+        @if (filteredOrders.length === 0) {
+          <tr><td colspan="7" class="text-center py-6 text-sm text-ink-light">Không tìm thấy đơn hàng nào.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

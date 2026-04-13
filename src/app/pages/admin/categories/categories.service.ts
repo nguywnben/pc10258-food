@@ -14,6 +14,12 @@ interface ApiResponse<T> {
   data: T;
 }
 
+export interface CreateCategoryPayload {
+  name: string;
+  icon: string | null;
+  sort_order: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CategoriesService {
   private readonly http = inject(HttpClient);
@@ -23,5 +29,14 @@ export class CategoriesService {
     return this.http
       .get<ApiResponse<Category[]>>(`${this.apiBaseUrl}/categories`)
       .pipe(map((response) => response.data ?? []));
+  }
+
+  create(payload: CreateCategoryPayload): Observable<Category> {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+
+    return this.http
+      .post<ApiResponse<Category>>(`${this.apiBaseUrl}/categories`, payload, { headers })
+      .pipe(map((response) => response.data));
   }
 }

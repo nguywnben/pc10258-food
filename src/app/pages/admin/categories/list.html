@@ -1,15 +1,44 @@
+@if (showSuccessToast()) {
+  <div class="fixed right-6 top-6 z-50 w-[min(92vw,420px)] rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-emerald-800 shadow-xl">
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex items-start gap-3">
+        <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-lg font-semibold leading-6">Thành công</p>
+          <p class="text-sm">Thêm danh mục thành công</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="rounded-md p-1 text-emerald-700 transition hover:bg-emerald-100"
+        (click)="dismissSuccessToast()"
+        aria-label="Đóng thông báo"
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+}
+
 <section class="card-admin overflow-hidden">
   <div class="flex items-center justify-between gap-4 px-5 py-4">
     <div>
       <h2 class="text-sm font-bold text-ink">Bảng danh mục</h2>
       <p class="text-xs text-ink-light">Tổng cộng {{ totalCategories() }} danh mục.</p>
     </div>
-    <button class="btn btn-brand !py-1.5 !text-xs" type="button">
+    <a class="btn btn-brand !py-1.5 !text-xs" routerLink="/admin/categories/create">
       <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M12 4v16m8-8H4" />
       </svg>
       Thêm danh mục
-    </button>
+    </a>
   </div>
 
   <div class="overflow-x-auto">
@@ -32,7 +61,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (category of categories(); track trackByCategoryId($index, category)) {
+          @for (category of sortedCategories(); track trackByCategoryId($index, category)) {
             <tr>
               <td class="font-semibold text-brand">#{{ category.id }}</td>
               <td class="font-semibold text-ink">{{ category.name }}</td>

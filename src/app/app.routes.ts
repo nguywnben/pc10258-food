@@ -18,6 +18,16 @@ export const routes: Routes = [
           import('./pages/admin/orders/orders').then(m => m.AdminOrders),
       },
       {
+        path: 'promotions',
+        loadComponent: () =>
+          import('./pages/admin/promotions/promotions').then(m => m.AdminPromotions),
+      },
+      {
+        path: 'memberships',
+        loadComponent: () =>
+          import('./pages/admin/memberships/memberships').then(m => m.AdminMemberships),
+      },
+      {
         path: 'forms',
         loadComponent: () =>
           import('./pages/admin/form-samples/form-samples').then(m => m.AdminFormSamples),

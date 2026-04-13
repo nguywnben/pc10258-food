@@ -28,6 +28,17 @@ export const routes: Routes = [
           import('./pages/admin/memberships/memberships').then(m => m.AdminMemberships),
       },
       {
+        path: 'users',
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'list' },
+          {
+            path: 'list',
+            loadComponent: () =>
+              import('./pages/admin/users/list').then(m => m.AdminUsersList),
+          },
+        ],
+      },
+      {
         path: 'forms',
         loadComponent: () =>
           import('./pages/admin/form-samples/form-samples').then(m => m.AdminFormSamples),

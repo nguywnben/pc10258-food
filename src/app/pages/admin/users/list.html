@@ -1,0 +1,217 @@
+@if (showSuccessToast()) {
+  <div class="fixed right-6 top-6 z-50 w-[min(92vw,420px)] rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-emerald-800 shadow-xl">
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex items-start gap-3">
+        <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-lg font-semibold leading-6">Thành công</p>
+          <p class="text-sm">{{ successToastMessage() }}</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="rounded-md p-1 text-emerald-700 transition hover:bg-emerald-100"
+        (click)="dismissSuccessToast()"
+        aria-label="Đóng thông báo"
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+}
+
+@if (showErrorToast()) {
+  <div class="fixed right-6 top-24 z-50 w-[min(92vw,420px)] rounded-2xl border border-red-100 bg-red-50 p-4 text-red-800 shadow-xl">
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex items-start gap-3">
+        <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-lg font-semibold leading-6">Không thể xóa</p>
+          <p class="text-sm">{{ errorToastMessage() }}</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="rounded-md p-1 text-red-700 transition hover:bg-red-100"
+        (click)="dismissErrorToast()"
+        aria-label="Đóng thông báo lỗi"
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+}
+
+<section class="card-admin overflow-hidden">
+  <div class="flex items-center justify-between gap-4 px-5 py-4">
+    <div>
+      <h2 class="text-sm font-bold text-ink">Quản trị hệ thống người dùng</h2>
+      <p class="text-xs text-ink-light">Tổng cộng {{ totalUsers() }} tài khoản.</p>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    @if (loading()) {
+      <div class="px-5 py-10 text-center text-sm text-ink-light">Đang tải danh sách người dùng...</div>
+    } @else if (error()) {
+      <div class="px-5 py-10 text-center text-sm text-red-500">{{ error() }}</div>
+    } @else if (users().length === 0) {
+      <div class="px-5 py-10 text-center text-sm text-ink-light">Chưa có dữ liệu người dùng.</div>
+    } @else {
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Họ tên</th>
+            <th>Email</th>
+            <th>Số điện thoại</th>
+            <th>Vai trò</th>
+            <th>Hạng thành viên</th>
+            <th>Ngày tạo</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of paginatedUsers(); track trackByUserId($index, user)) {
+            <tr>
+              <td class="font-semibold text-brand">#{{ user.id }}</td>
+              <td class="font-semibold text-ink">{{ displayUserName(user) }}</td>
+              <td>{{ user.email || '—' }}</td>
+              <td>{{ user.phone || '—' }}</td>
+              <td>
+                <span class="badge badge-neutral">{{ displayRole(user.role) }}</span>
+              </td>
+              <td>
+                <span class="badge" [class.badge-success]="user.membership === 'premium'" [class.badge-neutral]="user.membership !== 'premium'">
+                  {{ displayMembership(user.membership) }}
+                </span>
+              </td>
+              <td class="text-ink-light">
+                {{ user.created_at ? (user.created_at | date : 'dd/MM/yyyy HH:mm') : '—' }}
+              </td>
+              <td>
+                <button
+                  class="btn btn-ghost !p-1.5 text-sky-600 hover:!text-sky-800"
+                  title="Chỉnh sửa người dùng"
+                  type="button"
+                  [disabled]="deletingUserId() === user.id"
+                  (click)="openEditModal(user)"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M11 5h2M5 19h4l10-10a1.414 1.414 0 00-4-4L5 15v4z" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+                <button
+                  class="btn btn-ghost !p-1.5 text-red-500 hover:!text-red-700"
+                  title="Xóa người dùng"
+                  type="button"
+                  [disabled]="deletingUserId() === user.id"
+                  (click)="openLockModal(user)"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 15v2m6-7V7a6 6 0 10-12 0v3m-1 0h14a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9a1 1 0 011-1z" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
+    <app-pagination
+      [currentPage]="activePage()"
+      [totalPages]="totalPages()"
+      (pageChange)="goToPage($event)"
+    ></app-pagination>
+  </div>
+</section>
+
+<app-delete-modal
+  [isOpen]="showDeleteModal()"
+  [isLoading]="deletingUserId() !== null"
+  title="Xác nhận xóa người dùng"
+  message="Bạn có chắc chắn muốn xóa tài khoản này không? Hành động này không thể hoàn tác."
+  (confirm)="confirmLockUser()"
+  (cancel)="closeLockModal()"
+></app-delete-modal>
+
+@if (showEditModal() && editingUser(); as currentUser) {
+  <div class="fixed inset-0 z-[9998] flex items-center justify-center bg-black/35 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+    <div class="w-full max-w-2xl rounded-2xl border border-gray-100 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+      <div class="mb-5 flex items-start justify-between gap-4">
+        <div>
+          <h3 class="text-xl font-bold text-ink">Chỉnh sửa người dùng</h3>
+          <p class="mt-1 text-sm text-ink-light">Cập nhật thông tin người dùng (Lưu tạm thời trên trình duyệt).</p>
+        </div>
+        <button
+          type="button"
+          class="rounded-xl p-2 text-ink-lighter transition hover:bg-gray-50 hover:text-ink"
+          (click)="closeEditModal()"
+          aria-label="Đóng"
+        >
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="editForm" class="grid grid-cols-1 gap-5 md:grid-cols-2" (ngSubmit)="saveUser()">
+        <div class="md:col-span-2">
+          <label class="form-label">Họ tên <span class="text-red-400">*</span></label>
+          <input class="form-input" type="text" formControlName="full_name" placeholder="VD: Nguyễn Văn A" />
+          @if (editForm.get('full_name')?.invalid && editForm.get('full_name')?.touched) {
+            <p class="mt-1 text-xs text-red-500">Họ tên tối thiểu 2 ký tự.</p>
+          }
+        </div>
+
+        <div>
+          <label class="form-label">Email (Không thể sửa)</label>
+          <input class="form-input bg-gray-50" type="text" [value]="currentUser.email || ''" readonly />
+        </div>
+
+        <div>
+          <label class="form-label">Số điện thoại</label>
+          <input class="form-input" type="text" formControlName="phone" placeholder="VD: 0912345678" />
+        </div>
+
+        <div>
+          <label class="form-label">Vai trò <span class="text-red-400">*</span></label>
+          <select class="form-input" formControlName="role">
+            <option value="client">Người dùng</option>
+            <option value="admin">Quản trị viên</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label">Hạng thành viên <span class="text-red-400">*</span></label>
+          <select class="form-input" formControlName="membership">
+            <option value="free">Free</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2 mt-5 flex items-center justify-end gap-3 border-t border-gray-100 pt-5">
+          <button type="button" class="btn btn-outline" (click)="closeEditModal()" [disabled]="savingUserId() !== null">Hủy bỏ</button>
+          <button type="submit" class="btn btn-brand" [disabled]="savingUserId() !== null">
+            @if (savingUserId() !== null) { Đang lưu... } @else { Lưu thông tin }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

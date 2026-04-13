@@ -63,4 +63,12 @@ export class CategoriesService {
       .put<ApiResponse<Category>>(`${this.apiBaseUrl}/categories/${id}`, payload, { headers })
       .pipe(map((response) => response.data));
   }
+
+  delete(id: number): Observable<void> {
+    const headers = this.getAuthHeaders();
+
+    return this.http
+      .delete<{ message?: string }>(`${this.apiBaseUrl}/categories/${id}`, { headers })
+      .pipe(map(() => undefined));
+  }
 }

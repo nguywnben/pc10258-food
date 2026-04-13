@@ -22,6 +22,9 @@ export class AdminCategoriesList {
   readonly error = signal<string | null>(null);
   readonly showSuccessToast = signal(false);
   readonly successToastMessage = signal('Thêm danh mục thành công');
+  readonly showErrorToast = signal(false);
+  readonly errorToastMessage = signal('Không thể xóa danh mục.');
+  readonly deletingCategoryId = signal<number | null>(null);
   readonly totalCategories = computed(() => this.categories().length);
   readonly sortedCategories = computed(() => {
     const cats = [...this.categories()];
@@ -64,6 +67,32 @@ export class AdminCategoriesList {
     return category.id;
   }
 
+  deleteCategory(category: Category): void {
+    const confirmed = typeof window === 'undefined'
+      ? true
+      : window.confirm(`Bạn có chắc chắn muốn xóa danh mục "${category.name}"?`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.deletingCategoryId.set(category.id);
+
+    this.categoriesService.delete(category.id).subscribe({
+      next: () => {
+        this.categories.update((items) => items.filter((item) => item.id !== category.id));
+        this.successToastMessage.set('Xóa danh mục thành công');
+        this.openSuccessToast();
+        this.deletingCategoryId.set(null);
+      },
+      error: (err: unknown) => {
+        this.errorToastMessage.set(this.parseDeleteError(err));
+        this.openErrorToast();
+        this.deletingCategoryId.set(null);
+      },
+    });
+  }
+
   dismissSuccessToast(): void {
     this.showSuccessToast.set(false);
     if (this.toastTimer) {
@@ -79,6 +108,10 @@ export class AdminCategoriesList {
     });
   }
 
+  dismissErrorToast(): void {
+    this.showErrorToast.set(false);
+  }
+
   private openSuccessToast(): void {
     this.showSuccessToast.set(true);
 
@@ -89,5 +122,47 @@ export class AdminCategoriesList {
     this.toastTimer = setTimeout(() => {
       this.dismissSuccessToast();
     }, 3000);
+  }
+
+  private openErrorToast(): void {
+    this.showErrorToast.set(true);
+
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
+
+    this.toastTimer = setTimeout(() => {
+      this.dismissErrorToast();
+    }, 3500);
+  }
+
+  private parseDeleteError(err: unknown): string {
+    const status =
+      typeof err === 'object' && err !== null && 'status' in err
+        ? (err as { status?: number }).status
+        : undefined;
+
+    const apiMessage =
+      typeof err === 'object' &&
+      err !== null &&
+      'error' in err &&
+      typeof (err as { error?: unknown }).error === 'object' &&
+      (err as { error?: { message?: string } }).error?.message
+        ? (err as { error: { message: string } }).error.message
+        : '';
+
+    if (status === 401) {
+      return 'Bạn chưa đăng nhập hoặc token đã hết hạn.';
+    }
+
+    if (status === 403) {
+      return 'Tài khoản hiện tại không có quyền xóa danh mục.';
+    }
+
+    if (status === 400 || status === 409 || apiMessage.toLowerCase().includes('sản phẩm')) {
+      return 'Không thể xóa danh mục vì danh mục này đang có sản phẩm.';
+    }
+
+    return apiMessage || 'Không thể xóa danh mục. Vui lòng thử lại.';
   }
 }

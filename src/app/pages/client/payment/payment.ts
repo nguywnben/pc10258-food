@@ -1,8 +1,11 @@
-import { AfterViewInit, Component, OnInit, signal, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { AfterViewInit, Component, OnInit, signal, inject, computed } from '@angular/core';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MembershipService, MembershipPlan } from '../../../services/membership.service';
+import { PaymentService } from '../../../services/payment.service';
+import { WalletService } from '../../../services/wallet.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-payment',
@@ -12,47 +15,418 @@ import { MembershipService, MembershipPlan } from '../../../services/membership.
 })
 export class Payment implements OnInit, AfterViewInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly membershipSvc = inject(MembershipService);
+  private readonly paymentSvc = inject(PaymentService);
+  private readonly walletSvc = inject(WalletService);
+  private readonly authSvc = inject(AuthService);
 
   paymentType = signal<'wallet' | 'membership-upgrade'>('wallet');
   membershipPlan = signal<MembershipPlan | null>(null);
   isProcessing = signal(false);
   agreeConfirm = signal(false);
+  
+  // Wallet payment data
+  paymentAmount = signal<number>(0);
+  paymentId = signal<number | null>(null);
+  checkoutUrl = signal<string | null>(null);
+
+  // Wallet balance & payment method
+  walletBalance = signal<number>(0);
+  selectedPaymentMethod = signal<'payos' | 'wallet'>('payos');
+  isLoadingWallet = signal(false);
+  walletLoadError = signal<string>('');
+
+  isLoading = computed(() => this.isProcessing() && this.paymentAmount() === 0);
 
   ngOnInit(): void {
     const navigation = this.router.getCurrentNavigation();
-    if (navigation?.extras.state) {
-      const state = navigation.extras.state;
+    console.log('📋 Payment ngOnInit - Navigation state:', navigation?.extras.state);
+    
+    // Check authentication first
+    if (!this.authSvc.isAuthenticated()) {
+      console.error('❌ User not authenticated');
+      alert('Vui lòng đăng nhập để tiếp tục');
+      this.router.navigate(['/login']);
+      return;
+    }
+    
+    // Check sessionStorage first (more reliable than router state)
+    const storedPlan = sessionStorage.getItem('upgrade_plan');
+    const storedAmount = sessionStorage.getItem('upgrade_amount');
+    
+    if (storedPlan) {
+      console.log('✅ Found upgrade_plan in sessionStorage');
+      const plan = JSON.parse(storedPlan);
+      this.membershipPlan.set(plan);
+      this.paymentType.set('membership-upgrade');
+      this.paymentAmount.set(parseInt(storedAmount || '0', 10));
+      
+      console.log('🎯 From sessionStorage - Plan:', plan, 'Amount:', storedAmount);
+      
+      // Clean up sessionStorage
+      sessionStorage.removeItem('upgrade_plan');
+      sessionStorage.removeItem('upgrade_amount');
+      // Continue to load wallet balance below
+    } else if (navigation?.extras.state) {
+      const state = navigation?.extras.state;
+      console.log('🔍 State received from router:', state);
       this.paymentType.set(state['type'] || 'wallet');
+      console.log('💳 Payment type:', this.paymentType());
+      
       if (state['plan']) {
         this.membershipPlan.set(state['plan']);
+        console.log('📦 Membership plan:', state['plan']);
+        // Auto-set amount from plan price if not already set
+        if (!state['amount']) {
+          this.paymentAmount.set(state['plan'].price);
+          console.log('💰 Auto-set amount from plan.price:', state['plan'].price);
+        }
+      }
+
+      // Wallet payment data
+      if (state['amount']) {
+        this.paymentAmount.set(state['amount']);
+        console.log('💰 Amount from state:', state['amount']);
+      }
+      
+      if (state['payment_id']) {
+        this.paymentId.set(state['payment_id']);
+        console.log('🔑 Payment ID:', state['payment_id']);
+      }
+
+      if (state['checkout_url']) {
+        this.checkoutUrl.set(state['checkout_url']);
+        console.log('🔗 Checkout URL:', state['checkout_url']);
       }
     }
+
+    console.log('📊 After init - Amount:', this.paymentAmount(), 'Type:', this.paymentType(), 'Plan:', this.membershipPlan()?.name);
+
+    // Load wallet balance
+    this.loadWalletBalance();
+
+    // Additional route params handling
+    this.route.queryParams.subscribe(params => {
+      if (params['amount'] && !this.paymentAmount()) {
+        this.paymentAmount.set(parseInt(params['amount'], 10));
+        console.log('💰 Amount from query params:', params['amount']);
+      }
+    });
   }
 
   confirmPayment(): void {
+    console.log('🔴 confirmPayment called');
+    console.log('✅ Agree confirm:', this.agreeConfirm());
+    console.log('💳 Payment type:', this.paymentType());
+    console.log('💰 Payment amount:', this.paymentAmount());
+    console.log('📦 Membership plan:', this.membershipPlan());
+
     if (!this.agreeConfirm()) {
       alert('Vui lòng xác nhận thông tin thanh toán');
       return;
     }
 
-    if (this.paymentType() === 'membership-upgrade' && this.membershipPlan()) {
-      this.isProcessing.set(true);
-      const planId = this.membershipPlan()!.id;
-
-      this.membershipSvc.upgrade(planId).subscribe({
-        next: (response: any) => {
-          this.isProcessing.set(false);
-          console.log('Upgrade successful:', response);
-          this.router.navigate(['/upgrade-success']);
-        },
-        error: (err) => {
-          this.isProcessing.set(false);
-          console.error('Upgrade failed:', err);
-          alert('Nâng cấp thất bại: ' + (err.error?.message || 'Vui lòng thử lại'));
-        }
-      });
+    // Check payment method for wallet-type payments
+    if (this.paymentType() === 'wallet') {
+      if (this.selectedPaymentMethod() === 'wallet') {
+        this.processWalletBalancePayment();
+      } else {
+        this.processWalletPayment();
+      }
+    } else if (this.paymentType() === 'membership-upgrade') {
+      console.log('🔄 Processing membership upgrade payment');
+      console.log('💳 Selected payment method:', this.selectedPaymentMethod());
+      
+      // Check payment method for membership upgrade
+      if (this.selectedPaymentMethod() === 'wallet') {
+        this.processMembershipUpgradeWithWallet();
+      } else {
+        this.processMembershipPayment();
+      }
     }
+  }
+
+  /**
+   * Load wallet balance
+   */
+  private loadWalletBalance(): void {
+    this.isLoadingWallet.set(true);
+    this.walletLoadError.set('');
+    console.log('💰 Loading wallet balance...');
+    this.walletSvc.getWallet().subscribe({
+      next: (response) => {
+        console.log('✅ Wallet balance loaded:', response.data.balance);
+        this.walletBalance.set(response.data.balance);
+        this.isLoadingWallet.set(false);
+      },
+      error: (err: any) => {
+        console.error('❌ Failed to load wallet balance:', err);
+        console.error('  Status:', err.status);
+        console.error('  Message:', err.error?.message || err.message);
+        
+        // Handle 401 Unauthorized
+        if (err.status === 401) {
+          console.warn('Token expired or invalid. Redirecting to login.');
+          this.walletLoadError.set('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+          this.authSvc.logout();
+          this.router.navigate(['/login']);
+          return;
+        }
+        
+        // For other errors, keep balance at 0 but log warning
+        const errorMsg = err.error?.message || 'Không thể tải số dư ví. Vui lòng thử lại.';
+        console.warn('⚠️ Wallet balance could not be fetched. Error:', errorMsg);
+        this.walletLoadError.set(errorMsg);
+        this.walletBalance.set(0);
+        this.isLoadingWallet.set(false);
+      }
+    });
+  }
+
+  /**
+   * Process wallet payment via PayOS
+   */
+  private processWalletPayment(): void {
+    const amount = this.paymentAmount();
+    const paymentId = this.paymentId();
+
+    if (!amount || !paymentId) {
+      alert('Thông tin thanh toán không hợp lệ');
+      return;
+    }
+
+    this.isProcessing.set(true);
+
+    // If checkout URL is available, redirect to PayOS checkout
+    if (this.checkoutUrl()) {
+      setTimeout(() => {
+        window.location.href = this.checkoutUrl()!;
+      }, 500);
+      return;
+    }
+
+    // Otherwise create new payment
+    const returnUrl = `${window.location.origin}/payment/callback?payment_id=${paymentId}`;
+    const cancelUrl = `${window.location.origin}/wallet#nap-tien`;
+
+    this.paymentSvc.createPayment({
+      amount,
+      description: `Nạp tiền vào ví - ${amount.toLocaleString('vi-VN')} VNĐ`,
+      return_url: returnUrl,
+      cancel_url: cancelUrl
+    }).subscribe({
+      next: (response) => {
+        if (response.data.checkout_url) {
+          // Redirect to PayOS checkout
+          window.location.href = response.data.checkout_url;
+        } else {
+          this.isProcessing.set(false);
+          alert('Lỗi: Không nhận được đường link thanh toán');
+        }
+      },
+      error: (err: any) => {
+        this.isProcessing.set(false);
+        console.error('Payment creation failed:', err);
+        
+        // Handle 401 Unauthorized
+        if (err.status === 401) {
+          console.warn('Token expired or invalid. Redirecting to login.');
+          this.authSvc.logout();
+          this.router.navigate(['/login']);
+          return;
+        }
+        
+        alert('Lỗi tạo payment: ' + (err.error?.message || 'Vui lòng thử lại'));
+      }
+    });
+  }
+
+  /**
+   * Process membership upgrade payment with PayOS
+   */
+  private processMembershipPayment(): void {
+    console.log('🎯 processMembershipPayment started');
+    console.log('📦 Membership plan:', this.membershipPlan());
+    console.log('💰 Payment amount:', this.paymentAmount());
+
+    if (!this.membershipPlan()) {
+      console.error('❌ No membership plan!');
+      alert('Thông tin gói nâng cấp không hợp lệ');
+      return;
+    }
+
+    this.isProcessing.set(true);
+    const planId = this.membershipPlan()!.id;
+    const amount = this.membershipPlan()!.price;
+
+    console.log('✅ Plan ID:', planId, 'Amount:', amount);
+
+    const returnUrl = `${window.location.origin}/upgrade-success`;
+    const cancelUrl = `${window.location.origin}/upgrade`;
+
+    this.paymentSvc.createPayment({
+      amount,
+      description: `Nâng cấp Membership - ${this.membershipPlan()!.name} (${amount.toLocaleString('vi-VN')} VNĐ/tháng)`,
+      return_url: returnUrl,
+      cancel_url: cancelUrl
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ PayOS response:', response);
+        if (response.data.checkout_url) {
+          // Store membership plan ID for later confirmation
+          sessionStorage.setItem('upgrade_plan_id', planId.toString());
+          sessionStorage.setItem('upgrade_payment_id', response.data.id.toString());
+          console.log('🔗 Redirecting to PayOS:', response.data.checkout_url);
+          // Redirect to PayOS checkout
+          window.location.href = response.data.checkout_url;
+        } else {
+          this.isProcessing.set(false);
+          alert('Lỗi: Không nhận được đường link thanh toán');
+        }
+      },
+      error: (err: any) => {
+        this.isProcessing.set(false);
+        console.error('❌ Payment creation failed:', err);
+        
+        // Handle 401 Unauthorized
+        if (err.status === 401) {
+          console.warn('Token expired or invalid. Redirecting to login.');
+          this.authSvc.logout();
+          this.router.navigate(['/login']);
+          return;
+        }
+        
+        alert('Lỗi tạo payment: ' + (err.error?.message || 'Vui lòng thử lại'));
+      }
+    });
+  }
+
+  /**
+   * Process membership upgrade payment using wallet balance
+   */
+  private processMembershipUpgradeWithWallet(): void {
+    console.log('🎯 processMembershipUpgradeWithWallet started');
+    const amount = this.paymentAmount();
+    const planId = this.membershipPlan()?.id;
+
+    console.log('💰 Amount:', amount, 'Wallet balance:', this.walletBalance(), 'Plan ID:', planId);
+
+    if (!planId || !amount) {
+      console.error('❌ Missing plan ID or amount!');
+      alert('Thông tin gói không hợp lệ');
+      return;
+    }
+
+    if (this.walletBalance() < amount) {
+      console.warn('⚠️ Insufficient balance');
+      alert(`Số dư không đủ. Hiện có: ${this.formatPrice(this.walletBalance())}, Cần: ${this.formatPrice(amount)}`);
+      return;
+    }
+
+    this.isProcessing.set(true);
+
+    this.paymentSvc.payWithWallet({
+      amount,
+      type: 'upgrade',
+      description: `Nâng cấp Membership - ${this.membershipPlan()!.name} (${amount.toLocaleString('vi-VN')} VNĐ/tháng)`
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ Membership upgrade with wallet success:', response);
+        this.isProcessing.set(false);
+        
+        // Store upgrade info
+        sessionStorage.setItem('upgrade_plan_id', planId.toString());
+        sessionStorage.setItem('upgrade_payment_id', response.data.payment_id.toString());
+        sessionStorage.setItem('upgrade_method', 'wallet');
+        
+        // Redirect to success page
+        this.router.navigate(['/upgrade-success']);
+      },
+      error: (err: any) => {
+        this.isProcessing.set(false);
+        console.error('❌ Membership upgrade failed:', err);
+
+        // Handle 401 Unauthorized
+        if (err.status === 401) {
+          console.warn('Token expired or invalid. Redirecting to login.');
+          this.authSvc.logout();
+          this.router.navigate(['/login']);
+          return;
+        }
+
+        // Handle insufficient balance
+        if (err.status === 400 && err.error?.error?.includes('không đủ')) {
+          alert(err.error.error);
+          return;
+        }
+
+        alert('Lỗi thanh toán: ' + (err.error?.error || 'Vui lòng thử lại'));
+      }
+    });
+  }
+
+  /**
+   * Process payment using wallet balance
+   */
+  private processWalletBalancePayment(): void {
+    console.log('🎯 processWalletBalancePayment started');
+    const amount = this.paymentAmount();
+    console.log('💰 Amount:', amount, 'Wallet balance:', this.walletBalance());
+
+    if (!amount) {
+      console.error('❌ Amount is invalid:', amount);
+      alert('Số tiền không hợp lệ');
+      return;
+    }
+
+    if (this.walletBalance() < amount) {
+      console.warn('⚠️ Insufficient balance');
+      alert(`Số dư không đủ. Hiện có: ${this.formatPrice(this.walletBalance())}, Cần: ${this.formatPrice(amount)}`);
+      return;
+    }
+
+    this.isProcessing.set(true);
+
+    this.paymentSvc.payWithWallet({
+      amount,
+      type: 'order',
+      description: `Nạp tiền vào ví - ${amount.toLocaleString('vi-VN')} VNĐ`
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ Wallet payment success:', response);
+        this.isProcessing.set(false);
+        // Store payment info and redirect to success page
+        sessionStorage.setItem('paymentId', response.data.payment_id.toString());
+        sessionStorage.setItem('paymentAmount', amount.toString());
+        this.router.navigate(['/payment/success'], {
+          queryParams: {
+            payment_id: response.data.payment_id,
+            method: 'wallet'
+          }
+        });
+      },
+      error: (err: any) => {
+        this.isProcessing.set(false);
+        console.error('❌ Wallet payment failed:', err);
+
+        // Handle 401 Unauthorized
+        if (err.status === 401) {
+          console.warn('Token expired or invalid. Redirecting to login.');
+          this.authSvc.logout();
+          this.router.navigate(['/login']);
+          return;
+        }
+
+        // Handle insufficient balance
+        if (err.status === 400 && err.error?.error?.includes('không đủ')) {
+          alert(err.error.error);
+          return;
+        }
+
+        alert('Lỗi thanh toán: ' + (err.error?.error || 'Vui lòng thử lại'));
+      }
+    });
   }
 
   hasBackLink(): boolean {

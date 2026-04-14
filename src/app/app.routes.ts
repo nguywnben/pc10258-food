@@ -95,6 +95,18 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/client/payment/payment').then(m => m.Payment),
       },
       {
+        path: 'payment/callback',
+        loadComponent: () => import('./pages/client/payment/payment-callback/payment-callback.component').then(m => m.PaymentCallbackComponent),
+      },
+      {
+        path: 'payment/success',
+        loadComponent: () => import('./pages/client/payment/payment-success/payment-success.component').then(m => m.PaymentSuccessComponent),
+      },
+      {
+        path: 'payment/cancel',
+        loadComponent: () => import('./pages/client/payment/payment-cancel/payment-cancel.component').then(m => m.PaymentCancelComponent),
+      },
+      {
         path: 'orders',
         loadComponent: () => import('./pages/client/orders/orders').then(m => m.Orders),
       },

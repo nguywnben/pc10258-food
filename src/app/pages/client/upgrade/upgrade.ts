@@ -40,10 +40,18 @@ export class Upgrade implements OnInit, AfterViewInit {
   }
 
   upgrade(plan: MembershipPlan): void {
+    console.log('🚀 Upgrade button clicked for plan:', plan);
+    
+    // Store plan in sessionStorage to ensure it's available on payment page
+    sessionStorage.setItem('upgrade_plan', JSON.stringify(plan));
+    sessionStorage.setItem('upgrade_amount', plan.price.toString());
+    console.log('💾 Stored in sessionStorage:', { plan, amount: plan.price });
+    
     this.router.navigate(['/payment'], {
       state: {
         type: 'membership-upgrade',
-        plan: plan
+        plan: plan,
+        amount: plan.price
       }
     });
   }

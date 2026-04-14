@@ -89,10 +89,30 @@
     <p class="mb-1 mt-5 px-3 text-[10px] font-semibold tracking-wider text-ink-lighter uppercase">
       Quản lý
     </p>
-
-    <button
-      type="button"
-      class="flex w-full cursor-default items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink opacity-80 transition hover:bg-gray-50"
+    <a
+      routerLink="/admin/categories/list"
+      routerLinkActive="sidebar-link-active"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
+    >
+      <svg
+        class="h-5 w-5 shrink-0 text-ink-lighter"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+        />
+      </svg>
+      Danh mục
+    </a>
+    <a
+      routerLink="/admin/orders"
+      routerLinkActive="sidebar-link-active"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
     >
       <svg
         class="h-5 w-5 shrink-0 text-ink-lighter"
@@ -108,29 +128,11 @@
         />
       </svg>
       Đơn hàng
-    </button>
-    <button
-      type="button"
-      class="flex w-full cursor-default items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink opacity-80 transition hover:bg-gray-50"
-    >
-      <svg
-        class="h-5 w-5 shrink-0 text-ink-lighter"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m3 5.197V21"
-        />
-      </svg>
-      Khách hàng
-    </button>
-    <button
-      type="button"
-      class="flex w-full cursor-default items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink opacity-80 transition hover:bg-gray-50"
+    </a>
+    <a
+      routerLink="/admin/products/list"
+      routerLinkActive="sidebar-link-active"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
     >
       <svg
         class="h-5 w-5 shrink-0 text-ink-lighter"
@@ -146,10 +148,51 @@
         />
       </svg>
       Sản phẩm
-    </button>
-    <button
-      type="button"
-      class="flex w-full cursor-default items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink opacity-80 transition hover:bg-gray-50"
+    </a>
+    <a
+      routerLink="/admin/users/list"
+      routerLinkActive="sidebar-link-active"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
+    >
+      <svg
+        class="h-5 w-5 shrink-0 text-ink-lighter"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M17 20h5V9l-5-2m0 13v-7m0-6.5L12 4 2 9v11h5m10 0h-5m0 0v-4a2 2 0 10-4 0v4m4 0h-4"
+        />
+      </svg>
+      Người dùng
+    </a>
+    <a
+      routerLink="/admin/memberships"
+      routerLinkActive="sidebar-link-active"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
+    >
+      <svg
+        class="h-5 w-5 shrink-0 text-ink-lighter"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m3 5.197V21"
+        />
+      </svg>
+      Cấu hình Ranks VIP
+    </a>
+    <a
+      routerLink="/admin/promotions"
+      routerLinkActive="sidebar-link-active"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
     >
       <svg
         class="h-5 w-5 shrink-0 text-ink-lighter"
@@ -165,7 +208,7 @@
         />
       </svg>
       Khuyến mãi
-    </button>
+    </a>
 
     <p class="mb-1 mt-5 px-3 text-[10px] font-semibold tracking-wider text-ink-lighter uppercase">Khác</p>
 

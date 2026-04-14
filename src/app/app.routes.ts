@@ -13,6 +13,32 @@ export const routes: Routes = [
           import('./pages/admin/dashboard/dashboard').then(m => m.AdminDashboard),
       },
       {
+        path: 'orders',
+        loadComponent: () =>
+          import('./pages/admin/orders/orders').then(m => m.AdminOrders),
+      },
+      {
+        path: 'promotions',
+        loadComponent: () =>
+          import('./pages/admin/promotions/promotions').then(m => m.AdminPromotions),
+      },
+      {
+        path: 'memberships',
+        loadComponent: () =>
+          import('./pages/admin/memberships/memberships').then(m => m.AdminMemberships),
+      },
+      {
+        path: 'users',
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'list' },
+          {
+            path: 'list',
+            loadComponent: () =>
+              import('./pages/admin/users/list').then(m => m.AdminUsersList),
+          },
+        ],
+      },
+      {
         path: 'forms',
         loadComponent: () =>
           import('./pages/admin/form-samples/form-samples').then(m => m.AdminFormSamples),
@@ -21,6 +47,38 @@ export const routes: Routes = [
         path: 'tables',
         loadComponent: () =>
           import('./pages/admin/table-samples/table-samples').then(m => m.AdminTableSamples),
+      },
+      {
+        path: 'categories',
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'list' },
+          {
+            path: 'list',
+            loadComponent: () =>
+              import('./pages/admin/categories/list').then(m => m.AdminCategoriesList),
+          },
+          {
+            path: 'create',
+            loadComponent: () =>
+              import('./pages/admin/categories/create').then(m => m.AdminCategoriesCreate),
+          },
+          {
+            path: 'edit/:id',
+            loadComponent: () =>
+              import('./pages/admin/categories/edit').then(m => m.AdminCategoriesEdit),
+          },
+        ],
+      },
+      {
+        path: 'products',
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'list' },
+          {
+            path: 'list',
+            loadComponent: () =>
+              import('./pages/admin/products/list').then(m => m.AdminProductsList),
+          },
+        ],
       },
       { path: '**', redirectTo: 'dashboard' },
     ],
@@ -79,6 +137,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/client/register/register').then(m => m.Register),
       }
     ],
+  },
+  {
+    path: 'not-found',
+    loadComponent: () =>
+      import('./not-found/not-found.component').then(m => m.NotFoundComponent),
   },
   {
     path: '**',

@@ -48,7 +48,7 @@
     <table class="admin-table">
       <thead><tr><th>Hạng thẻ</th><th>Mốc Điểm yêu cầu</th><th>% Sale mặc định</th><th>Quyền lợi bổ sung</th><th>Hành động</th></tr></thead>
       <tbody>
-        @for (plan of plans; track plan.id) {
+        @for (plan of plans(); track plan.id) {
           <tr>
             <td>
               <div class="flex items-center gap-2.5">
@@ -75,7 +75,7 @@
             </td>
           </tr>
         }
-        @if (plans.length === 0) {
+        @if (plans().length === 0) {
           <tr><td colspan="5" class="text-center py-6 text-sm text-ink-light">Hệ thống chưa thiết lập các gói phân hạng. Mọi người dùng đều là Khách mặc định.</td></tr>
         }
       </tbody>

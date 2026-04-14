@@ -1,52 +1,76 @@
-<div class="mx-auto w-full max-w-4xl space-y-6">
-  <div>
-    <h1 class="text-2xl font-bold text-ink">Chọn gói nâng cấp</h1>
-    <p class="mt-1 text-sm text-ink-light">Trang tĩnh demo: nhấn “Thanh toán” để xem trang thành công.</p>
+<div class="mx-auto w-full max-w-5xl space-y-8">
+  <div class="text-center">
+    <h1 class="text-3xl font-extrabold tracking-tight text-ink md:text-4xl">Chọn gói nâng cấp</h1>
+    <p class="mt-3 text-base text-ink-light">Danh sách các gói membership premium của hệ thống. Tận hưởng ưu đãi ngay!</p>
   </div>
 
-  <section class="grid gap-4 md:grid-cols-2 md:items-stretch">
-    <article class="flex min-h-0 min-w-0 flex-col rounded-3xl border border-gray-100 bg-white p-6">
-      <h2 class="text-lg font-bold text-ink">Miễn phí</h2>
-      <p class="mt-1 text-3xl font-extrabold text-ink flex items-center gap-2">
-        <span>0đ</span>
-      </p>
-      <ul class="mt-4 space-y-2 text-sm text-ink-light">
-        <li>Giao hàng theo thời gian dự kiến</li>
-        <li>Xem danh mục và đặt món</li>
-        <li>Không có mã giảm thêm</li>
-      </ul>
-      <div class="mt-5 flex items-center justify-start">
-        <span class="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-ink-light">Hiện tại</span>
-      </div>
-    </article>
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="flex items-center justify-center py-8">
+    <div class="inline-flex items-center gap-3">
+      <div class="h-5 w-5 animate-spin rounded-full border-2 border-brand border-t-transparent"></div>
+      <span class="text-ink-light">Đang tải danh sách gói...</span>
+    </div>
+  </div>
 
-    <article class="flex min-h-0 min-w-0 flex-col rounded-3xl border border-brand/20 bg-brand-light p-6">
-      <div class="flex items-start justify-between gap-3">
-        <h2 class="text-lg font-bold text-ink">Thành viên Cần Thơ</h2>
-        <span class="shrink-0 rounded-full bg-white/70 px-3 py-1 text-xs font-bold text-brand ring-1 ring-brand/25">Phổ biến</span>
-      </div>
-      <p class="mt-1 flex flex-wrap items-baseline gap-2 text-3xl font-extrabold text-ink">
-        <span>49.000đ</span>
-        <span class="text-base font-semibold text-ink-light">tháng</span>
-      </p>
-      <ul class="mt-4 space-y-2 text-sm text-ink-light">
-        <li>Tặng mã giảm giá khi nâng cấp</li>
-        <li>Ưu tiên một số ưu đãi khu vực</li>
-        <li>Xem nhanh các món gợi ý</li>
-      </ul>
+  <!-- Error State -->
+  <div *ngIf="error()" class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+    {{ error() }}
+  </div>
 
-      <div class="mt-6 flex flex-col gap-4 border-t border-brand/20 pt-5">
-        <p class="text-xs leading-relaxed text-ink-light">
-          Mã nhận sau khi nâng cấp: <span class="font-semibold text-brand">CANTHO-10258</span> (demo)
-        </p>
-        <a
-          routerLink="/upgrade-success"
-          class="flex w-full shrink-0 items-center justify-center rounded-xl bg-brand px-4 py-3 text-sm font-bold text-white transition hover:bg-brand-hover"
+  <!-- Membership Plans Grid -->
+  <section *ngIf="plans().length > 0" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <article 
+      *ngFor="let plan of plans()" 
+      [class.ring-2]="plan.is_popular === 1"
+      [class.ring-brand]="plan.is_popular === 1"
+      class="group relative flex min-h-[450px] flex-col items-center justify-between rounded-3xl border-2 border-gray-100 bg-white px-6 py-10 text-center shadow-sm transition-all hover:-translate-y-1 hover:border-brand hover:shadow-xl"
+    >
+      <!-- Popular Badge -->
+      <div *ngIf="plan.is_popular === 1" class="absolute -top-3 left-1/2 -translate-x-1/2 transform">
+        <span class="inline-flex items-center gap-1 rounded-full bg-brand px-4 py-1.5 text-xs font-bold text-white shadow-lg">
+          ⭐ Phổ biến
+        </span>
+      </div>
+
+      <div class="w-full">
+        <!-- Title -->
+        <h2 class="text-2xl font-extrabold text-ink transition-colors group-hover:text-brand">{{ plan.name }}</h2>
+        
+        <!-- Price Display -->
+        <div class="mt-6 flex flex-col items-center justify-center">
+          <p class="text-5xl font-black text-brand">{{ formatPrice(plan.price) }}</p>
+          <p class="mt-1 text-sm font-medium text-ink-light">/tháng</p>
+        </div>
+
+        <hr class="mx-auto my-6 w-12 border-brand/50 transition-all group-hover:w-24 group-hover:border-brand">
+
+        <!-- Features -->
+        <ul class="flex flex-col items-start gap-3 text-sm font-medium text-ink-light">
+          <li *ngFor="let feature of plan.features" class="flex items-center gap-2 w-full justify-center">
+            <svg class="h-4 w-4 text-brand flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+            <span>{{ feature }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Footer action -->
+      <div class="mt-8 flex w-full flex-col items-center">
+        <button
+          (click)="upgrade(plan)"
+          class="w-full max-w-[220px] inline-flex items-center justify-center rounded-full border-2 border-brand bg-white px-6 py-3 text-sm font-bold text-brand transition-all group-hover:bg-brand group-hover:text-white disabled:pointer-events-none disabled:opacity-50"
+          type="button"
         >
-          Thanh toán
-        </a>
+          Nâng cấp ngay
+        </button>
       </div>
     </article>
   </section>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading() && plans().length === 0 && !error()" class="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
+    <p class="text-ink-light">Không có gói membership nào để hiển thị</p>
+  </div>
 </div>
 

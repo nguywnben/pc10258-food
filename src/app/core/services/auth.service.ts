@@ -1,7 +1,7 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { tap } from 'rxjs/operators';
-import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, AuthUser } from '../models/auth.model';
+import { AuthUser, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../models/auth.model';
 
 interface AuthStorage {
   token: string;
@@ -43,6 +43,16 @@ export class AuthService {
     this._token.set(token);
     this._user.set(user);
     this.writeStoredAuth({ token, user });
+  }
+
+  updateUser(user: AuthUser): void {
+    const token = this._token();
+    if (!token) {
+      this._user.set(user);
+      return;
+    }
+
+    this.setAuth(token, user);
   }
 
   logout(): void {

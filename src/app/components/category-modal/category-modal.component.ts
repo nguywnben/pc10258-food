@@ -36,7 +36,7 @@ export interface CategoryModalSaveEvent {
           </div>
 
           <form [formGroup]="form" class="grid grid-cols-1 gap-5 md:grid-cols-2" (ngSubmit)="submit()">
-            <div class="md:col-span-2">
+            <div class="md:col-span-1">
               <label for="category-name" class="form-label">Tên danh mục <span class="text-red-400">*</span></label>
               <input
                 id="category-name"
@@ -59,6 +59,14 @@ export interface CategoryModalSaveEvent {
                   <p class="mt-1 text-xs text-red-500">Tên danh mục này đã tồn tại.</p>
                 }
               }
+            </div>
+
+            <div class="md:col-span-1">
+              <label for="category-status" class="form-label">Trạng thái <span class="text-red-400">*</span></label>
+              <select id="category-status" class="form-input" formControlName="status">
+                <option [value]="1">Hoạt động</option>
+                <option [value]="0">Ngừng hoạt động</option>
+              </select>
             </div>
 
             <div>
@@ -95,6 +103,9 @@ export interface CategoryModalSaveEvent {
                 }
                 @if (sortOrder.hasError('min')) {
                   <p class="mt-1 text-xs text-red-500">Thứ tự hiển thị phải lớn hơn 0.</p>
+                }
+                @if (sortOrder.hasError('duplicateSortOrder')) {
+                  <p class="mt-1 text-xs text-red-500">Thứ tự hiển thị này đã tồn tại.</p>
                 }
               }
             </div>
@@ -144,13 +155,14 @@ export class CategoryModalComponent {
       [this.createDuplicateNameValidator()],
     ],
     icon: ['', [Validators.required, Validators.maxLength(10)]],
-    sort_order: [1, [Validators.required, Validators.min(1)]],
+    sort_order: [1, [Validators.required, Validators.min(1)], [this.createDuplicateSortOrderValidator()]],
+    status: [1, [Validators.required]],
   });
 
   constructor() {
     effect(() => {
       if (!this.isOpen()) {
-        this.form.reset({ name: '', icon: '', sort_order: 1 });
+        this.form.reset({ name: '', icon: '', sort_order: 1, status: 1 });
         this.form.markAsPristine();
         this.form.markAsUntouched();
         return;
@@ -161,10 +173,12 @@ export class CategoryModalComponent {
         name: category?.name ?? '',
         icon: category?.icon ?? '',
         sort_order: category?.sort_order ?? 1,
+        status: category?.status ?? 1,
       });
       this.form.markAsPristine();
       this.form.markAsUntouched();
       this.name.updateValueAndValidity();
+      this.sortOrder.updateValueAndValidity();
     });
   }
 
@@ -178,6 +192,10 @@ export class CategoryModalComponent {
 
   get sortOrder() {
     return this.form.controls.sort_order;
+  }
+
+  get status() {
+    return this.form.controls.status;
   }
 
   private createDuplicateNameValidator() {
@@ -194,19 +212,37 @@ export class CategoryModalComponent {
     };
   }
 
+  private createDuplicateSortOrderValidator() {
+    return (control: AbstractControl): Observable<ValidationErrors | null> => {
+      if (!control.value) {
+        return of(null);
+      }
+
+      const currentId = this.category()?.id;
+      return this.categoriesService.checkSortOrderExists(Number(control.value), currentId).pipe(
+        debounceTime(300),
+        map((exists) => (exists ? { duplicateSortOrder: true } : null)),
+      );
+    };
+  }
+
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
+    const formValue = this.form.getRawValue();
+    const payload: CreateCategoryPayload | UpdateCategoryPayload = {
+      name: formValue.name.trim(),
+      icon: formValue.icon.trim() || null,
+      sort_order: Number(formValue.sort_order),
+      status: Number(formValue.status),
+    };
+
     this.save.emit({
       category: this.category(),
-      payload: {
-        name: this.name.value.trim(),
-        icon: this.icon.value.trim() || null,
-        sort_order: Number(this.sortOrder.value),
-      },
+      payload,
     });
   }
 }

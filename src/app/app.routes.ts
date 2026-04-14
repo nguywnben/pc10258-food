@@ -50,37 +50,24 @@ export const routes: Routes = [
       },
       {
         path: 'categories',
-        children: [
-          { path: '', pathMatch: 'full', redirectTo: 'list' },
-          {
-            path: 'list',
-            loadComponent: () =>
-              import('./pages/admin/categories/list').then(m => m.AdminCategoriesList),
-          },
-          {
-            path: 'create',
-            loadComponent: () =>
-              import('./pages/admin/categories/create').then(m => m.AdminCategoriesCreate),
-          },
-          {
-            path: 'edit/:id',
-            loadComponent: () =>
-              import('./pages/admin/categories/edit').then(m => m.AdminCategoriesEdit),
-          },
-        ],
+        loadComponent: () =>
+          import('./pages/admin/categories/list').then(m => m.AdminCategoriesList),
+      },
+      {
+        path: 'categories/create',
+        loadComponent: () =>
+          import('./pages/admin/categories/create').then(m => m.AdminCategoriesCreate),
+      },
+      {
+        path: 'categories/edit/:id',
+        loadComponent: () =>
+          import('./pages/admin/categories/edit').then(m => m.AdminCategoriesEdit),
       },
       {
         path: 'products',
-        children: [
-          { path: '', pathMatch: 'full', redirectTo: 'list' },
-          {
-            path: 'list',
-            loadComponent: () =>
-              import('./pages/admin/products/list').then(m => m.AdminProductsList),
-          },
-        ],
+        loadComponent: () =>
+          import('./pages/admin/products/list').then(m => m.AdminProductsList),
       },
-      { path: '**', redirectTo: 'dashboard' },
     ],
   },
   {

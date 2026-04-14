@@ -59,15 +59,28 @@
 <section class="card-admin overflow-hidden">
   <div class="flex items-center justify-between gap-4 px-5 py-4">
     <div>
-      <h2 class="text-sm font-bold text-ink">Bảng danh mục</h2>
+      <h2 class="text-sm font-bold text-ink">Kho danh mục</h2>
       <p class="text-xs text-ink-light">Tổng cộng {{ totalCategories() }} danh mục.</p>
     </div>
-    <button class="btn btn-brand !py-1.5 !text-xs" type="button" (click)="openCreateModal()">
-      <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path d="M12 4v16m8-8H4" />
-      </svg>
-      Thêm danh mục
-    </button>
+    <div class="flex items-center gap-3">
+      <div class="relative hidden sm:block">
+        <input
+          type="text"
+          placeholder="Tìm tên danh mục..."
+          class="form-input !py-1.5 !pl-9 !text-xs w-64"
+          (input)="onSearch($event)"
+        />
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-ink-lighter" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <button class="btn btn-brand !py-1.5 !text-xs shrink-0" type="button" (click)="openCreateModal()">
+        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 4v16m8-8H4" />
+        </svg>
+        Thêm danh mục
+      </button>
+    </div>
   </div>
 
   <div class="overflow-x-auto">
@@ -85,6 +98,7 @@
             <th>Tên danh mục</th>
             <th>Biểu tượng</th>
             <th>Thứ tự</th>
+            <th>Trạng thái</th>
             <th>Ngày tạo</th>
             <th>Hành động</th>
           </tr>
@@ -98,6 +112,13 @@
                 <span class="badge badge-neutral">{{ category.icon || '—' }}</span>
               </td>
               <td>{{ category.sort_order }}</td>
+              <td>
+                @if (category.status === 1) {
+                  <span class="badge badge-success">Hoạt động</span>
+                } @else {
+                  <span class="badge badge-neutral">Ngừng</span>
+                }
+              </td>
               <td class="text-ink-light">{{ category.created_at | date : 'dd/MM/yyyy HH:mm' }}</td>
               <td>
                 <div class="flex gap-1">

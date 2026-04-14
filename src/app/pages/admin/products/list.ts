@@ -6,6 +6,7 @@ import { DeleteModalComponent } from '../../../components/delete-modal/delete-mo
 import { PaginationComponent } from '../../../components/pagination/pagination.component';
 import { ProductModalComponent, ProductModalSaveEvent } from '../../../components/product-modal/product-modal.component';
 import { ProductsService, Product, CreateProductPayload, UpdateProductPayload } from '../../../services/products.service';
+import { CategoriesService, Category } from '../../../services/categories.service';
 
 @Component({
   selector: 'app-admin-products-list',
@@ -76,12 +77,25 @@ import { ProductsService, Product, CreateProductPayload, UpdateProductPayload } 
       <h2 class="text-sm font-bold text-ink">Kho sản phẩm</h2>
       <p class="text-xs text-ink-light">Tổng cộng {{ totalProducts() }} sản phẩm.</p>
     </div>
-    <button class="btn btn-brand !py-1.5 !text-xs" type="button" (click)="openCreateModal()">
-      <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path d="M12 4v16m8-8H4" />
-      </svg>
-      Thêm sản phẩm
-    </button>
+    <div class="flex items-center gap-3">
+      <div class="relative hidden sm:block">
+        <input
+          type="text"
+          placeholder="Tìm sản phẩm..."
+          class="form-input !py-1.5 !pl-9 !text-xs w-64"
+          (input)="onSearch($event)"
+        />
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-ink-lighter" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <button class="btn btn-brand !py-1.5 !text-xs shrink-0" type="button" (click)="openCreateModal()">
+        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 4v16m8-8H4" />
+        </svg>
+        Thêm sản phẩm
+      </button>
+    </div>
   </div>
 
   <div class="overflow-x-auto">
@@ -95,11 +109,12 @@ import { ProductsService, Product, CreateProductPayload, UpdateProductPayload } 
       <table class="admin-table">
         <thead>
           <tr>
-            <th>Mã sản phẩm</th>
-            <th>Tên sản phẩm</th>
-            <th>Hình ảnh</th>
+            <th>Mã</th>
+            <th>Sản phẩm</th>
+            <th>Danh mục</th>
             <th>Giá bán</th>
-            <th>Ngày tạo</th>
+            <th>Đánh giá</th>
+            <th>Trạng thái</th>
             <th>Hành động</th>
           </tr>
         </thead>
@@ -107,16 +122,40 @@ import { ProductsService, Product, CreateProductPayload, UpdateProductPayload } 
           @for (product of paginatedProducts(); track trackByProductId($index, product)) {
             <tr>
               <td class="font-semibold text-brand">#{{ product.id }}</td>
-              <td class="font-semibold text-ink">{{ product.name }}</td>
               <td>
-                <img
-                  [src]="product.image_url || 'assets/images/placeholder.png'"
-                  [alt]="product.name"
-                  class="h-12 w-12 rounded-xl object-cover"
-                />
+                <div class="flex items-center gap-3">
+                  <img
+                    [src]="product.image_url || 'assets/images/placeholder.png'"
+                    [alt]="product.name"
+                    class="h-10 w-10 rounded-lg object-cover"
+                  />
+                  <div>
+                    <p class="font-semibold text-ink">{{ product.name }}</p>
+                    <div class="text-[10px] text-ink-lighter max-w-[150px] truncate" [title]="product.name" [innerHTML]="product.description || 'Chưa có mô tả'">
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge badge-neutral text-[10px]">{{ getCategoryName(product.category_id) }}</span>
               </td>
               <td class="font-semibold text-ink">{{ product.price | number:'1.0-0' }}₫</td>
-              <td class="text-ink-light">{{ product.created_at | date : 'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <div class="flex flex-col">
+                  <div class="flex items-center gap-1 text-amber-500">
+                    <svg class="h-3 w-3 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                    <span class="text-xs font-bold">{{ product.rating }}</span>
+                  </div>
+                  <span class="text-[10px] text-ink-lighter">{{ product.review_count }} đánh giá</span>
+                </div>
+              </td>
+              <td>
+                @if (product.is_available === 1) {
+                  <span class="badge badge-success text-[10px]">Đang bán</span>
+                } @else {
+                  <span class="badge badge-neutral text-[10px]">Ngừng</span>
+                }
+              </td>
               <td>
                 <div class="flex gap-1">
                   <button class="btn btn-ghost !p-1.5" title="Sửa" type="button" (click)="openEditModal(product)">
@@ -173,6 +212,7 @@ import { ProductsService, Product, CreateProductPayload, UpdateProductPayload } 
 })
 export class AdminProductsList {
   private readonly productsService = inject(ProductsService);
+  private readonly categoriesService = inject(CategoriesService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -180,6 +220,7 @@ export class AdminProductsList {
   private readonly itemsPerPage = 10;
 
   readonly products = signal<Product[]>([]);
+  readonly categories = signal<Category[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly showSuccessToast = signal(false);
@@ -193,9 +234,15 @@ export class AdminProductsList {
   readonly editingProduct = signal<Product | null>(null);
   readonly savingProduct = signal(false);
   readonly currentPage = signal(1);
-  readonly totalProducts = computed(() => this.products().length);
+  readonly searchQuery = signal('');
+  readonly filteredProducts = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.products();
+    return this.products().filter((p) => p.name.toLowerCase().includes(query) || p.description?.toLowerCase().includes(query));
+  });
+  readonly totalProducts = computed(() => this.filteredProducts().length);
   readonly sortedProducts = computed(() => {
-    const items = [...this.products()];
+    const items = [...this.filteredProducts()];
     return items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   });
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.sortedProducts().length / this.itemsPerPage)));
@@ -207,7 +254,7 @@ export class AdminProductsList {
 
   constructor() {
     this.productsService
-      .getAll()
+      .getAll(true)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (items) => {
@@ -220,10 +267,30 @@ export class AdminProductsList {
         },
       });
 
+    this.categoriesService
+      .getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (categories) => {
+          this.categories.set(categories);
+        },
+      });
+
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const page = Number(params.get('page') ?? '1');
       this.currentPage.set(Number.isInteger(page) && page > 0 ? page : 1);
     });
+  }
+
+  getCategoryName(categoryId: number): string {
+    const category = this.categories().find((c) => c.id === categoryId);
+    return category ? category.name : `ID: ${categoryId}`;
+  }
+
+  onSearch(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(value);
+    this.goToPage(1);
   }
 
   trackByProductId(_: number, product: Product): number {

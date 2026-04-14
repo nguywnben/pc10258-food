@@ -7,6 +7,7 @@ export interface Category {
   name: string;
   icon: string | null;
   sort_order: number;
+  status: number; // 1: active, 0: inactive
   created_at: string;
 }
 
@@ -18,12 +19,14 @@ export interface CreateCategoryPayload {
   name: string;
   icon: string | null;
   sort_order: number;
+  status: number;
 }
 
 export interface UpdateCategoryPayload {
   name: string;
   icon: string | null;
   sort_order: number;
+  status: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -48,6 +51,16 @@ export class CategoriesService {
         const trimmedName = name.trim().toLowerCase();
         return categories.some(
           (cat) => cat.name.toLowerCase() === trimmedName && (!excludeId || cat.id !== excludeId),
+        );
+      }),
+    );
+  }
+
+  checkSortOrderExists(sortOrder: number, excludeId?: number): Observable<boolean> {
+    return this.getAll().pipe(
+      map((categories) => {
+        return categories.some(
+          (cat) => cat.sort_order === sortOrder && (!excludeId || cat.id !== excludeId),
         );
       }),
     );

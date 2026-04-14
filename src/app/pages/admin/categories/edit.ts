@@ -111,6 +111,7 @@ export class AdminCategoriesEdit {
 			name: formValue.name.trim(),
 			icon: formValue.icon.trim() || null,
 			sort_order: Number(formValue.sort_order),
+			status: 1, // Giả sử mặc định là hoạt động hoặc lấy từ dữ liệu cũ nếu form có field này
 		};
 
 		this.error.set(null);

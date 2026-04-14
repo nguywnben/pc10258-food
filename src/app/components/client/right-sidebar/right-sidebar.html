@@ -2,8 +2,7 @@
   id="right-sidebar"
   class="custom-scroll flex h-full min-h-0 flex-col overflow-y-auto border-l border-gray-100 bg-white px-4 py-4"
 >
-  <!-- Số dư ví — chỉ hiển thị nếu có wallet data -->
-  @if (wallet) {
+  @if ((wallet$ | async); as wallet) {
     <div class="mb-4 rounded-2xl bg-brand/10 px-4 py-4">
       <div class="block rounded-xl">
         <p class="text-xs font-medium text-ink-light">Số dư ví</p>

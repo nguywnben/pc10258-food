@@ -1,8 +1,9 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { afterNextRender, Component, inject, OnDestroy, signal } from '@angular/core';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil } from 'rxjs';
+import { asyncScheduler, BehaviorSubject, Subject } from 'rxjs';
+import { filter, observeOn, takeUntil } from 'rxjs/operators';
 
 import { CartService, CartItem } from '../../../services/cart.service';
 import { WalletService, Wallet } from '../../../services/wallet.service';
@@ -19,7 +20,7 @@ import { OrderService } from '../../../services/order.service';
     class: 'h-full min-h-0 flex flex-col',
   },
 })
-export class RightSidebar implements OnInit, OnDestroy {
+export class RightSidebar implements OnDestroy {
   private readonly router = inject(Router);
   private readonly cartService = inject(CartService);
   private readonly walletService = inject(WalletService);
@@ -29,7 +30,9 @@ export class RightSidebar implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  wallet: Wallet | null = null;
+  private readonly walletSubject = new BehaviorSubject<Wallet | null>(null);
+  readonly wallet$ = this.walletSubject.pipe(observeOn(asyncScheduler));
+
   defaultAddress: Address | null = null;
   
   cartItems: CartItem[] = [];
@@ -40,17 +43,35 @@ export class RightSidebar implements OnInit, OnDestroy {
   appliedPromo: Promotion | null = null;
   discountAmount: number = 0;
 
-  ngOnInit() {
-    this.loadWallet();
-    this.loadAddress();
-    this.loadCart();
+  readonly isFavoritesRoute = signal(this.computeIsFavoritesRoute());
 
-    // Lắng nghe sự kiện cập nhật giỏ hàng từ component khác
-    this.cartService.cartUpdated$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.loadCart();
-      });
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => this.isFavoritesRoute.set(this.computeIsFavoritesRoute()));
+
+    afterNextRender(() => {
+      this.scheduleViewUpdate(() =>
+        this.isFavoritesRoute.set(this.computeIsFavoritesRoute()),
+      );
+      this.loadWallet();
+      this.loadAddress();
+      this.loadCart();
+
+      this.cartService.cartUpdated$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.loadCart();
+        });
+    });
+  }
+
+  private computeIsFavoritesRoute(): boolean {
+    const p = this.router.url.split(/[?#]/)[0];
+    return p === '/favorites';
   }
 
   ngOnDestroy() {
@@ -58,39 +79,42 @@ export class RightSidebar implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  isFavoritesRoute(): boolean {
-    const p = this.router.url.split(/[?#]/)[0];
-    return p === '/favorites';
+  private scheduleViewUpdate(fn: () => void): void {
+    setTimeout(fn, 0);
   }
 
   loadWallet() {
-    // Để gọi API Wallet cần Token (Nên gắn cứng tạm hoặc bắt lỗi 401 bỏ qua)
     this.walletService.getWallet().subscribe({
-      next: (res: any) => this.wallet = res.data,
-      error: () => console.warn('Cần đăng nhập để tải ví')
+      next: (res: any) => this.walletSubject.next(res.data ?? null),
+      error: () => {
+        console.warn('Cần đăng nhập để tải ví');
+        this.walletSubject.next(null);
+      },
     });
   }
 
   loadAddress() {
     this.addressService.getAddresses().subscribe({
-      next: (res: any) => {
-        if (res.data && res.data.length > 0) {
-          this.defaultAddress = res.data.find((a: any) => a.is_default === 1) || res.data[0];
-        }
-      },
-      error: () => console.warn('Cần đăng nhập để tải địa chỉ')
+      next: (res: any) =>
+        this.scheduleViewUpdate(() => {
+          if (res.data && res.data.length > 0) {
+            this.defaultAddress = res.data.find((a: any) => a.is_default === 1) || res.data[0];
+          }
+        }),
+      error: () => console.warn('Cần đăng nhập để tải địa chỉ'),
     });
   }
 
   loadCart() {
     this.cartService.getCart().subscribe({
-      next: (res: any) => {
-        this.cartItems = res.data.items || [];
-        this.subtotal = res.data.subtotal || 0;
-        this.cartCount = res.data.count || 0;
-        this.recalculateDiscount();
-      },
-      error: () => console.warn('Cần đăng nhập để xem giỏ hàng')
+      next: (res: any) =>
+        this.scheduleViewUpdate(() => {
+          this.cartItems = res.data.items || [];
+          this.subtotal = res.data.subtotal || 0;
+          this.cartCount = res.data.count || 0;
+          this.recalculateDiscount();
+        }),
+      error: () => console.warn('Cần đăng nhập để xem giỏ hàng'),
     });
   }
 

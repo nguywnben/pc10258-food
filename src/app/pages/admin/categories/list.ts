@@ -35,9 +35,15 @@ export class AdminCategoriesList {
   readonly editingCategory = signal<Category | null>(null);
   readonly savingCategory = signal(false);
   readonly currentPage = signal(1);
-  readonly totalCategories = computed(() => this.categories().length);
+  readonly searchQuery = signal('');
+  readonly filteredCategories = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.categories();
+    return this.categories().filter((cat) => cat.name.toLowerCase().includes(query));
+  });
+  readonly totalCategories = computed(() => this.filteredCategories().length);
   readonly sortedCategories = computed(() => {
-    const cats = [...this.categories()];
+    const cats = [...this.filteredCategories()];
     return cats.sort((a, b) => {
       const dateA = new Date(a.created_at).getTime();
       const dateB = new Date(b.created_at).getTime();
@@ -71,6 +77,12 @@ export class AdminCategoriesList {
       this.currentPage.set(Number.isInteger(page) && page > 0 ? page : 1);
 
     });
+  }
+
+  onSearch(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(value);
+    this.goToPage(1);
   }
 
   trackByCategoryId(_: number, category: Category): number {

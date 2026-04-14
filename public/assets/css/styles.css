@@ -207,6 +207,30 @@ button.conv-row-active:focus-visible {
 .form-input::placeholder {
   color: #9ca3af;
 }
+
+/* CKEditor Custom Styles */
+.ck-editor__remaining-char-count {
+  display: none;
+}
+.ck-editor__editable {
+  min-height: 150px;
+  max-height: 400px;
+  border-bottom-left-radius: 0.75rem !important;
+  border-bottom-right-radius: 0.75rem !important;
+}
+.ck-toolbar {
+  border-top-left-radius: 0.75rem !important;
+  border-top-right-radius: 0.75rem !important;
+  border-color: #d1d5db !important;
+}
+.ck.ck-editor__main > .ck-editor__editable.ck-focused {
+  border-color: #f4623a !important;
+  box-shadow: 0 0 0 3px rgba(244, 98, 58, 0.12) !important;
+}
+.ck.ck-editor__main > .ck-editor__editable {
+  border-color: #d1d5db !important;
+}
+
 .form-select {
   width: 100%;
   padding: 10px 14px;

@@ -65,6 +65,7 @@ export class AdminCategoriesCreate {
 			name: formValue.name.trim(),
 			icon: formValue.icon.trim() || null,
 			sort_order: Number(formValue.sort_order),
+			status: 1, // Mặc định là hoạt động
 		};
 
 		this.error.set(null);

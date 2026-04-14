@@ -3,16 +3,20 @@
     <h1 class="text-2xl font-bold">Tạo tài khoản</h1>
     <p class="mt-1 text-sm text-ink-light">Điền thông tin để bắt đầu đặt món nhanh hơn.</p>
 
-    <form class="mt-6 space-y-4" onsubmit="return false;">
+    <form class="mt-6 space-y-4" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <div>
         <label for="reg-name" class="mb-1 block text-xs font-medium text-ink-light">Họ và tên</label>
         <input
           id="reg-name"
           type="text"
+          formControlName="full_name"
           autocomplete="name"
           placeholder="Ví dụ: Nguyễn Văn A"
           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-ink outline-none transition focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20"
         />
+        @if (registerForm.controls.full_name.touched && registerForm.controls.full_name.invalid) {
+          <p class="mt-1 text-xs text-red-600">Họ tên phải có ít nhất 2 ký tự.</p>
+        }
       </div>
 
       <div>
@@ -20,10 +24,14 @@
         <input
           id="reg-email"
           type="email"
+          formControlName="email"
           autocomplete="email"
           placeholder="khach@example.com"
           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-ink outline-none transition focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20"
         />
+        @if (registerForm.controls.email.touched && registerForm.controls.email.invalid) {
+          <p class="mt-1 text-xs text-red-600">Vui lòng nhập email hợp lệ.</p>
+        }
       </div>
 
       <div>
@@ -31,10 +39,14 @@
         <input
           id="reg-phone"
           type="text"
+          formControlName="phone"
           autocomplete="tel"
           placeholder="Ví dụ: 0901 234 567"
           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-ink outline-none transition focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20"
         />
+        @if (registerForm.controls.phone.touched && registerForm.controls.phone.invalid) {
+          <p class="mt-1 text-xs text-red-600">Số điện thoại không hợp lệ.</p>
+        }
       </div>
 
       <div>
@@ -42,10 +54,14 @@
         <input
           id="reg-password"
           type="password"
+          formControlName="password"
           autocomplete="new-password"
           placeholder="Tạo mật khẩu"
           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-ink outline-none transition focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20"
         />
+        @if (registerForm.controls.password.touched && registerForm.controls.password.invalid) {
+          <p class="mt-1 text-xs text-red-600">Mật khẩu tối thiểu 6 ký tự.</p>
+        }
       </div>
 
       <div>
@@ -53,30 +69,47 @@
         <input
           id="reg-password-confirm"
           type="password"
+          formControlName="confirmPassword"
           autocomplete="new-password"
           placeholder="Nhập lại mật khẩu"
           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-ink outline-none transition focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20"
         />
+        @if (passwordMismatch()) {
+          <p class="mt-1 text-xs text-red-600">Mật khẩu xác nhận không khớp.</p>
+        }
       </div>
 
       <label class="flex items-start gap-2 text-sm text-ink-light">
-        <input type="checkbox" class="mt-1 h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand/20" />
+        <input
+          type="checkbox"
+          formControlName="acceptTerms"
+          class="mt-1 h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand/20"
+        />
         <span>
           Tôi đồng ý với <a href="#" class="font-semibold text-brand hover:underline">điều khoản sử dụng</a> (mẫu).
         </span>
       </label>
+      @if (registerForm.controls.acceptTerms.touched && registerForm.controls.acceptTerms.invalid) {
+        <p class="text-xs text-red-600">Bạn cần đồng ý điều khoản để tiếp tục.</p>
+      }
 
-      <button type="submit" class="w-full rounded-xl bg-brand py-2.5 text-sm font-bold text-white transition hover:bg-brand-hover">
-        Tạo tài khoản
+      @if (submitError()) {
+        <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ submitError() }}</p>
+      }
+
+      <button
+        type="submit"
+        [disabled]="isSubmitting()"
+        class="w-full rounded-xl bg-brand py-2.5 text-sm font-bold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        {{ isSubmitting() ? 'Đang xử lý...' : 'Tạo tài khoản' }}
       </button>
 
       <div class="flex items-center justify-between gap-3">
-        <a href="/login" class="text-sm font-semibold text-brand transition hover:opacity-90">Đăng nhập</a>
+        <a routerLink="/login" class="text-sm font-semibold text-brand transition hover:opacity-90">Đăng nhập</a>
         <a href="/help" class="text-sm font-semibold text-ink-light transition hover:text-brand">Trợ giúp</a>
       </div>
     </form>
-
-    <p class="mt-5 text-xs text-ink-light">Lưu ý: Đây là trang giao diện mẫu. Chưa kết nối backend.</p>
   </section>
 </div>
 

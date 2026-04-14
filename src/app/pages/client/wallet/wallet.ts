@@ -5,19 +5,21 @@ import { FormsModule } from '@angular/forms';
 import { WalletService, WalletTransaction } from '../../../services/wallet.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { WalletDepositModalComponent } from '../../../components/wallet-deposit-modal/wallet-deposit-modal.component';
+import { ToastComponent } from '../../../components/toast/toast.component';
 
 @Component({
   selector: 'app-wallet',
   standalone: true,
-  imports: [CommonModule, FormsModule, WalletDepositModalComponent],
+  imports: [CommonModule, FormsModule, WalletDepositModalComponent, ToastComponent],
   templateUrl: './wallet.html',
 })
 export class Wallet implements OnInit, AfterViewInit {
+  @ViewChild(ToastComponent) toast!: ToastComponent;
+  @ViewChild(WalletDepositModalComponent) depositModal!: WalletDepositModalComponent;
+
   private readonly router = inject(Router);
   private readonly walletSvc = inject(WalletService);
   private readonly authSvc = inject(AuthService);
-
-  @ViewChild(WalletDepositModalComponent) depositModal!: WalletDepositModalComponent;
 
   // Signals
   walletBalance = signal<number>(0);
@@ -62,7 +64,6 @@ export class Wallet implements OnInit, AfterViewInit {
   ngOnInit(): void {
     // Check if user is authenticated
     if (!this.isAuthenticated()) {
-      console.warn('User not authenticated. Redirecting to login.');
       this.router.navigate(['/login']);
       return;
     }
@@ -101,7 +102,6 @@ export class Wallet implements OnInit, AfterViewInit {
         console.error('Failed to load wallet balance:', err);
         // Handle 401 Unauthorized - redirect to login
         if (err.status === 401) {
-          console.warn('Token expired or invalid. Redirecting to login.');
           this.authSvc.logout();
           this.router.navigate(['/login']);
           return;
@@ -123,7 +123,6 @@ export class Wallet implements OnInit, AfterViewInit {
         console.error('Failed to load transactions:', err);
         // Handle 401 Unauthorized - redirect to login
         if (err.status === 401) {
-          console.warn('Token expired or invalid. Redirecting to login.');
           this.authSvc.logout();
           this.router.navigate(['/login']);
           return;

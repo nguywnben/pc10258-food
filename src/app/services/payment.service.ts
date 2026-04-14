@@ -19,6 +19,7 @@ export interface WalletPaymentPayload {
 
 export interface PaymentConfirmPayload {
   transaction_code?: string;  // Optional - backend can generate if not provided
+  plan_id?: number;           // Required for membership upgrade payments
 }
 
 export interface Payment {
@@ -78,7 +79,7 @@ export class PaymentService {
    * Confirm payment after successful PayOS transaction
    * PUT /api/payments/:id/confirm
    */
-  confirmPayment(paymentId: number, payload: PaymentConfirmPayload): Observable<PaymentResponse> {
+  confirmPayment(paymentId: number | string, payload: PaymentConfirmPayload): Observable<PaymentResponse> {
     return this.http.put<PaymentResponse>(`${this.baseUrl}/${paymentId}/confirm`, payload);
   }
 

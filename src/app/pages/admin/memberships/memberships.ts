@@ -1,7 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminMembershipService, MembershipPlan } from '../../../services/admin-membership.service';
+
+import { PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-admin-memberships',
@@ -11,6 +14,8 @@ import { AdminMembershipService, MembershipPlan } from '../../../services/admin-
 })
 export class AdminMemberships implements OnInit {
   private readonly membershipService = inject(AdminMembershipService);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   plans: MembershipPlan[] = [];
   
@@ -25,13 +30,23 @@ export class AdminMemberships implements OnInit {
   editingId: number | null = null;
 
   ngOnInit() {
-    this.loadPlans();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadPlans();
+    }
   }
 
   loadPlans() {
     this.membershipService.getAllPlans().subscribe({
-      next: (res: any) => this.plans = res.data || [],
-      error: (err: any) => console.error('Lỗi tải danh sách thẻ thành viên:', err)
+      next: (res: MembershipPlan[]) => {
+        this.plans = res || [];
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        console.error('Lỗi tải danh sách thẻ thành viên:', err);
+        if (typeof window !== 'undefined') {
+          alert(err.error?.message || 'Lỗi tải danh sách thẻ thành viên');
+        }
+      }
     });
   }
 

@@ -1,7 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminPromotionService, Promotion } from '../../../services/admin-promotion.service';
+
+import { PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-admin-promotions',
@@ -11,6 +14,8 @@ import { AdminPromotionService, Promotion } from '../../../services/admin-promot
 })
 export class AdminPromotions implements OnInit {
   private readonly promoService = inject(AdminPromotionService);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   promotions: Promotion[] = [];
   
@@ -28,13 +33,23 @@ export class AdminPromotions implements OnInit {
   };
 
   ngOnInit() {
-    this.loadPromotions();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadPromotions();
+    }
   }
 
   loadPromotions() {
     this.promoService.getAllPromotions().subscribe({
-      next: (res: any) => this.promotions = res.data || [],
-      error: (err: any) => console.error('Lỗi tải danh sách khuyến mãi:', err)
+      next: (res: Promotion[]) => {
+        this.promotions = res || [];
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        console.error('Lỗi tải danh sách khuyến mãi:', err);
+        if (typeof window !== 'undefined') {
+          alert(err.error?.message || 'Lỗi tải danh sách khuyến mãi');
+        }
+      }
     });
   }
 

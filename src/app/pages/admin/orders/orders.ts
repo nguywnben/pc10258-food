@@ -1,7 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminOrderService } from '../../../services/admin-order.service';
+
+import { PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-admin-orders',
@@ -11,24 +14,31 @@ import { AdminOrderService } from '../../../services/admin-order.service';
 })
 export class AdminOrders implements OnInit {
   private readonly adminOrderService = inject(AdminOrderService);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   orders: any[] = [];
   filteredOrders: any[] = [];
   searchQuery: string = '';
 
   ngOnInit(): void {
-    this.loadOrders();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadOrders();
+    }
   }
 
   loadOrders() {
     this.adminOrderService.getAllOrders().subscribe({
-      next: (res: any) => {
-        this.orders = res.data;
+      next: (res: any[]) => {
+        this.orders = res;
         this.applySearch();
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
-        console.error('Lỗi khi tải danh sách đơn hàng', err);
-        alert(err.error?.message || 'Không thể lấy danh sách đơn hàng. Bạn đã đăng nhập Admin chưa?');
+        console.error('Lỗi khi tải danh sách đơn hàng:', err);
+        if (typeof window !== 'undefined') {
+          alert(err.error?.message || 'Không thể lấy danh sách đơn hàng. Bạn đã đăng nhập Admin chưa?');
+        }
       }
     });
   }
@@ -39,10 +49,11 @@ export class AdminOrders implements OnInit {
       return;
     }
     const q = this.searchQuery.toLowerCase();
-    this.filteredOrders = this.orders.filter(order => 
-      order.order_code?.toLowerCase().includes(q) ||
-      order.user?.full_name?.toLowerCase().includes(q)
-    );
+    this.filteredOrders = this.orders.filter(order => {
+      const codeMatches = order.order_code ? order.order_code.toLowerCase().includes(q) : false;
+      const nameMatches = order.user?.full_name ? order.user.full_name.toLowerCase().includes(q) : false;
+      return codeMatches || nameMatches;
+    });
   }
 
   updateStatus(order: any, newStatus: string) {

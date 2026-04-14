@@ -4,10 +4,18 @@ import { map, Observable } from 'rxjs';
 
 export interface Product {
   id: number;
+  category_id: number;
   name: string;
-  image_url: string | null;
+  description: string | null;
   price: number;
+  image_url: string | null;
+  rating: number;
+  review_count: number;
+  delivery_info: string | null;
+  delivery_time: string | null;
+  is_available: number; // 1 = true, 0 = false
   created_at: string;
+  updated_at: string;
 }
 
 interface ApiResponse<T> {
@@ -15,15 +23,25 @@ interface ApiResponse<T> {
 }
 
 export interface CreateProductPayload {
+  category_id: number;
   name: string;
-  image_url: string;
+  description: string | null;
   price: number;
+  image_url: string | null;
+  delivery_info?: string;
+  delivery_time?: string;
+  is_available: number;
 }
 
 export interface UpdateProductPayload {
+  category_id: number;
   name: string;
-  image_url: string;
+  description: string | null;
   price: number;
+  image_url: string | null;
+  delivery_info?: string;
+  delivery_time?: string;
+  is_available: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -36,9 +54,13 @@ export class ProductsService {
     return token ? { Authorization: `Bearer ${token}` } : undefined;
   }
 
-  getAll(): Observable<Product[]> {
+  getAll(isAdmin = false): Observable<Product[]> {
+    const url = isAdmin 
+      ? `${this.apiBaseUrl}/products?is_available=all` 
+      : `${this.apiBaseUrl}/products`;
+      
     return this.http
-      .get<ApiResponse<Product[]>>(`${this.apiBaseUrl}/products`)
+      .get<ApiResponse<Product[]>>(url)
       .pipe(map((response) => response.data ?? []));
   }
 

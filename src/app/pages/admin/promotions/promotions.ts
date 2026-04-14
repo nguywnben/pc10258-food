@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminPromotionService, Promotion } from '../../../services/admin-promotion.service';
@@ -11,13 +11,13 @@ import { isPlatformBrowser } from '@angular/common';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './promotions.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminPromotions implements OnInit {
   private readonly promoService = inject(AdminPromotionService);
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly cdr = inject(ChangeDetectorRef);
 
-  promotions: Promotion[] = [];
+  readonly promotions = signal<Promotion[]>([]);
   
   // Model for the create form
   newPromo: Promotion = {
@@ -40,10 +40,7 @@ export class AdminPromotions implements OnInit {
 
   loadPromotions() {
     this.promoService.getAllPromotions().subscribe({
-      next: (res: Promotion[]) => {
-        this.promotions = res || [];
-        this.cdr.detectChanges();
-      },
+      next: (res: Promotion[]) => this.promotions.set(res || []),
       error: (err: any) => {
         console.error('Lỗi tải danh sách khuyến mãi:', err);
         if (typeof window !== 'undefined') {
@@ -79,7 +76,10 @@ export class AdminPromotions implements OnInit {
 
     this.promoService.updatePromotion(promo.id, { is_active: updatedStatus }).subscribe({
       next: () => {
-        promo.is_active = updatedStatus;
+        // Update specific item in the signal array
+        this.promotions.update(promos => 
+          promos.map(p => p.id === promo.id ? { ...p, is_active: updatedStatus } : p)
+        );
         alert('Cập nhật trạng thái thành công!');
       },
       error: (err: any) => alert(err.error?.message || 'Có lỗi xảy ra')
@@ -92,7 +92,7 @@ export class AdminPromotions implements OnInit {
     this.promoService.deletePromotion(id).subscribe({
       next: () => {
         alert('Đã xoá mã!');
-        this.loadPromotions();
+        this.promotions.update(promos => promos.filter(p => p.id !== id));
       },
       error: (err: any) => alert(err.error?.message || 'Lỗi xoá mã')
     });

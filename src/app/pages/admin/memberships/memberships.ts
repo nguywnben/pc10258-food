@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminMembershipService, MembershipPlan } from '../../../services/admin-membership.service';
@@ -11,13 +11,13 @@ import { isPlatformBrowser } from '@angular/common';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './memberships.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminMemberships implements OnInit {
   private readonly membershipService = inject(AdminMembershipService);
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly cdr = inject(ChangeDetectorRef);
 
-  plans: MembershipPlan[] = [];
+  readonly plans = signal<MembershipPlan[]>([]);
   
   newPlan: MembershipPlan = {
     name: '',
@@ -37,10 +37,7 @@ export class AdminMemberships implements OnInit {
 
   loadPlans() {
     this.membershipService.getAllPlans().subscribe({
-      next: (res: MembershipPlan[]) => {
-        this.plans = res || [];
-        this.cdr.detectChanges();
-      },
+      next: (res: MembershipPlan[]) => this.plans.set(res || []),
       error: (err: any) => {
         console.error('Lỗi tải danh sách thẻ thành viên:', err);
         if (typeof window !== 'undefined') {
@@ -52,14 +49,14 @@ export class AdminMemberships implements OnInit {
 
   onSubmit() {
     if (!this.newPlan.name || this.newPlan.min_points < 0 || this.newPlan.discount_rate < 0) {
-      alert('Vui lòng nhập tên, điểm tối thiểu và % giảm giá hợp lệ!');
+      alert('Vui lòng kiểm tra lại thông tin form!');
       return;
     }
 
     if (this.isEditing && this.editingId) {
       this.membershipService.updatePlan(this.editingId, this.newPlan).subscribe({
         next: () => {
-          alert('Cập nhật hạng thành viên thành công!');
+          alert('Cập nhật rank thành công!');
           this.resetForm();
           this.loadPlans();
         },
@@ -68,11 +65,11 @@ export class AdminMemberships implements OnInit {
     } else {
       this.membershipService.createPlan(this.newPlan).subscribe({
         next: () => {
-          alert('Tạo thẻ thành viên mới thành công!');
+          alert('Tạo rank thành công!');
           this.resetForm();
           this.loadPlans();
         },
-        error: (err: any) => alert(err.error?.message || 'Lỗi tạo mới')
+        error: (err: any) => alert(err.error?.message || 'Lỗi tạo rank mới')
       });
     }
   }
@@ -80,19 +77,18 @@ export class AdminMemberships implements OnInit {
   editPlan(plan: MembershipPlan) {
     this.isEditing = true;
     this.editingId = plan.id!;
-    this.newPlan = { ...plan }; // clone data
+    this.newPlan = { ...plan };
   }
 
   deletePlan(id?: number) {
-    if (!id || !confirm('Cảnh báo: Xoá gói Rank này có thể ảnh hưởng đến quyền lợi người dùng hiện tại! Xác nhận xoá?')) return;
-
+    if (!id || !confirm('Xoá rank này?')) return;
+    
     this.membershipService.deletePlan(id).subscribe({
       next: () => {
-        alert('Đã xoá cấp bậc hội viên!');
-        this.loadPlans();
-        if (this.editingId === id) this.resetForm();
+        this.plans.update(items => items.filter(p => p.id !== id));
+        alert('Đã xoá!');
       },
-      error: (err: any) => alert(err.error?.message || 'Lỗi xoá cấp bậc')
+      error: (err: any) => alert(err.error?.message || 'Lỗi xoá rank')
     });
   }
 

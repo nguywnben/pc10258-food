@@ -67,7 +67,7 @@
     <table class="admin-table">
       <thead><tr><th>Mã Code</th><th>Mô tả / Loại</th><th>Giá trị</th><th>Đơn tối thiểu</th><th>Đã dùng / Limit</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
       <tbody>
-        @for (promo of promotions; track promo.id) {
+        @for (promo of promotions(); track promo.id) {
           <tr>
             <td class="font-bold text-brand uppercase">{{ promo.code }}</td>
             <td>
@@ -101,7 +101,7 @@
             </td>
           </tr>
         }
-        @if (promotions.length === 0) {
+        @if (promotions().length === 0) {
           <tr><td colspan="7" class="text-center py-6 text-sm text-ink-light">Chưa có chương trình khuyến mãi nào được tạo.</td></tr>
         }
       </tbody>

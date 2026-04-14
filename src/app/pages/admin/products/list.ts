@@ -1,0 +1,435 @@
+import { DatePipe, DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
+import { DeleteModalComponent } from '../../../components/delete-modal/delete-modal.component';
+import { PaginationComponent } from '../../../components/pagination/pagination.component';
+import { ProductModalComponent, ProductModalSaveEvent } from '../../../components/product-modal/product-modal.component';
+import { ProductsService, Product, CreateProductPayload, UpdateProductPayload } from '../../../services/products.service';
+
+@Component({
+  selector: 'app-admin-products-list',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DatePipe, DecimalPipe, DeleteModalComponent, PaginationComponent, ProductModalComponent],
+  template: `
+@if (showSuccessToast()) {
+  <div class="fixed right-6 top-6 z-50 w-[min(92vw,420px)] rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-emerald-800 shadow-xl">
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex items-start gap-3">
+        <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-lg font-semibold leading-6">Thành công</p>
+          <p class="text-sm">{{ successToastMessage() }}</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="rounded-md p-1 text-emerald-700 transition hover:bg-emerald-100"
+        (click)="dismissSuccessToast()"
+        aria-label="Đóng thông báo"
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+}
+
+@if (showErrorToast()) {
+  <div class="fixed right-6 top-24 z-50 w-[min(92vw,420px)] rounded-2xl border border-red-100 bg-red-50 p-4 text-red-800 shadow-xl">
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex items-start gap-3">
+        <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-lg font-semibold leading-6">Không thể thực hiện</p>
+          <p class="text-sm">{{ errorToastMessage() }}</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="rounded-md p-1 text-red-700 transition hover:bg-red-100"
+        (click)="dismissErrorToast()"
+        aria-label="Đóng thông báo lỗi"
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+}
+
+<section class="card-admin overflow-hidden">
+  <div class="flex items-center justify-between gap-4 px-5 py-4">
+    <div>
+      <h2 class="text-sm font-bold text-ink">Kho sản phẩm</h2>
+      <p class="text-xs text-ink-light">Tổng cộng {{ totalProducts() }} sản phẩm.</p>
+    </div>
+    <button class="btn btn-brand !py-1.5 !text-xs" type="button" (click)="openCreateModal()">
+      <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M12 4v16m8-8H4" />
+      </svg>
+      Thêm sản phẩm
+    </button>
+  </div>
+
+  <div class="overflow-x-auto">
+    @if (loading()) {
+      <div class="px-5 py-10 text-center text-sm text-ink-light">Đang tải sản phẩm...</div>
+    } @else if (error()) {
+      <div class="px-5 py-10 text-center text-sm text-red-500">{{ error() }}</div>
+    } @else if (products().length === 0) {
+      <div class="px-5 py-10 text-center text-sm text-ink-light">Chưa có sản phẩm nào.</div>
+    } @else {
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Mã sản phẩm</th>
+            <th>Tên sản phẩm</th>
+            <th>Hình ảnh</th>
+            <th>Giá bán</th>
+            <th>Ngày tạo</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of paginatedProducts(); track trackByProductId($index, product)) {
+            <tr>
+              <td class="font-semibold text-brand">#{{ product.id }}</td>
+              <td class="font-semibold text-ink">{{ product.name }}</td>
+              <td>
+                <img
+                  [src]="product.image_url || 'assets/images/placeholder.png'"
+                  [alt]="product.name"
+                  class="h-12 w-12 rounded-xl object-cover"
+                />
+              </td>
+              <td class="font-semibold text-ink">{{ product.price | number:'1.0-0' }}₫</td>
+              <td class="text-ink-light">{{ product.created_at | date : 'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <div class="flex gap-1">
+                  <button class="btn btn-ghost !p-1.5" title="Sửa" type="button" (click)="openEditModal(product)">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button
+                    class="btn btn-ghost !p-1.5 text-red-400 hover:!text-red-600"
+                    title="Xoá"
+                    type="button"
+                    [disabled]="deletingProductId() === product.id"
+                    (click)="deleteProduct(product)"
+                  >
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
+    <app-pagination
+      [currentPage]="activePage()"
+      [totalPages]="totalPages()"
+      (pageChange)="goToPage($event)"
+    ></app-pagination>
+  </div>
+</section>
+
+<app-product-modal
+  [isOpen]="showProductModal()"
+  [isLoading]="savingProduct()"
+  [product]="editingProduct()"
+  [title]="editingProduct() ? 'Sửa sản phẩm' : 'Thêm sản phẩm'"
+  [submitLabel]="editingProduct() ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm'"
+  (save)="saveProduct($event)"
+  (cancel)="closeProductModal()"
+></app-product-modal>
+
+<app-delete-modal
+  [isOpen]="showDeleteModal()"
+  [isLoading]="deletingProductId() !== null"
+  title="Xác nhận xóa sản phẩm"
+  message="Bạn có chắc chắn muốn xóa sản phẩm này không? Hành động này không thể hoàn tác."
+  (confirm)="confirmDeleteProduct()"
+  (cancel)="closeDeleteModal()"
+></app-delete-modal>
+  `,
+})
+export class AdminProductsList {
+  private readonly productsService = inject(ProductsService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly itemsPerPage = 10;
+
+  readonly products = signal<Product[]>([]);
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly showSuccessToast = signal(false);
+  readonly successToastMessage = signal('Thêm sản phẩm thành công');
+  readonly showErrorToast = signal(false);
+  readonly errorToastMessage = signal('Không thể xóa sản phẩm.');
+  readonly deletingProductId = signal<number | null>(null);
+  readonly showDeleteModal = signal(false);
+  readonly selectedProduct = signal<Product | null>(null);
+  readonly showProductModal = signal(false);
+  readonly editingProduct = signal<Product | null>(null);
+  readonly savingProduct = signal(false);
+  readonly currentPage = signal(1);
+  readonly totalProducts = computed(() => this.products().length);
+  readonly sortedProducts = computed(() => {
+    const items = [...this.products()];
+    return items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  });
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.sortedProducts().length / this.itemsPerPage)));
+  readonly activePage = computed(() => Math.min(Math.max(this.currentPage(), 1), this.totalPages()));
+  readonly paginatedProducts = computed(() => {
+    const startIndex = (this.activePage() - 1) * this.itemsPerPage;
+    return this.sortedProducts().slice(startIndex, startIndex + this.itemsPerPage);
+  });
+
+  constructor() {
+    this.productsService
+      .getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (items) => {
+          this.products.set(items);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Không thể tải danh sách sản phẩm từ backend.');
+          this.loading.set(false);
+        },
+      });
+
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const page = Number(params.get('page') ?? '1');
+      this.currentPage.set(Number.isInteger(page) && page > 0 ? page : 1);
+    });
+  }
+
+  trackByProductId(_: number, product: Product): number {
+    return product.id;
+  }
+
+  openCreateModal(): void {
+    this.editingProduct.set(null);
+    this.showProductModal.set(true);
+  }
+
+  openEditModal(product: Product): void {
+    this.editingProduct.set(product);
+    this.showProductModal.set(true);
+  }
+
+  closeProductModal(): void {
+    this.showProductModal.set(false);
+    this.editingProduct.set(null);
+    this.savingProduct.set(false);
+  }
+
+  saveProduct(event: ProductModalSaveEvent): void {
+    const product = event.product;
+    const payload = event.payload as CreateProductPayload | UpdateProductPayload;
+
+    this.error.set(null);
+    this.showProductModal.set(true);
+    this.savingProduct.set(true);
+
+    const request = product
+      ? this.productsService.update(product.id, payload as UpdateProductPayload)
+      : this.productsService.create(payload as CreateProductPayload);
+
+    request.subscribe({
+      next: (savedProduct) => {
+        if (product) {
+          this.products.update((items) => items.map((item) => (item.id === savedProduct.id ? savedProduct : item)));
+          this.successToastMessage.set('Cập nhật sản phẩm thành công');
+        } else {
+          this.products.update((items) => [savedProduct, ...items]);
+          this.successToastMessage.set('Thêm sản phẩm thành công');
+          this.goToPage(1);
+        }
+
+        this.savingProduct.set(false);
+        this.closeProductModal();
+        this.openSuccessToast();
+      },
+      error: (err: unknown) => {
+        this.errorToastMessage.set(this.parseSaveError(err, !!product));
+        this.savingProduct.set(false);
+        this.openErrorToast();
+      },
+    });
+  }
+
+  deleteProduct(product: Product): void {
+    this.selectedProduct.set(product);
+    this.showDeleteModal.set(true);
+  }
+
+  confirmDeleteProduct(): void {
+    const product = this.selectedProduct();
+    if (!product) return;
+
+    this.showDeleteModal.set(false);
+    this.deletingProductId.set(product.id);
+
+    this.productsService.delete(product.id).subscribe({
+      next: () => {
+        this.products.update((items) => items.filter((item) => item.id !== product.id));
+        this.ensureCurrentPageInRange();
+        this.successToastMessage.set('Xóa sản phẩm thành công');
+        this.openSuccessToast();
+        this.deletingProductId.set(null);
+        this.selectedProduct.set(null);
+      },
+      error: (err: unknown) => {
+        this.errorToastMessage.set(this.parseDeleteError(err));
+        this.openErrorToast();
+        this.deletingProductId.set(null);
+        this.selectedProduct.set(null);
+      },
+    });
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal.set(false);
+    this.selectedProduct.set(null);
+  }
+
+  goToPage(page: number): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  dismissSuccessToast(): void {
+    this.showSuccessToast.set(false);
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+      this.toastTimer = null;
+    }
+  }
+
+  dismissErrorToast(): void {
+    this.showErrorToast.set(false);
+  }
+
+  private openSuccessToast(): void {
+    this.showSuccessToast.set(true);
+
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
+
+    this.toastTimer = setTimeout(() => {
+      this.dismissSuccessToast();
+    }, 3000);
+  }
+
+  private openErrorToast(): void {
+    this.showErrorToast.set(true);
+
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
+
+    this.toastTimer = setTimeout(() => {
+      this.dismissErrorToast();
+    }, 3500);
+  }
+
+  private ensureCurrentPageInRange(): void {
+    if (this.currentPage() > this.totalPages()) {
+      this.goToPage(this.totalPages());
+    }
+  }
+
+  private parseSaveError(err: unknown, isUpdate: boolean): string {
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'status' in err &&
+      (err as { status?: number }).status === 401
+    ) {
+      return 'Bạn chưa đăng nhập hoặc token đã hết hạn.';
+    }
+
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'status' in err &&
+      (err as { status?: number }).status === 403
+    ) {
+      return isUpdate
+        ? 'Tài khoản hiện tại không có quyền cập nhật sản phẩm.'
+        : 'Tài khoản hiện tại không có quyền thêm sản phẩm.';
+    }
+
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'error' in err &&
+      typeof (err as { error?: unknown }).error === 'object' &&
+      (err as { error?: { message?: string } }).error?.message
+    ) {
+      return (err as { error: { message: string } }).error.message;
+    }
+
+    return isUpdate
+      ? 'Không thể cập nhật sản phẩm. Vui lòng thử lại.'
+      : 'Không thể thêm sản phẩm. Vui lòng thử lại.';
+  }
+
+  private parseDeleteError(err: unknown): string {
+    const status =
+      typeof err === 'object' && err !== null && 'status' in err
+        ? (err as { status?: number }).status
+        : undefined;
+
+    const apiMessage =
+      typeof err === 'object' &&
+      err !== null &&
+      'error' in err &&
+      typeof (err as { error?: unknown }).error === 'object' &&
+      (err as { error?: { message?: string } }).error?.message
+        ? (err as { error: { message: string } }).error.message
+        : '';
+
+    if (status === 401) {
+      return 'Bạn chưa đăng nhập hoặc token đã hết hạn.';
+    }
+
+    if (status === 403) {
+      return 'Tài khoản hiện tại không có quyền xóa sản phẩm.';
+    }
+
+    if (status === 409 || apiMessage.toLowerCase().includes('được dùng')) {
+      return 'Không thể xóa sản phẩm này vì đang được sử dụng.';
+    }
+
+    return apiMessage || 'Không thể xóa sản phẩm. Vui lòng thử lại.';
+  }
+}

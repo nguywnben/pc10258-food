@@ -14,6 +14,8 @@ export class Orders implements OnInit {
   orders = signal<Order[]>([]);
   loading = signal(true);
   currentFilter = signal<string>('all');
+  selectedOrder = signal<Order | null>(null);
+  showDetailModal = signal(false);
 
   ngOnInit(): void {
     this.loadOrders();
@@ -38,6 +40,16 @@ export class Orders implements OnInit {
   filterOrders(status: string): void {
     this.currentFilter.set(status);
     this.loadOrders(status);
+  }
+
+  openDetailModal(order: Order): void {
+    this.selectedOrder.set(order);
+    this.showDetailModal.set(true);
+  }
+
+  closeDetailModal(): void {
+    this.showDetailModal.set(false);
+    this.selectedOrder.set(null);
   }
 
   cancelOrder(orderId: number): void {

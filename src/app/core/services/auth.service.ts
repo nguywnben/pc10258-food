@@ -30,9 +30,14 @@ export class AuthService {
   }
 
   login(payload: LoginRequest) {
-    return this.http
-      .post<LoginResponse>(`${this.apiBaseUrl}/login`, payload)
-      .pipe(tap((response) => this.setAuth(response.token, response.user)));
+    const requestBody = {
+      email: payload.email.trim(),
+      password: payload.password,
+    };
+
+    return this.http.post<LoginResponse>(`${this.apiBaseUrl}/login`, requestBody).pipe(
+      tap((response) => this.setAuth(response.token, response.user))
+    );
   }
 
   register(payload: RegisterRequest) {
@@ -60,7 +65,7 @@ export class AuthService {
     this._user.set(null);
 
     if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem(this.storageKey);
+      localStorage.clear();
     }
   }
 
@@ -100,4 +105,5 @@ export class AuthService {
 
     localStorage.setItem(this.storageKey, JSON.stringify(data));
   }
+
 }

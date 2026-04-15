@@ -1,8 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs/operators';
-import { Subscription } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { MenuService } from '../../../core/services/menu.service';
 import { Category, Product, ProductQuery } from '../../../core/models/menu.model';
@@ -17,10 +16,7 @@ import { Category, Product, ProductQuery } from '../../../core/models/menu.model
 export class Home implements AfterViewInit, OnInit, OnDestroy {
   private readonly menuService = inject(MenuService);
   private readonly authService = inject(AuthService);
-  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-
-  private queryParamsSub?: Subscription;
 
   readonly categoriesLoading = signal(true);
   readonly productsLoading = signal(true);
@@ -37,12 +33,11 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadCategories();
-    this.listenFilterParams();
+    this.loadProducts(this.buildProductQuery());
     this.loadFavorites();
   }
 
   ngOnDestroy(): void {
-    this.queryParamsSub?.unsubscribe();
   }
 
   ngAfterViewInit(): void {
@@ -58,46 +53,24 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
   }
 
   onSelectCategory(categoryId: number | null): void {
-    void this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {
-        category_id: categoryId ?? null,
-      },
-      queryParamsHandling: 'merge',
-    });
+    this.selectedCategoryId.set(categoryId);
+    this.loadProducts(this.buildProductQuery());
   }
 
   onSortChange(sort: 'popular' | 'price-asc' | 'price-desc' | 'new'): void {
-    void this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { sort },
-      queryParamsHandling: 'merge',
-    });
+    this.selectedSort.set(sort);
+    this.loadProducts(this.buildProductQuery());
   }
 
   onPriceRangeChange(value: string): void {
-    const query: { min_price: number | null; max_price: number | null } = {
-      min_price: null,
-      max_price: null,
-    };
-
     if (value === '0-50000') {
-      query.max_price = 50000;
     } else if (value === '50000-100000') {
-      query.min_price = 50000;
-      query.max_price = 100000;
     } else if (value === '100000-200000') {
-      query.min_price = 100000;
-      query.max_price = 200000;
     } else if (value === '200000+') {
-      query.min_price = 200000;
     }
 
-    void this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: query,
-      queryParamsHandling: 'merge',
-    });
+    this.selectedPriceRange.set(value);
+    this.loadProducts(this.buildProductQuery());
   }
 
   toggleFavorite(product: Product): void {
@@ -133,35 +106,6 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
     return `${new Intl.NumberFormat('vi-VN').format(price)}₫`;
   }
 
-  private listenFilterParams(): void {
-    this.queryParamsSub = this.route.queryParamMap.subscribe((params) => {
-      const categoryId = params.get('category_id');
-      const sort = (params.get('sort') as 'popular' | 'price-asc' | 'price-desc' | 'new' | null) ?? 'popular';
-      const minPrice = params.get('min_price');
-      const maxPrice = params.get('max_price');
-
-      this.selectedCategoryId.set(categoryId ? Number(categoryId) : null);
-      this.selectedSort.set(sort);
-      this.selectedPriceRange.set(this.resolvePriceRange(minPrice, maxPrice));
-
-      const query: ProductQuery = {
-        sort,
-      };
-
-      if (categoryId) {
-        query.category_id = Number(categoryId);
-      }
-      if (minPrice) {
-        query.min_price = Number(minPrice);
-      }
-      if (maxPrice) {
-        query.max_price = Number(maxPrice);
-      }
-
-      this.loadProducts(query);
-    });
-  }
-
   private loadCategories(): void {
     this.categoriesLoading.set(true);
     this.menuService
@@ -193,6 +137,33 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
           this.products.set([]);
         },
       });
+  }
+
+  private buildProductQuery(): ProductQuery {
+    const query: ProductQuery = {};
+
+    if (this.selectedCategoryId() !== null) {
+      query.category_id = this.selectedCategoryId() as number;
+    }
+
+    if (this.selectedSort() !== 'popular') {
+      query.sort = this.selectedSort();
+    }
+
+    const range = this.selectedPriceRange();
+    if (range === '0-50000') {
+      query.max_price = 50000;
+    } else if (range === '50000-100000') {
+      query.min_price = 50000;
+      query.max_price = 100000;
+    } else if (range === '100000-200000') {
+      query.min_price = 100000;
+      query.max_price = 200000;
+    } else if (range === '200000+') {
+      query.min_price = 200000;
+    }
+
+    return query;
   }
 
   private loadFavorites(): void {

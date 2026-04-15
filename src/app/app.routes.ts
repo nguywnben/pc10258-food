@@ -1,9 +1,13 @@
 import { Routes } from '@angular/router';
 import { ClientLayout } from './layouts/client/client';
+import { adminChildGuard, adminGuard } from './core/guards/admin.guard';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: 'admin',
+    canActivate: [adminGuard],
+    canActivateChild: [adminChildGuard],
     loadComponent: () => import('./layouts/admin/admin').then(m => m.AdminLayout),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
@@ -84,14 +88,17 @@ export const routes: Routes = [
       },
       {
         path: 'wallet',
+        canActivate: [authGuard],
         loadComponent: () => import('./pages/client/wallet/wallet').then(m => m.Wallet),
       },
       {
         path: 'account',
+        canActivate: [authGuard],
         loadComponent: () => import('./pages/client/account/account').then(m => m.Account),
       },
       {
         path: 'payment',
+        canActivate: [authGuard],
         loadComponent: () => import('./pages/client/payment/payment').then(m => m.PaymentComponent),
       },
       {
@@ -108,22 +115,27 @@ export const routes: Routes = [
       },
       {
         path: 'orders',
+        canActivate: [authGuard],
         loadComponent: () => import('./pages/client/orders/orders').then(m => m.Orders),
       },
       {
         path: 'messages',
+        canActivate: [authGuard],
         loadComponent: () => import('./pages/client/messages/messages').then(m => m.Messages),
       },
       {
         path: 'favorites',
+        canActivate: [authGuard],
         loadComponent: () => import('./pages/client/favorites/favorites').then(m => m.Favorites),
       },
       {
         path: 'upgrade',
+        canActivate: [authGuard],
         loadComponent: () => import('./pages/client/upgrade/upgrade').then(m => m.Upgrade),
       },
       {
         path: 'upgrade-success',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./pages/client/upgrade-success/upgrade-success').then(m => m.UpgradeSuccess),
       },

@@ -13,30 +13,6 @@
 
   <nav class="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto" aria-label="Điều hướng chính">
     <a
-      routerLink="/"
-      [ngClass]="
-        exact('/')
-          ? 'bg-brand font-semibold text-white hover:bg-brand-hover'
-          : 'font-medium text-ink hover:bg-gray-50'
-      "
-      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition"
-    >
-      <svg
-        class="h-5 w-5 shrink-0"
-        [ngClass]="exact('/') ? 'opacity-90' : 'text-ink-lighter'"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"
-        />
-      </svg>
-      Tổng quan
-    </a>
-
-    <a
       routerLink="/login"
       [attr.aria-current]="exact('/login') ? 'page' : null"
       [ngClass]="

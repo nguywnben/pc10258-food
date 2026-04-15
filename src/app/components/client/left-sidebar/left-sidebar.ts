@@ -1,6 +1,7 @@
 import { NgClass } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-left-sidebar',
@@ -13,6 +14,7 @@ import { Router, RouterLink } from '@angular/router';
 })
 export class LeftSidebar {
   private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
   /** `<details>` "Khác" đang mở (dùng cho nền cam nhạt khi xổ, chưa chọn trang con). */
   otherExpanded = false;
@@ -59,6 +61,7 @@ export class LeftSidebar {
   }
 
   logout(): void {
-    void this.router.navigate(['/login']);
+    this.authService.logout();
+    void this.router.navigate(['/']);
   }
 }

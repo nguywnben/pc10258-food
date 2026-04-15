@@ -2,6 +2,25 @@
   id="right-sidebar"
   class="custom-scroll flex h-full min-h-0 flex-col overflow-y-auto border-l border-gray-100 bg-white px-4 py-4"
 >
+  @if (!auth.isAuthenticated()) {
+    <div class="flex min-h-0 flex-1 flex-col">
+      <div class="rounded-2xl border border-brand/25 bg-gradient-to-b from-brand/10 to-white px-4 py-4">
+        <p class="text-[11px] font-bold uppercase tracking-wide text-brand">Chưa đăng nhập</p>
+        <p class="mt-2 text-sm leading-relaxed text-ink-light">
+          Khi đã đăng nhập, bạn sẽ xem được giỏ hàng, số dư ví và địa chỉ giao hàng ngay tại đây để tiếp tục đặt món và thanh toán.
+        </p>
+      </div>
+      @if (isFavoritesRoute()) {
+        <p class="mt-4 text-sm leading-relaxed text-ink-light">
+          Trên trang <span class="font-medium text-ink">Yêu thích</span>, danh sách món sẽ lưu theo tài khoản sau khi bạn đăng nhập.
+        </p>
+      } @else {
+        <p class="mt-4 text-sm leading-relaxed text-ink-light">
+          <a routerLink="/" class="font-semibold text-brand hover:underline">Tổng quan</a> là trang chủ: bạn xem toàn bộ menu theo danh mục, lọc và tìm món theo sở thích, xem giá và mô tả chi tiết — phù hợp để khám phá món trước khi quyết định đặt.
+        </p>
+      }
+    </div>
+  } @else {
   @if ((wallet$ | async); as wallet) {
     <div class="mb-4 rounded-2xl bg-brand/10 px-4 py-4">
       <div class="block rounded-xl">
@@ -134,5 +153,6 @@
     >
       Tiến hành đặt hàng
     </button>
+  }
   }
 </aside>

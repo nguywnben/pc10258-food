@@ -69,7 +69,7 @@ export class Login implements AfterViewInit {
             null;
 
           if (!apiMessage && errorResponse.status === 400) {
-            this.submitError.set('Đăng nhập thất bại (400). Có thể email/số điện thoại hoặc mật khẩu chưa đúng.');
+            this.submitError.set('Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.');
             return;
           }
 

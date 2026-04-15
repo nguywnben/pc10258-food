@@ -419,3 +419,8 @@ button.conv-row-active:focus-visible {
   color: #fff;
   border-color: #f4623a;
 }
+
+/* Tránh lệch chiều ngang form đăng nhập/đăng ký: chỉ một trang cần cuộn thì thanh cuộn chiếm chỗ */
+#main-content.custom-scroll {
+  scrollbar-gutter: stable;
+}

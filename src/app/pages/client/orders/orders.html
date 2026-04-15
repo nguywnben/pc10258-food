@@ -48,7 +48,7 @@
       <div class="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
         <p class="text-sm">Tổng <span class="text-lg font-extrabold text-brand">{{ order.total | number:'1.0-0' }}₫</span></p>
         <div class="flex flex-wrap gap-2">
-          <button type="button" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-ink transition hover:border-brand hover:text-brand">Chi tiết</button>
+          <button type="button" (click)="openDetailModal(order)" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-ink transition hover:border-brand hover:text-brand">Chi tiết</button>
           <button *ngIf="order.status === 'pending'"
                   (click)="cancelOrder(order.id)"
                   type="button" 
@@ -62,4 +62,99 @@
     </div>
   </li>
 </ul>
+
+<!-- Chi tiết đơn hàng Modal -->
+<div *ngIf="showDetailModal() && selectedOrder()" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+  <div class="w-full max-w-2xl rounded-2xl bg-white shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+    <!-- Header -->
+    <div class="sticky top-0 flex items-center justify-between gap-4 border-b border-gray-100 bg-white px-6 py-4">
+      <div>
+        <h3 class="text-lg font-bold text-ink">Chi tiết đơn hàng</h3>
+        <p class="mt-1 text-sm text-ink-light">Mã: {{ selectedOrder()?.order_code }}</p>
+      </div>
+      <button (click)="closeDetailModal()" type="button" class="rounded-lg p-2 text-ink-lighter transition hover:bg-gray-100 hover:text-ink">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="px-6 py-4 space-y-5">
+      <!-- Thông tin đơn hàng -->
+      <div>
+        <p class="mb-3 text-sm font-semibold text-ink">Thông tin đơn hàng</p>
+        <div class="space-y-2 text-sm text-ink-light">
+          <div class="flex justify-between">
+            <span>Ngày đặt:</span>
+            <span class="text-ink font-medium">{{ selectedOrder()?.created_at | date:'dd/MM/yyyy · HH:mm' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Phương thức thanh toán:</span>
+            <span class="text-ink font-medium">{{ selectedOrder()?.payment_method }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Trạng thái:</span>
+            <span class="text-ink font-medium" [ngClass]="'text-' + getStatusClass(selectedOrder()?.status || '')">
+              {{ getStatusLabel(selectedOrder()?.status || '') }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Địa chỉ giao hàng -->
+      <div>
+        <p class="mb-3 text-sm font-semibold text-ink">Địa chỉ giao hàng</p>
+        <div class="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm text-ink">
+          <div *ngIf="selectedOrder()?.address?.label" class="flex justify-between">
+            <span class="text-ink-light">Loại địa chỉ:</span>
+            <span class="font-semibold">{{ selectedOrder()?.address?.label }}</span>
+          </div>
+          <div *ngIf="selectedOrder()?.address?.full_address" class="pt-2 border-t border-gray-200">
+            <p class="text-ink-light text-xs mb-1">Địa chỉ chi tiết:</p>
+            <p class="text-ink font-medium leading-relaxed">{{ selectedOrder()?.address?.full_address }}</p>
+          </div>
+          <div *ngIf="selectedOrder()?.note" class="pt-2 border-t border-gray-200">
+            <p class="text-ink-light text-xs mb-1">Ghi chú:</p>
+            <p class="text-ink italic">{{ selectedOrder()?.note }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danh sách sản phẩm -->
+      <div>
+        <p class="mb-3 text-sm font-semibold text-ink">Sản phẩm đã đặt</p>
+        <ul class="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-3">
+          <li *ngFor="let item of selectedOrder()?.items" class="flex justify-between text-sm text-ink">
+            <span class="truncate">{{ item.product_name }} × {{ item.quantity }}</span>
+            <span class="shrink-0 font-medium">{{ item.subtotal | number:'1.0-0' }}₫</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Tính toán giá -->
+      <div class="space-y-2 border-t border-gray-100 pt-4 text-sm">
+        <div class="flex justify-between text-ink-light">
+          <span>Tạm tính:</span>
+          <span class="text-ink">{{ (selectedOrder()?.total || 0) - (selectedOrder()?.delivery_fee || 0) | number:'1.0-0' }}₫</span>
+        </div>
+        <div *ngIf="(selectedOrder()?.delivery_fee || 0) > 0" class="flex justify-between text-ink-light">
+          <span>Phí giao hàng:</span>
+          <span class="text-ink">{{ selectedOrder()?.delivery_fee | number:'1.0-0' }}₫</span>
+        </div>
+        <div class="flex justify-between border-t border-gray-100 pt-2 font-semibold text-ink">
+          <span>Tổng cộng:</span>
+          <span class="text-lg text-brand">{{ selectedOrder()?.total | number:'1.0-0' }}₫</span>
+        </div>
+      </div>
+
+      <!-- Nút đóng -->
+      <div class="flex justify-end gap-2 border-t border-gray-100 pt-4">
+        <button (click)="closeDetailModal()" type="button" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-ink transition hover:border-gray-300 hover:bg-gray-50">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 

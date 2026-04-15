@@ -1,13 +1,70 @@
-import { AfterViewInit, Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { AfterViewInit, Component, OnInit, signal, inject } from '@angular/core';
+import { RouterLink, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { MembershipService, MembershipPlan } from '../../../services/membership.service';
 
 @Component({
   selector: 'app-upgrade',
   standalone: true,
-  imports: [RouterLink],
+  imports: [CommonModule],
   templateUrl: './upgrade.html',
 })
-export class Upgrade implements AfterViewInit {
+export class Upgrade implements OnInit, AfterViewInit {
+  private readonly membershipSvc = inject(MembershipService);
+  private readonly router = inject(Router);
+  
+  plans = signal<MembershipPlan[]>([]);
+  isLoading = signal(false);
+  error = signal<string | null>(null);
+
+  ngOnInit(): void {
+    this.loadMembershipPlans();
+  }
+
+  loadMembershipPlans(): void {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    this.membershipSvc.getMembershipPlans().subscribe({
+      next: (response: any) => {
+        const data = Array.isArray(response) ? response : response.data;
+        this.plans.set(data || []);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load membership plans:', err);
+        this.error.set('Không thể tải danh sách gói membership');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  upgrade(plan: MembershipPlan): void {
+    console.log('🚀 Upgrade button clicked for plan:', plan);
+    
+    // Store plan in sessionStorage to ensure it's available on payment page
+    sessionStorage.setItem('upgrade_plan', JSON.stringify(plan));
+    sessionStorage.setItem('upgrade_amount', plan.price.toString());
+    console.log('💾 Stored in sessionStorage:', { plan, amount: plan.price });
+    
+    this.router.navigate(['/payment'], {
+      state: {
+        type: 'membership-upgrade',
+        plan: plan,
+        amount: plan.price
+      }
+    });
+  }
+
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(price);
+  }
+
   ngAfterViewInit(): void {
     if (typeof document === 'undefined') return;
     if (document.querySelector('script#food-main-js')) return;

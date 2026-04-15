@@ -1,5 +1,6 @@
 <div class="mx-auto w-full max-w-2xl space-y-6">
-  <nav id="pay-breadcrumb" class="text-sm text-ink-light" aria-label="Breadcrumb">
+  <!-- Breadcrumb for Wallet -->
+  <nav *ngIf="paymentType() === 'wallet'" id="pay-breadcrumb" class="text-sm text-ink-light" aria-label="Breadcrumb">
     <a href="/wallet#so-du-lich-su" class="font-medium text-brand transition hover:text-brand-hover">Ví &amp; số dư</a>
     <span class="mx-2 text-ink-lighter">/</span>
     <a href="/wallet#nap-tien" class="font-medium text-brand transition hover:text-brand-hover">Nạp tiền</a>
@@ -7,11 +8,24 @@
     <span class="text-ink">Thanh toán</span>
   </nav>
 
+  <!-- Breadcrumb for Membership Upgrade -->
+  <nav *ngIf="paymentType() === 'membership-upgrade'" id="pay-breadcrumb" class="text-sm text-ink-light" aria-label="Breadcrumb">
+    <a href="/upgrade" class="font-medium text-brand transition hover:text-brand-hover">Nâng cấp Membership</a>
+    <span class="mx-2 text-ink-lighter">/</span>
+    <span class="text-ink">Thanh toán</span>
+  </nav>
+
   <section class="rounded-3xl border border-gray-100 bg-white p-6 sm:p-7">
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <h1 id="pay-title" class="text-xl font-bold text-ink sm:text-2xl">Xác nhận thanh toán</h1>
-        <p id="pay-subtitle" class="mt-1 text-sm text-ink-light">Kiểm tra thông tin trước khi hoàn tất (demo).</p>
+        <h1 id="pay-title" class="text-xl font-bold text-ink sm:text-2xl">
+          <span *ngIf="paymentType() === 'wallet'">Xác nhận thanh toán</span>
+          <span *ngIf="paymentType() === 'membership-upgrade'">Xác nhận nâng cấp Membership</span>
+        </h1>
+        <p id="pay-subtitle" class="mt-1 text-sm text-ink-light">
+          <span *ngIf="paymentType() === 'wallet'">Kiểm tra thông tin trước khi hoàn tất (demo).</span>
+          <span *ngIf="paymentType() === 'membership-upgrade'">Kiểm tra gói cần nâng cấp trước khi thanh toán.</span>
+        </p>
       </div>
       <div class="rounded-xl bg-gray-50 px-3 py-2 text-right ring-1 ring-gray-100">
         <p class="text-[10px] font-medium uppercase tracking-wide text-ink-lighter">Mã giao dịch</p>
@@ -19,7 +33,8 @@
       </div>
     </div>
 
-    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+    <!-- Wallet Payment Info -->
+    <div *ngIf="paymentType() === 'wallet'" class="mt-6 grid gap-4 sm:grid-cols-2">
       <div class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4">
         <p class="text-xs font-medium text-ink-light">Loại</p>
         <p id="pay-kind" class="mt-1 text-sm font-semibold text-ink">Nạp tiền vào ví</p>
@@ -30,27 +45,209 @@
       </div>
     </div>
 
-    <div class="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-brand/5 px-5 py-4 ring-1 ring-brand/20">
-      <span class="text-sm font-medium text-ink">Số tiền thanh toán</span>
-      <span id="pay-amount" class="text-xl font-extrabold text-brand tabular-nums">100.000₫</span>
-    </div>
-
-    <div id="pay-qr-block" class="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 p-6 text-center">
-      <div class="mx-auto flex h-36 w-36 items-center justify-center rounded-xl bg-white text-ink-lighter ring-1 ring-gray-100">
-        <svg class="h-16 w-16 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.5v4.5m0 4.5v4.5m0-9h4.5m-4.5 4.5h4.5m4.5-9h4.5m-4.5 4.5h4.5m-4.5-4.5v4.5m0 4.5h4.5m-4.5 4.5v-4.5m4.5 4.5h4.5m-4.5-4.5h4.5"/></svg>
+    <!-- Membership Plan Info -->
+    <div *ngIf="paymentType() === 'membership-upgrade' && membershipPlan()" class="mt-6 grid gap-4 sm:grid-cols-2">
+      <div class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4">
+        <p class="text-xs font-medium text-ink-light">Tên gói</p>
+        <p class="mt-1 text-sm font-semibold text-ink">{{ membershipPlan()?.name }}</p>
       </div>
-      <p class="mt-3 text-xs text-ink-light">Mã QR minh họa — ứng dụng thật sẽ hiển thị mã quét từ cổng thanh toán.</p>
-      <p id="pay-transfer-note" class="mt-2 font-mono text-[11px] text-ink-light">Nội dung CK: <span class="font-semibold text-ink">PC10258 NAP <span id="pay-note-suffix">100K</span></span></p>
+      <div class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4">
+        <p class="text-xs font-medium text-ink-light">Giá tiền</p>
+        <p class="mt-1 text-sm font-semibold text-ink">{{ formatPrice(membershipPlan()?.price || 0) }}/tháng</p>
+      </div>
     </div>
 
+    <!-- Amount Display -->
+    <div class="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-brand/5 px-5 py-4 ring-1 ring-brand/20">
+      <span class="text-sm font-medium text-ink">
+        <span *ngIf="paymentType() === 'wallet'">Số tiền thanh toán</span>
+        <span *ngIf="paymentType() === 'membership-upgrade'">Giá tiền gói</span>
+      </span>
+      <span id="pay-amount" class="text-xl font-extrabold text-brand tabular-nums">
+        <span *ngIf="paymentType() === 'wallet'">{{ formatPrice(paymentAmount() || 0) }}</span>
+        <span *ngIf="paymentType() === 'membership-upgrade'">{{ formatPrice(membershipPlan()?.price || 0) }}</span>
+      </span>
+    </div>
+
+    <!-- Payment Method Selection for Wallet & Membership Upgrade -->
+    <div *ngIf="paymentType() === 'wallet' || paymentType() === 'membership-upgrade'" class="mt-6 space-y-4">
+      <!-- Wallet Load Error Alert -->
+      <div *ngIf="walletLoadError()" class="rounded-xl border border-red-200 bg-red-50 p-4">
+        <p class="text-sm font-semibold text-red-800">⚠️ Lỗi tải số dư ví</p>
+        <p class="mt-1 text-sm text-red-700">{{ walletLoadError() }}</p>
+      </div>
+
+      <!-- PayOS Option -->
+      <label class="flex cursor-pointer items-start gap-3 rounded-xl border-2 transition p-4"
+        [class.border-brand]="selectedPaymentMethod() === 'payos'"
+        [class.bg-brand/5]="selectedPaymentMethod() === 'payos'"
+        [class.border-gray-100]="selectedPaymentMethod() !== 'payos'"
+        [class.bg-white]="selectedPaymentMethod() !== 'payos'"
+      >
+        <input 
+          type="radio" 
+          name="payment-method"
+          value="payos"
+          (change)="selectedPaymentMethod.set('payos')"
+          [checked]="selectedPaymentMethod() === 'payos'"
+          class="mt-1 h-4 w-4 shrink-0 border-gray-300 text-brand focus:ring-brand" 
+        />
+        <div class="flex-1">
+          <span class="block text-sm font-semibold text-ink">Chuyển khoản ngân hàng (PayOS)</span>
+          <span class="text-xs text-ink-light">Quét mã QR hoặc nhập chi tiết chuyển khoản</span>
+        </div>
+      </label>
+
+      <!-- Wallet Balance Option -->
+      <label class="flex cursor-pointer items-start gap-3 rounded-xl border-2 transition p-4"
+        [class.border-brand]="selectedPaymentMethod() === 'wallet'"
+        [class.bg-brand/5]="selectedPaymentMethod() === 'wallet'"
+        [class.border-gray-100]="selectedPaymentMethod() !== 'wallet'"
+        [class.bg-white]="selectedPaymentMethod() !== 'wallet'"
+      >
+        <input 
+          type="radio" 
+          name="payment-method"
+          value="wallet"
+          (change)="selectedPaymentMethod.set('wallet')"
+          [checked]="selectedPaymentMethod() === 'wallet'"
+          class="mt-1 h-4 w-4 shrink-0 border-gray-300 text-brand focus:ring-brand" 
+        />
+        <div class="flex-1">
+          <span class="block text-sm font-semibold text-ink">Ví của tôi</span>
+          <div class="mt-1 flex items-center justify-between">
+            <span class="text-xs text-ink-light">
+              <span *ngIf="isLoadingWallet()">Đang tải số dư...</span>
+              <span *ngIf="!isLoadingWallet()">Số dư: {{ formatPrice(walletBalance()) }}</span>
+            </span>
+            <span 
+              *ngIf="!isLoadingWallet() && walletBalance() >= paymentAmount()"
+              class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-700"
+            >
+              ✓ Đủ
+            </span>
+            <span 
+              *ngIf="!isLoadingWallet() && walletBalance() < paymentAmount()"
+              class="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-700"
+            >
+              ✗ Không đủ
+            </span>
+          </div>
+        </div>
+      </label>
+    </div>
+
+    <!-- PayOS Info Block for Wallet & Membership -->
+    <div *ngIf="(paymentType() === 'wallet' || paymentType() === 'membership-upgrade') && selectedPaymentMethod() === 'payos'" id="pay-info-block" class="mt-6 rounded-2xl border border-gray-100 bg-gray-50/50 p-6">
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-ink-light">Phương thức thanh toán</p>
+          <p class="text-sm font-semibold text-ink">PayOS</p>
+        </div>
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-ink-light">
+            <span *ngIf="paymentType() === 'wallet'">Loại giao dịch</span>
+            <span *ngIf="paymentType() === 'membership-upgrade'">Gói nâng cấp</span>
+          </p>
+          <p class="text-sm font-semibold text-ink">
+            <span *ngIf="paymentType() === 'wallet'">Nạp tiền vào ví</span>
+            <span *ngIf="paymentType() === 'membership-upgrade'">{{ membershipPlan()?.name }}</span>
+          </p>
+        </div>
+        <div class="flex items-center justify-between border-t border-gray-200 pt-3">
+          <p class="text-sm text-ink-light">Tổng thanh toán</p>
+          <p class="text-sm font-bold text-brand">
+            <span *ngIf="paymentType() === 'wallet'">{{ formatPrice(paymentAmount() || 0) }}</span>
+            <span *ngIf="paymentType() === 'membership-upgrade'">{{ formatPrice(membershipPlan()?.price || 0) }}</span>
+          </p>
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-ink-light">Hệ thống sẽ chuyển hướng bạn đến cổng PayOS để xác nhận thanh toán.</p>
+    </div>
+
+    <!-- Wallet Payment Info for Wallet & Membership -->
+    <div *ngIf="(paymentType() === 'wallet' || paymentType() === 'membership-upgrade') && selectedPaymentMethod() === 'wallet'" id="pay-wallet-info" class="mt-6 rounded-2xl border border-gray-100 bg-gray-50/50 p-6">
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-ink-light">Phương thức thanh toán</p>
+          <p class="text-sm font-semibold text-ink">Ví của tôi</p>
+        </div>
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-ink-light">Số dư hiện tại</p>
+          <p class="text-sm font-bold text-brand">{{ formatPrice(walletBalance()) }}</p>
+        </div>
+        <div class="flex items-center justify-between border-t border-gray-200 pt-3">
+          <p class="text-sm text-ink-light">Tổng thanh toán</p>
+          <p class="text-sm font-bold text-brand">
+            <span *ngIf="paymentType() === 'wallet'">{{ formatPrice(paymentAmount() || 0) }}</span>
+            <span *ngIf="paymentType() === 'membership-upgrade'">{{ formatPrice(membershipPlan()?.price || 0) }}</span>
+          </p>
+        </div>
+        <div class="flex items-center justify-between border-t border-gray-200 pt-3">
+          <p class="text-sm text-ink-light">Số dư sau thanh toán</p>
+          <p class="text-sm font-bold" [ngClass]="walletBalance() - paymentAmount() >= 0 ? 'text-green-600' : 'text-red-600'">
+            {{ formatPrice(walletBalance() - paymentAmount()) }}
+          </p>
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-ink-light">
+        <span *ngIf="paymentType() === 'wallet'">Tiền sẽ được trừ trực tiếp từ ví của bạn ngay khi xác nhận.</span>
+        <span *ngIf="paymentType() === 'membership-upgrade'">Tiền nâng cấp sẽ được trừ từ ví. Tài khoản sẽ được nâng cấp ngay.</span>
+      </p>
+    </div>
+
+    <!-- Benefits for Membership Upgrade (only when using PayOS) -->
+    <div *ngIf="paymentType() === 'membership-upgrade' && membershipPlan()?.features && selectedPaymentMethod() === 'payos'" id="pay-qr-block" class="mt-6 rounded-2xl border border-gray-100 bg-gray-50/50 p-6">
+      <p class="text-sm font-semibold text-ink mb-3">Các lợi ích bạn sẽ nhận được:</p>
+      <ul class="space-y-2 text-sm text-ink-light">
+        <li *ngFor="let feature of membershipPlan()?.features" class="flex items-start gap-2">
+          <svg class="h-5 w-5 shrink-0 text-brand mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+          <span>{{ feature }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Confirm Checkbox -->
     <label class="mt-6 flex cursor-pointer items-start gap-3 rounded-xl border border-gray-100 bg-white p-4 transition hover:border-gray-200">
-      <input id="pay-agree" type="checkbox" class="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-brand focus:ring-brand" />
-      <span class="text-sm text-ink-light">Tôi xác nhận đã kiểm tra số tiền và phương thức. Đây là luồng demo, không trừ tiền thật.</span>
+      <input 
+        (change)="agreeConfirm.set(!agreeConfirm())"
+        [checked]="agreeConfirm()"
+        type="checkbox" 
+        class="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-brand focus:ring-brand" 
+      />
+      <span class="text-sm text-ink-light">
+        <span *ngIf="paymentType() === 'wallet'">Tôi xác nhận đã kiểm tra số tiền và phương thức. Đây là luồng demo, không trừ tiền thật.</span>
+        <span *ngIf="paymentType() === 'membership-upgrade'">Tôi xác nhận đã kiểm tra gói nâng cấp. Sau khi thanh toán, tài khoản sẽ được nâng cấp ngay.</span>
+      </span>
     </label>
 
+    <!-- Action Buttons -->
     <div class="mt-6 flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
-      <a id="pay-back-link" href="/wallet#nap-tien" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:border-gray-300 hover:bg-gray-50">Chỉnh sửa</a>
-      <button id="pay-confirm" type="button" class="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50">Hoàn tất thanh toán</button>
+      <a 
+        *ngIf="paymentType() === 'wallet'"
+        id="pay-back-link" 
+        href="/wallet#nap-tien" 
+        class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:border-gray-300 hover:bg-gray-50"
+      >
+        Chỉnh sửa
+      </a>
+      <a 
+        *ngIf="paymentType() === 'membership-upgrade'"
+        routerLink="/upgrade"
+        class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:border-gray-300 hover:bg-gray-50"
+      >
+        Quay lại
+      </a>
+      <button 
+        id="pay-confirm" 
+        type="button" 
+        (click)="confirmPayment()"
+        [disabled]="isProcessing()"
+        class="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <span *ngIf="!isProcessing()">Hoàn tất thanh toán</span>
+        <span *ngIf="isProcessing()">Đang xử lý...</span>
+      </button>
     </div>
   </section>
 </div>

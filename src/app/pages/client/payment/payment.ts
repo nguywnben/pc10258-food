@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, signal, inject, computed } from '@angular/core';
+import { AfterViewInit, Component, OnInit, signal, inject, computed, ViewChild } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,14 +6,17 @@ import { MembershipService, MembershipPlan } from '../../../services/membership.
 import { PaymentService } from '../../../services/payment.service';
 import { WalletService } from '../../../services/wallet.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastComponent } from '../../../components/toast/toast.component';
 
 @Component({
   selector: 'app-payment',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, ToastComponent],
   templateUrl: './payment.html',
 })
-export class Payment implements OnInit, AfterViewInit {
+export class PaymentComponent implements OnInit, AfterViewInit {
+  @ViewChild(ToastComponent) toast!: ToastComponent;
+
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly membershipSvc = inject(MembershipService);
@@ -41,12 +44,11 @@ export class Payment implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     const navigation = this.router.getCurrentNavigation();
-    console.log('📋 Payment ngOnInit - Navigation state:', navigation?.extras.state);
     
     // Check authentication first
     if (!this.authSvc.isAuthenticated()) {
       console.error('❌ User not authenticated');
-      alert('Vui lòng đăng nhập để tiếp tục');
+      this.toast.displayToast('Vui lòng đăng nhập để tiếp tục', 'error');
       this.router.navigate(['/login']);
       return;
     }
@@ -56,13 +58,10 @@ export class Payment implements OnInit, AfterViewInit {
     const storedAmount = sessionStorage.getItem('upgrade_amount');
     
     if (storedPlan) {
-      console.log('✅ Found upgrade_plan in sessionStorage');
       const plan = JSON.parse(storedPlan);
       this.membershipPlan.set(plan);
       this.paymentType.set('membership-upgrade');
       this.paymentAmount.set(parseInt(storedAmount || '0', 10));
-      
-      console.log('🎯 From sessionStorage - Plan:', plan, 'Amount:', storedAmount);
       
       // Clean up sessionStorage
       sessionStorage.removeItem('upgrade_plan');
@@ -70,38 +69,29 @@ export class Payment implements OnInit, AfterViewInit {
       // Continue to load wallet balance below
     } else if (navigation?.extras.state) {
       const state = navigation?.extras.state;
-      console.log('🔍 State received from router:', state);
       this.paymentType.set(state['type'] || 'wallet');
-      console.log('💳 Payment type:', this.paymentType());
       
       if (state['plan']) {
         this.membershipPlan.set(state['plan']);
-        console.log('📦 Membership plan:', state['plan']);
         // Auto-set amount from plan price if not already set
         if (!state['amount']) {
           this.paymentAmount.set(state['plan'].price);
-          console.log('💰 Auto-set amount from plan.price:', state['plan'].price);
         }
       }
 
       // Wallet payment data
       if (state['amount']) {
         this.paymentAmount.set(state['amount']);
-        console.log('💰 Amount from state:', state['amount']);
       }
       
       if (state['payment_id']) {
         this.paymentId.set(state['payment_id']);
-        console.log('🔑 Payment ID:', state['payment_id']);
       }
 
       if (state['checkout_url']) {
         this.checkoutUrl.set(state['checkout_url']);
-        console.log('🔗 Checkout URL:', state['checkout_url']);
       }
     }
-
-    console.log('📊 After init - Amount:', this.paymentAmount(), 'Type:', this.paymentType(), 'Plan:', this.membershipPlan()?.name);
 
     // Load wallet balance
     this.loadWalletBalance();
@@ -110,20 +100,13 @@ export class Payment implements OnInit, AfterViewInit {
     this.route.queryParams.subscribe(params => {
       if (params['amount'] && !this.paymentAmount()) {
         this.paymentAmount.set(parseInt(params['amount'], 10));
-        console.log('💰 Amount from query params:', params['amount']);
       }
     });
   }
 
   confirmPayment(): void {
-    console.log('🔴 confirmPayment called');
-    console.log('✅ Agree confirm:', this.agreeConfirm());
-    console.log('💳 Payment type:', this.paymentType());
-    console.log('💰 Payment amount:', this.paymentAmount());
-    console.log('📦 Membership plan:', this.membershipPlan());
-
     if (!this.agreeConfirm()) {
-      alert('Vui lòng xác nhận thông tin thanh toán');
+      this.toast.displayToast('Vui lòng xác nhận thông tin thanh toán', 'error');
       return;
     }
 
@@ -135,9 +118,6 @@ export class Payment implements OnInit, AfterViewInit {
         this.processWalletPayment();
       }
     } else if (this.paymentType() === 'membership-upgrade') {
-      console.log('🔄 Processing membership upgrade payment');
-      console.log('💳 Selected payment method:', this.selectedPaymentMethod());
-      
       // Check payment method for membership upgrade
       if (this.selectedPaymentMethod() === 'wallet') {
         this.processMembershipUpgradeWithWallet();
@@ -153,10 +133,8 @@ export class Payment implements OnInit, AfterViewInit {
   private loadWalletBalance(): void {
     this.isLoadingWallet.set(true);
     this.walletLoadError.set('');
-    console.log('💰 Loading wallet balance...');
     this.walletSvc.getWallet().subscribe({
       next: (response) => {
-        console.log('✅ Wallet balance loaded:', response.data.balance);
         this.walletBalance.set(response.data.balance);
         this.isLoadingWallet.set(false);
       },
@@ -167,7 +145,6 @@ export class Payment implements OnInit, AfterViewInit {
         
         // Handle 401 Unauthorized
         if (err.status === 401) {
-          console.warn('Token expired or invalid. Redirecting to login.');
           this.walletLoadError.set('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
           this.authSvc.logout();
           this.router.navigate(['/login']);
@@ -176,7 +153,6 @@ export class Payment implements OnInit, AfterViewInit {
         
         // For other errors, keep balance at 0 but log warning
         const errorMsg = err.error?.message || 'Không thể tải số dư ví. Vui lòng thử lại.';
-        console.warn('⚠️ Wallet balance could not be fetched. Error:', errorMsg);
         this.walletLoadError.set(errorMsg);
         this.walletBalance.set(0);
         this.isLoadingWallet.set(false);
@@ -192,7 +168,7 @@ export class Payment implements OnInit, AfterViewInit {
     const paymentId = this.paymentId();
 
     if (!amount || !paymentId) {
-      alert('Thông tin thanh toán không hợp lệ');
+      this.toast.displayToast('Thông tin thanh toán không hợp lệ', 'error');
       return;
     }
 
@@ -222,7 +198,7 @@ export class Payment implements OnInit, AfterViewInit {
           window.location.href = response.data.checkout_url;
         } else {
           this.isProcessing.set(false);
-          alert('Lỗi: Không nhận được đường link thanh toán');
+          this.toast.displayToast('Lỗi: Không nhận được đường link thanh toán', 'error');
         }
       },
       error: (err: any) => {
@@ -231,13 +207,12 @@ export class Payment implements OnInit, AfterViewInit {
         
         // Handle 401 Unauthorized
         if (err.status === 401) {
-          console.warn('Token expired or invalid. Redirecting to login.');
           this.authSvc.logout();
           this.router.navigate(['/login']);
           return;
         }
         
-        alert('Lỗi tạo payment: ' + (err.error?.message || 'Vui lòng thử lại'));
+        this.toast.displayToast('Lỗi tạo payment: ' + (err.error?.message || 'Vui lòng thử lại'), 'error');
       }
     });
   }
@@ -246,21 +221,15 @@ export class Payment implements OnInit, AfterViewInit {
    * Process membership upgrade payment with PayOS
    */
   private processMembershipPayment(): void {
-    console.log('🎯 processMembershipPayment started');
-    console.log('📦 Membership plan:', this.membershipPlan());
-    console.log('💰 Payment amount:', this.paymentAmount());
-
     if (!this.membershipPlan()) {
       console.error('❌ No membership plan!');
-      alert('Thông tin gói nâng cấp không hợp lệ');
+      this.toast.displayToast('Thông tin gói nâng cấp không hợp lệ', 'error');
       return;
     }
 
     this.isProcessing.set(true);
     const planId = this.membershipPlan()!.id;
     const amount = this.membershipPlan()!.price;
-
-    console.log('✅ Plan ID:', planId, 'Amount:', amount);
 
     const returnUrl = `${window.location.origin}/upgrade-success`;
     const cancelUrl = `${window.location.origin}/upgrade`;
@@ -272,17 +241,16 @@ export class Payment implements OnInit, AfterViewInit {
       cancel_url: cancelUrl
     }).subscribe({
       next: (response) => {
-        console.log('✅ PayOS response:', response);
         if (response.data.checkout_url) {
           // Store membership plan ID for later confirmation
           sessionStorage.setItem('upgrade_plan_id', planId.toString());
           sessionStorage.setItem('upgrade_payment_id', response.data.id.toString());
-          console.log('🔗 Redirecting to PayOS:', response.data.checkout_url);
+          sessionStorage.setItem('upgrade_payment_type', 'payos');
           // Redirect to PayOS checkout
           window.location.href = response.data.checkout_url;
         } else {
           this.isProcessing.set(false);
-          alert('Lỗi: Không nhận được đường link thanh toán');
+          this.toast.displayToast('Lỗi: Không nhận được đường link thanh toán', 'error');
         }
       },
       error: (err: any) => {
@@ -291,13 +259,12 @@ export class Payment implements OnInit, AfterViewInit {
         
         // Handle 401 Unauthorized
         if (err.status === 401) {
-          console.warn('Token expired or invalid. Redirecting to login.');
           this.authSvc.logout();
           this.router.navigate(['/login']);
           return;
         }
         
-        alert('Lỗi tạo payment: ' + (err.error?.message || 'Vui lòng thử lại'));
+        this.toast.displayToast('Lỗi tạo payment: ' + (err.error?.message || 'Vui lòng thử lại'), 'error');
       }
     });
   }
@@ -306,21 +273,17 @@ export class Payment implements OnInit, AfterViewInit {
    * Process membership upgrade payment using wallet balance
    */
   private processMembershipUpgradeWithWallet(): void {
-    console.log('🎯 processMembershipUpgradeWithWallet started');
     const amount = this.paymentAmount();
     const planId = this.membershipPlan()?.id;
 
-    console.log('💰 Amount:', amount, 'Wallet balance:', this.walletBalance(), 'Plan ID:', planId);
-
     if (!planId || !amount) {
       console.error('❌ Missing plan ID or amount!');
-      alert('Thông tin gói không hợp lệ');
+      this.toast.displayToast('Thông tin gói không hợp lệ', 'error');
       return;
     }
 
     if (this.walletBalance() < amount) {
-      console.warn('⚠️ Insufficient balance');
-      alert(`Số dư không đủ. Hiện có: ${this.formatPrice(this.walletBalance())}, Cần: ${this.formatPrice(amount)}`);
+      this.toast.displayToast(`Số dư không đủ. Hiện có: ${this.formatPrice(this.walletBalance())}, Cần: ${this.formatPrice(amount)}`, 'error');
       return;
     }
 
@@ -332,36 +295,38 @@ export class Payment implements OnInit, AfterViewInit {
       description: `Nâng cấp Membership - ${this.membershipPlan()!.name} (${amount.toLocaleString('vi-VN')} VNĐ/tháng)`
     }).subscribe({
       next: (response) => {
-        console.log('✅ Membership upgrade with wallet success:', response);
-        this.isProcessing.set(false);
-        
-        // Store upgrade info
-        sessionStorage.setItem('upgrade_plan_id', planId.toString());
-        sessionStorage.setItem('upgrade_payment_id', response.data.payment_id.toString());
-        sessionStorage.setItem('upgrade_method', 'wallet');
-        
-        // Redirect to success page
-        this.router.navigate(['/upgrade-success']);
+        // Now upgrade the membership
+        this.membershipSvc.upgrade(planId!).subscribe({
+          next: (upgradeResponse) => {
+            this.isProcessing.set(false);
+            
+            // Store upgrade info
+            sessionStorage.setItem('upgrade_plan_id', planId.toString());
+            sessionStorage.setItem('upgrade_payment_id', response.data.payment_id.toString());
+            sessionStorage.setItem('upgrade_method', 'wallet');
+            
+            // Redirect to success page
+            this.router.navigate(['/upgrade-success']);
+          },
+          error: (upgradeErr: any) => {
+            this.isProcessing.set(false);
+            console.error('❌ Membership upgrade API failed:', upgradeErr);
+            this.toast.displayToast('Lỗi nâng cấp gói: ' + (upgradeErr.error?.message || 'Vui lòng thử lại'), 'error');
+          }
+        });
       },
       error: (err: any) => {
         this.isProcessing.set(false);
-        console.error('❌ Membership upgrade failed:', err);
+        console.error('❌ Wallet payment failed:', err);
 
         // Handle 401 Unauthorized
         if (err.status === 401) {
-          console.warn('Token expired or invalid. Redirecting to login.');
           this.authSvc.logout();
           this.router.navigate(['/login']);
           return;
         }
 
-        // Handle insufficient balance
-        if (err.status === 400 && err.error?.error?.includes('không đủ')) {
-          alert(err.error.error);
-          return;
-        }
-
-        alert('Lỗi thanh toán: ' + (err.error?.error || 'Vui lòng thử lại'));
+        this.toast.displayToast('Lỗi thanh toán: ' + (err.error?.message || 'Vui lòng thử lại'), 'error');
       }
     });
   }
@@ -370,19 +335,16 @@ export class Payment implements OnInit, AfterViewInit {
    * Process payment using wallet balance
    */
   private processWalletBalancePayment(): void {
-    console.log('🎯 processWalletBalancePayment started');
     const amount = this.paymentAmount();
-    console.log('💰 Amount:', amount, 'Wallet balance:', this.walletBalance());
 
     if (!amount) {
       console.error('❌ Amount is invalid:', amount);
-      alert('Số tiền không hợp lệ');
+      this.toast.displayToast('Số tiền không hợp lệ', 'error');
       return;
     }
 
     if (this.walletBalance() < amount) {
-      console.warn('⚠️ Insufficient balance');
-      alert(`Số dư không đủ. Hiện có: ${this.formatPrice(this.walletBalance())}, Cần: ${this.formatPrice(amount)}`);
+      this.toast.displayToast(`Số dư không đủ. Hiện có: ${this.formatPrice(this.walletBalance())}, Cần: ${this.formatPrice(amount)}`, 'error');
       return;
     }
 
@@ -394,7 +356,6 @@ export class Payment implements OnInit, AfterViewInit {
       description: `Nạp tiền vào ví - ${amount.toLocaleString('vi-VN')} VNĐ`
     }).subscribe({
       next: (response) => {
-        console.log('✅ Wallet payment success:', response);
         this.isProcessing.set(false);
         // Store payment info and redirect to success page
         sessionStorage.setItem('paymentId', response.data.payment_id.toString());
@@ -412,7 +373,6 @@ export class Payment implements OnInit, AfterViewInit {
 
         // Handle 401 Unauthorized
         if (err.status === 401) {
-          console.warn('Token expired or invalid. Redirecting to login.');
           this.authSvc.logout();
           this.router.navigate(['/login']);
           return;
@@ -420,11 +380,11 @@ export class Payment implements OnInit, AfterViewInit {
 
         // Handle insufficient balance
         if (err.status === 400 && err.error?.error?.includes('không đủ')) {
-          alert(err.error.error);
+          this.toast.displayToast(err.error.error, 'error');
           return;
         }
 
-        alert('Lỗi thanh toán: ' + (err.error?.error || 'Vui lòng thử lại'));
+        this.toast.displayToast('Lỗi thanh toán: ' + (err.error?.error || 'Vui lòng thử lại'), 'error');
       }
     });
   }

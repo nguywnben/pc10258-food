@@ -92,7 +92,7 @@ export const routes: Routes = [
       },
       {
         path: 'payment',
-        loadComponent: () => import('./pages/client/payment/payment').then(m => m.Payment),
+        loadComponent: () => import('./pages/client/payment/payment').then(m => m.PaymentComponent),
       },
       {
         path: 'payment/callback',

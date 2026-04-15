@@ -99,7 +99,19 @@ export const routes: Routes = [
       {
         path: 'payment',
         canActivate: [authGuard],
-        loadComponent: () => import('./pages/client/payment/payment').then(m => m.Payment),
+        loadComponent: () => import('./pages/client/payment/payment').then(m => m.PaymentComponent),
+      },
+      {
+        path: 'payment/callback',
+        loadComponent: () => import('./pages/client/payment/payment-callback/payment-callback.component').then(m => m.PaymentCallbackComponent),
+      },
+      {
+        path: 'payment/success',
+        loadComponent: () => import('./pages/client/payment/payment-success/payment-success.component').then(m => m.PaymentSuccessComponent),
+      },
+      {
+        path: 'payment/cancel',
+        loadComponent: () => import('./pages/client/payment/payment-cancel/payment-cancel.component').then(m => m.PaymentCancelComponent),
       },
       {
         path: 'orders',

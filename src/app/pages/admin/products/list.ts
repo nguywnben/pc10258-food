@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -11,7 +11,7 @@ import { CategoriesService, Category } from '../../../services/categories.servic
 @Component({
   selector: 'app-admin-products-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, DecimalPipe, DeleteModalComponent, PaginationComponent, ProductModalComponent],
+  imports: [DecimalPipe, DeleteModalComponent, PaginationComponent, ProductModalComponent],
   template: `
 @if (showSuccessToast()) {
   <div class="fixed right-6 top-6 z-50 w-[min(92vw,420px)] rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-emerald-800 shadow-xl">

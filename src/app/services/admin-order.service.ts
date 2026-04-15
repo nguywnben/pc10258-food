@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { map, Observable } from 'rxjs';
+import { AuthService } from '../core/services/auth.service';
 import { environment } from '../../environments/environment';
 
 interface ApiResponse<T> {
@@ -12,10 +13,11 @@ interface ApiResponse<T> {
 })
 export class AdminOrderService {
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
   private readonly apiBaseUrl = environment.apiUrl;
 
   private getAuthHeaders(): { Authorization: string } | undefined {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token = this.auth.getToken();
     return token ? { Authorization: `Bearer ${token}` } : undefined;
   }
 

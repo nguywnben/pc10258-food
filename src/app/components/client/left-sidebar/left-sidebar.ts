@@ -56,12 +56,22 @@ export class LeftSidebar {
     return p === '/upgrade' || p === '/upgrade-success';
   }
 
+  adminRelated(): boolean {
+    const p = this.path();
+    return p.startsWith('/admin/');
+  }
+
   otherSectionActive(): boolean {
-    return this.exact('/account') || this.walletRelated();
+    return this.exact('/account') || this.walletRelated() || this.adminRelated();
   }
 
   logout(): void {
     this.authService.logout();
     void this.router.navigate(['/']);
+  }
+
+  isAdmin(): boolean {
+    const user = this.authService.user();
+    return user?.role === 'admin';
   }
 }

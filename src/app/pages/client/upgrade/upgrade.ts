@@ -24,6 +24,34 @@ export class Upgrade implements OnInit, AfterViewInit {
   // Computed: Check if user has current membership
   hasCurrentMembership = computed(() => this.currentMembership() !== null);
 
+  /**
+   * Normalize plan data: ensure features is always an array
+   */
+  private normalizePlan(plan: any): MembershipPlan {
+    let features: string[] = [];
+
+    if (Array.isArray(plan.features)) {
+      features = plan.features;
+    } else if (typeof plan.features === 'string') {
+      // Try to parse as JSON first
+      try {
+        const parsed = JSON.parse(plan.features);
+        features = Array.isArray(parsed) ? parsed : [plan.features];
+      } catch {
+        // If not JSON, treat as comma-separated or single string
+        features = plan.features
+          .split(',')
+          .map((f: string) => f.trim())
+          .filter((f: string) => f.length > 0);
+      }
+    }
+
+    return {
+      ...plan,
+      features
+    };
+  }
+
   ngOnInit(): void {
     // Check if user is authenticated
     if (!this.authSvc.isAuthenticated()) {
@@ -46,8 +74,9 @@ export class Upgrade implements OnInit, AfterViewInit {
     this.membershipSvc.getMembershipPlans().subscribe({
       next: (response: any) => {
         const data = Array.isArray(response) ? response : response.data;
-        this.plans.set(data || []);
-        console.log('✅ Membership plans loaded:', data);
+        const normalizedPlans = (data || []).map((plan: any) => this.normalizePlan(plan));
+        this.plans.set(normalizedPlans);
+        console.log('✅ Membership plans loaded:', normalizedPlans);
         this.isLoading.set(false);
       },
       error: (err) => {

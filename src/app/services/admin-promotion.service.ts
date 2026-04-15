@@ -7,15 +7,15 @@ import { environment } from '../../environments/environment';
 export interface Promotion {
   id?: number;
   code: string;
-  description?: string;
-  discount_type: 'percent' | 'fixed' | 'freeship';
+  description: string;
+  discount_type: 'percent' | 'fixed';
   discount_value: number;
-  min_order_value?: number;
-  start_date?: string;
-  end_date?: string;
-  max_uses?: number;
+  min_order: number;
+  max_uses?: number | null;
   used_count?: number;
-  is_active?: boolean;
+  start_date: string;
+  end_date: string;
+  created_at?: string;
 }
 
 interface ApiResponse<T> {

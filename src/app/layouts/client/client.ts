@@ -6,6 +6,7 @@ import { Header } from '../../components/client/header/header';
 import { LeftSidebar } from '../../components/client/left-sidebar/left-sidebar';
 import { RightSidebar } from '../../components/client/right-sidebar/right-sidebar';
 import { Footer } from '../../components/client/footer/footer';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-client-layout',
@@ -25,6 +26,7 @@ import { Footer } from '../../components/client/footer/footer';
 })
 export class ClientLayout {
   private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
   private currentPath(): string {
     const raw = this.router.url.split(/[?#]/)[0];
@@ -37,10 +39,14 @@ export class ClientLayout {
     return p === '/login' || p === '/register';
   }
 
+  shouldUseAuthSidebar(): boolean {
+    return this.isAuthLayoutRoute() || !this.authService.isAuthenticated();
+  }
+
   /** Chỉ trang chủ và Yêu thích có sidebar phải (giỏ / gợi ý). */
   showRightSidebar(): boolean {
     const p = this.currentPath();
-    if (this.isAuthLayoutRoute()) return false;
+    if (this.shouldUseAuthSidebar()) return false;
     return p === '/' || p === '/favorites';
   }
 

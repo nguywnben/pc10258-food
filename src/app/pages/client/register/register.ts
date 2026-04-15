@@ -53,11 +53,20 @@ export class Register implements AfterViewInit {
     this.isSubmitting.set(true);
 
     const { full_name, email, phone, password } = this.registerForm.getRawValue();
+    const normalizedFullName = full_name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPhone = phone.trim();
+    const normalizedPassword = password;
 
     this.authService
-      .register({ full_name, email, phone, password })
+      .register({
+        full_name: normalizedFullName,
+        email: normalizedEmail,
+        phone: normalizedPhone,
+        password: normalizedPassword,
+      })
       .pipe(
-        switchMap(() => this.authService.login({ email, password })),
+        switchMap(() => this.authService.login({ email: normalizedEmail, password: normalizedPassword })),
         finalize(() => this.isSubmitting.set(false))
       )
       .subscribe({

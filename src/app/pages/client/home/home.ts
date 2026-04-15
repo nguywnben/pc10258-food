@@ -35,6 +35,13 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
   readonly selectedSort = signal<'popular' | 'price-asc' | 'price-desc' | 'new'>('popular');
   readonly selectedPriceRange = signal<string>('');
 
+  private readonly allowedSorts = new Set<'popular' | 'price-asc' | 'price-desc' | 'new'>([
+    'popular',
+    'price-asc',
+    'price-desc',
+    'new',
+  ]);
+
   ngOnInit(): void {
     this.loadCategories();
     this.listenFilterParams();
@@ -70,7 +77,7 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
   onSortChange(sort: 'popular' | 'price-asc' | 'price-desc' | 'new'): void {
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { sort },
+      queryParams: { sort: sort === 'popular' ? null : sort },
       queryParamsHandling: 'merge',
     });
   }
@@ -136,7 +143,8 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
   private listenFilterParams(): void {
     this.queryParamsSub = this.route.queryParamMap.subscribe((params) => {
       const categoryId = params.get('category_id');
-      const sort = (params.get('sort') as 'popular' | 'price-asc' | 'price-desc' | 'new' | null) ?? 'popular';
+      const rawSort = params.get('sort') as 'popular' | 'price-asc' | 'price-desc' | 'new' | null;
+      const sort = rawSort && this.allowedSorts.has(rawSort) ? rawSort : 'popular';
       const minPrice = params.get('min_price');
       const maxPrice = params.get('max_price');
 
@@ -144,18 +152,25 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
       this.selectedSort.set(sort);
       this.selectedPriceRange.set(this.resolvePriceRange(minPrice, maxPrice));
 
-      const query: ProductQuery = {
-        sort,
-      };
+      const query: ProductQuery = {};
 
       if (categoryId) {
         query.category_id = Number(categoryId);
       }
+      if (sort !== 'popular') {
+        query.sort = sort;
+      }
       if (minPrice) {
-        query.min_price = Number(minPrice);
+        const parsedMinPrice = Number(minPrice);
+        if (Number.isFinite(parsedMinPrice)) {
+          query.min_price = parsedMinPrice;
+        }
       }
       if (maxPrice) {
-        query.max_price = Number(maxPrice);
+        const parsedMaxPrice = Number(maxPrice);
+        if (Number.isFinite(parsedMaxPrice)) {
+          query.max_price = parsedMaxPrice;
+        }
       }
 
       this.loadProducts(query);

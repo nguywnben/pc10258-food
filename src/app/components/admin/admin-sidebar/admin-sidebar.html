@@ -1,6 +1,6 @@
 <aside
   id="left-sidebar"
-  class="flex min-h-0 min-w-0 flex-col border-r border-gray-100 bg-white px-4 py-5"
+  class="flex h-full min-h-0 min-w-0 flex-col border-r border-gray-100 bg-white px-4 py-5"
   aria-label="Menu quản trị"
 >
   <!-- Logo -->
@@ -44,48 +44,6 @@
       Bảng điều khiển
     </a>
 
-    <a
-      routerLink="/admin/forms"
-      routerLinkActive="sidebar-link-active"
-      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
-    >
-      <svg
-        class="h-5 w-5 shrink-0 text-ink-lighter"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-        />
-      </svg>
-      Form mẫu
-    </a>
-
-    <a
-      routerLink="/admin/tables"
-      routerLinkActive="sidebar-link-active"
-      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
-    >
-      <svg
-        class="h-5 w-5 shrink-0 text-ink-lighter"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M3 10h18M3 14h18M3 6h18M3 18h18"
-        />
-      </svg>
-      Bảng mẫu
-    </a>
-
     <p class="mb-1 mt-5 px-3 text-[10px] font-semibold tracking-wider text-ink-lighter uppercase">
       Quản lý
     </p>
@@ -110,26 +68,6 @@
       Danh mục
     </a>
     <a
-      routerLink="/admin/orders"
-      routerLinkActive="sidebar-link-active"
-      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
-    >
-      <svg
-        class="h-5 w-5 shrink-0 text-ink-lighter"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-        />
-      </svg>
-      Đơn hàng
-    </a>
-    <a
       routerLink="/admin/products"
       routerLinkActive="sidebar-link-active"
       class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
@@ -148,6 +86,26 @@
         />
       </svg>
       Sản phẩm
+    </a>
+    <a
+      routerLink="/admin/orders"
+      routerLinkActive="sidebar-link-active"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-gray-50"
+    >
+      <svg
+        class="h-5 w-5 shrink-0 text-ink-lighter"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+        />
+      </svg>
+      Đơn hàng
     </a>
     <a
       routerLink="/admin/users/list"
@@ -239,10 +197,9 @@
   </nav>
 
   <div class="mt-4 flex flex-col gap-1 border-t border-gray-100 pt-4">
-    <button
-      type="button"
+    <a
+      routerLink="/"
       class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-500 transition hover:bg-red-50"
-      (click)="logout()"
     >
       <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path
@@ -251,7 +208,7 @@
           d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1"
         />
       </svg>
-      Đăng xuất
-    </button>
+      Quay về cửa hàng
+    </a>
   </div>
 </aside>

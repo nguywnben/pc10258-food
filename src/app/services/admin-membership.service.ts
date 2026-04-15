@@ -7,9 +7,9 @@ import { environment } from '../../environments/environment';
 export interface MembershipPlan {
   id?: number;
   name: string;
-  min_points: number;
-  discount_rate: number;
-  benefits?: string;
+  price: number;
+  features?: string[] | null;
+  is_popular?: number;
   created_at?: string;
 }
 

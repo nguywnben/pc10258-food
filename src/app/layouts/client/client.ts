@@ -43,10 +43,13 @@ export class ClientLayout {
     return this.isAuthLayoutRoute() || !this.authService.isAuthenticated();
   }
 
-  /** Chỉ trang chủ và Yêu thích có sidebar phải (giỏ / gợi ý). */
+  /**
+   * Trang chủ & Yêu thích luôn có cột phải:
+   * — chưa đăng nhập: nội dung gợi ý đăng nhập;
+   * — đã đăng nhập: giỏ / ví / địa chỉ như hiện tại.
+   */
   showRightSidebar(): boolean {
     const p = this.currentPath();
-    if (this.shouldUseAuthSidebar()) return false;
     return p === '/' || p === '/favorites';
   }
 

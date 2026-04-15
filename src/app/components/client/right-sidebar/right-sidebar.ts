@@ -1,10 +1,11 @@
-import { afterNextRender, Component, inject, OnDestroy, signal } from '@angular/core';
+import { afterNextRender, Component, effect, inject, OnDestroy, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { asyncScheduler, BehaviorSubject, Subject } from 'rxjs';
 import { filter, observeOn, takeUntil } from 'rxjs/operators';
 
+import { AuthService } from '../../../core/services/auth.service';
 import { CartService, CartItem } from '../../../services/cart.service';
 import { WalletService, Wallet } from '../../../services/wallet.service';
 import { AddressService, Address } from '../../../services/address.service';
@@ -21,6 +22,7 @@ import { OrderService } from '../../../services/order.service';
   },
 })
 export class RightSidebar implements OnDestroy {
+  protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly cartService = inject(CartService);
   private readonly walletService = inject(WalletService);
@@ -53,20 +55,37 @@ export class RightSidebar implements OnDestroy {
       )
       .subscribe(() => this.isFavoritesRoute.set(this.computeIsFavoritesRoute()));
 
-    afterNextRender(() => {
-      this.scheduleViewUpdate(() =>
-        this.isFavoritesRoute.set(this.computeIsFavoritesRoute()),
-      );
-      this.loadWallet();
-      this.loadAddress();
-      this.loadCart();
+    this.cartService.cartUpdated$
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(() => this.auth.isAuthenticated()),
+      )
+      .subscribe(() => this.loadCart());
 
-      this.cartService.cartUpdated$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => {
-          this.loadCart();
-        });
+    effect(() => {
+      if (this.auth.isAuthenticated()) {
+        this.loadWallet();
+        this.loadAddress();
+        this.loadCart();
+      } else {
+        this.clearGuestSidebarState();
+      }
     });
+
+    afterNextRender(() => {
+      this.scheduleViewUpdate(() => this.isFavoritesRoute.set(this.computeIsFavoritesRoute()));
+    });
+  }
+
+  private clearGuestSidebarState(): void {
+    this.walletSubject.next(null);
+    this.defaultAddress = null;
+    this.cartItems = [];
+    this.subtotal = 0;
+    this.cartCount = 0;
+    this.appliedPromo = null;
+    this.promoCodeInput = '';
+    this.discountAmount = 0;
   }
 
   private computeIsFavoritesRoute(): boolean {

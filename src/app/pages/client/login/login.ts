@@ -40,20 +40,41 @@ export class Login implements AfterViewInit {
       return;
     }
 
+    const { email, password } = this.loginForm.getRawValue();
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = password;
+
+    if (!normalizedEmail || !normalizedPassword) {
+      this.submitError.set('Vui lòng nhập email và mật khẩu hợp lệ.');
+      return;
+    }
+
     this.submitError.set(null);
     this.isSubmitting.set(true);
 
     this.authService
-      .login(this.loginForm.getRawValue())
+      .login({ email: normalizedEmail, password: normalizedPassword })
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: () => {
           void this.router.navigate(['/']);
         },
         error: (errorResponse: HttpErrorResponse) => {
-          const apiMessage = errorResponse.error?.message;
+          const errorBody = errorResponse.error;
+          const apiMessage =
+            (typeof errorBody?.message === 'string' && errorBody.message) ||
+            (typeof errorBody?.error === 'string' && errorBody.error) ||
+            (Array.isArray(errorBody?.errors) && typeof errorBody.errors[0] === 'string' && errorBody.errors[0]) ||
+            (typeof errorBody === 'string' && errorBody) ||
+            null;
+
+          if (!apiMessage && errorResponse.status === 400) {
+            this.submitError.set('Đăng nhập thất bại (400). Có thể email/số điện thoại hoặc mật khẩu chưa đúng.');
+            return;
+          }
+
           this.submitError.set(
-            typeof apiMessage === 'string' ? apiMessage : 'Đăng nhập thất bại, vui lòng thử lại.'
+            typeof apiMessage === 'string' ? apiMessage : `Đăng nhập thất bại (HTTP ${errorResponse.status || 0}).`
           );
         },
       });

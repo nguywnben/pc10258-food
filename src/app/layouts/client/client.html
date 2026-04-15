@@ -1,5 +1,5 @@
 <div class="grid h-full min-h-0 grid-cols-[240px_1fr] overflow-hidden">
-    @if (isAuthLayoutRoute()) {
+    @if (shouldUseAuthSidebar()) {
       <app-auth-sidebar></app-auth-sidebar>
     } @else {
       <app-left-sidebar></app-left-sidebar>

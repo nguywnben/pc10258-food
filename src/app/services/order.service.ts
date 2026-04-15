@@ -29,6 +29,11 @@ export interface Order {
   note?: string;
   created_at: string;
   items?: OrderItem[];
+  address?: {
+    id: number;
+    label: string;
+    full_address: string;
+  };
 }
 
 export interface OrderCreatePayload {

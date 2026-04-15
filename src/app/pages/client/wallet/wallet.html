@@ -1,9 +1,16 @@
 <div class="mx-auto w-full max-w-4xl space-y-8">
+  <!-- Deposit Modal -->
+  <app-wallet-deposit-modal #depositModal></app-wallet-deposit-modal>
+  
+  <!-- Toast Notification -->
+  <app-toast #toast></app-toast>
+
   <nav class="flex flex-wrap gap-2 border-b border-gray-200 pb-6" aria-label="Chuyển nhanh trong trang ví">
     <a href="/wallet#so-du-lich-su" class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-ink transition hover:border-brand/40 hover:bg-brand-light/30">Số dư &amp; lịch sử</a>
     <a href="/wallet#nap-tien" class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-ink transition hover:border-brand/40 hover:bg-brand-light/30">Nạp tiền</a>
   </nav>
 
+  <!-- Wallet Balance & Transaction History Section -->
   <section id="so-du-lich-su" class="scroll-mt-6 rounded-3xl border border-gray-100 bg-white p-6 sm:p-7" aria-labelledby="wallet-history-heading">
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
@@ -12,102 +19,142 @@
       </div>
       <div class="text-right">
         <p class="text-xs font-medium text-ink-light">Số dư hiện tại</p>
-        <p class="text-2xl font-extrabold text-brand">520.000₫</p>
+        <p class="text-2xl font-extrabold text-brand">{{ formatPrice(walletBalance()) }}</p>
       </div>
     </div>
 
+    <!-- Time Filter -->
     <div class="mt-5 flex flex-wrap items-center gap-2" role="toolbar" aria-label="Bộ lọc thời gian">
-      <button type="button" class="rounded-full bg-brand px-3 py-1.5 text-xs font-semibold text-white">7 ngày</button>
-      <button type="button" class="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-ink transition hover:border-brand">30 ngày</button>
-      <button type="button" class="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-ink transition hover:border-brand">Tất cả</button>
+      <button 
+        type="button"
+        (click)="setTimeFilter('7')"
+        [class.bg-brand]="selectedTimeFilter() === '7'"
+        [class.text-white]="selectedTimeFilter() === '7'"
+        [class.border-gray-200]="selectedTimeFilter() !== '7'"
+        [class.bg-white]="selectedTimeFilter() !== '7'"
+        [class.text-ink]="selectedTimeFilter() !== '7'"
+        class="rounded-full border px-3 py-1.5 text-xs font-semibold transition hover:border-brand"
+      >
+        7 ngày
+      </button>
+      <button 
+        type="button"
+        (click)="setTimeFilter('30')"
+        [class.bg-brand]="selectedTimeFilter() === '30'"
+        [class.text-white]="selectedTimeFilter() === '30'"
+        [class.border-gray-200]="selectedTimeFilter() !== '30'"
+        [class.bg-white]="selectedTimeFilter() !== '30'"
+        [class.text-ink]="selectedTimeFilter() !== '30'"
+        class="rounded-full border px-3 py-1.5 text-xs font-semibold transition hover:border-brand"
+      >
+        30 ngày
+      </button>
+      <button 
+        type="button"
+        (click)="setTimeFilter('all')"
+        [class.bg-brand]="selectedTimeFilter() === 'all'"
+        [class.text-white]="selectedTimeFilter() === 'all'"
+        [class.border-gray-200]="selectedTimeFilter() !== 'all'"
+        [class.bg-white]="selectedTimeFilter() !== 'all'"
+        [class.text-ink]="selectedTimeFilter() !== 'all'"
+        class="rounded-full border px-3 py-1.5 text-xs font-semibold transition hover:border-brand"
+      >
+        Tất cả
+      </button>
     </div>
 
+    <!-- Transactions List -->
     <div class="mt-5 overflow-hidden rounded-2xl border border-gray-100">
-      <ul class="divide-y divide-gray-100">
-        <li class="flex flex-wrap items-center justify-between gap-3 bg-gray-50/30 px-5 py-4">
-          <div>
-            <p class="text-sm font-semibold text-ink">Nạp tiền</p>
-            <p class="text-xs text-ink-light">16/03/2026 · 10:15</p>
-          </div>
-          <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">+ 200.000₫</span>
-        </li>
-        <li class="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-          <div>
-            <p class="text-sm font-semibold text-ink">Thanh toán đơn #PC-5821</p>
-            <p class="text-xs text-ink-light">14/03/2026 · 19:42</p>
-          </div>
-          <span class="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-600">- 178.000₫</span>
-        </li>
-        <li class="flex flex-wrap items-center justify-between gap-3 bg-gray-50/30 px-5 py-4">
-          <div>
-            <p class="text-sm font-semibold text-ink">Hoàn mã giảm giá</p>
-            <p class="text-xs text-ink-light">12/03/2026 · 09:05</p>
-          </div>
-          <span class="rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold text-brand">+ 30.000₫</span>
-        </li>
-        <li class="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-          <div>
-            <p class="text-sm font-semibold text-ink">Thanh toán đơn #PC-5790</p>
-            <p class="text-xs text-ink-light">10/03/2026 · 21:18</p>
-          </div>
-          <span class="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-600">- 45.000₫</span>
-        </li>
-      </ul>
-    </div>
+      <div *ngIf="isLoading()" class="px-5 py-8 text-center text-sm text-ink-light">
+        <p>Đang tải dữ liệu...</p>
+      </div>
+      
+      <div *ngIf="!isLoading() && filteredTransactions().length === 0" class="px-5 py-8 text-center text-sm text-ink-light">
+        <p>Không có giao dịch nào.</p>
+      </div>
 
-    <p class="mt-4 text-xs text-ink-light">Dữ liệu mẫu tĩnh. Mục <strong class="font-medium text-ink"><a href="/wallet#nap-tien" class="text-brand hover:underline">Nạp tiền</a></strong> bên dưới dùng chung trang này.</p>
+      <div *ngIf="!isLoading() && filteredTransactions().length > 0">
+        <ul class="divide-y divide-gray-100">
+          <li 
+            *ngFor="let transaction of filteredTransactions(); let even = even"
+            [class.bg-gray-50/30]="even"
+            class="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
+          >
+            <div>
+              <p class="text-sm font-semibold text-ink">{{ getTransactionTypeLabel(transaction.type) }}</p>
+              <p class="text-xs text-ink-light">{{ formatDate(transaction.created_at) }}</p>
+            </div>
+            <span 
+              [ngClass]="'rounded-full px-3 py-1 text-xs font-semibold ' + getTransactionBadgeClass(transaction.type)"
+              [innerHTML]="(transaction.type !== 'payment' ? '+ ' : '- ') + formatPrice(transaction.amount)"
+            ></span>
+          </li>
+        </ul>
+
+        <!-- Pagination Info & Controls -->
+        <div class="flex flex-col items-center justify-between gap-4 border-t border-gray-100 bg-gray-50/50 px-5 py-4 sm:flex-row">
+          <p class="text-xs text-ink-light">
+            Hiển thị {{ displayInfo().start }}-{{ displayInfo().end }} trên tổng {{ displayInfo().total }} giao dịch
+          </p>
+          
+          <div class="flex items-center gap-2">
+            <!-- Previous Button -->
+            <button
+              type="button"
+              (click)="previousPage()"
+              [disabled]="currentPage() === 1 || isLoading()"
+              class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-ink transition disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:border-brand hover:enabled:text-brand"
+            >
+              ← Trước
+            </button>
+
+            <!-- Page Numbers -->
+            <div class="flex items-center gap-1">
+              <button
+                *ngFor="let page of [].constructor(totalPages()); let i = index;"
+                type="button"
+                (click)="goToPage(i + 1)"
+                [class.bg-brand]="currentPage() === i + 1"
+                [class.text-white]="currentPage() === i + 1"
+                [class.border-brand]="currentPage() === i + 1"
+                [class.border-gray-200]="currentPage() !== i + 1"
+                [class.bg-white]="currentPage() !== i + 1"
+                [class.text-ink]="currentPage() !== i + 1"
+                [disabled]="isLoading()"
+                class="rounded-lg border px-2.5 py-1.5 text-xs font-medium transition hover:enabled:border-brand hover:enabled:text-brand disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ i + 1 }}
+              </button>
+            </div>
+
+            <!-- Next Button -->
+            <button
+              type="button"
+              (click)="nextPage()"
+              [disabled]="currentPage() === totalPages() || isLoading()"
+              class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-ink transition disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:border-brand hover:enabled:text-brand"
+            >
+              Sau →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
+  <!-- Deposit Section -->
   <section id="nap-tien" class="scroll-mt-6 rounded-3xl border border-gray-100 bg-white p-6 sm:p-7" aria-labelledby="wallet-deposit-title">
     <h2 id="wallet-deposit-title" class="text-xl font-bold text-ink">Nạp tiền vào ví</h2>
-    <p class="mt-1 text-sm text-ink-light">Chọn mệnh giá và phương thức, sau đó xác nhận ở bước thanh toán (demo).</p>
+    <p class="mt-1 text-sm text-ink-light">Chọn mệnh giá và phương thức thanh toán để nạp thêm tiền.</p>
 
-    <form id="deposit-form" class="mt-8 space-y-8" (submit)="continueToPayment($event)">
-      <input type="hidden" name="type" value="deposit" />
-
-      <div>
-        <h3 class="text-sm font-bold text-ink">Chọn mệnh giá</h3>
-        <p class="mt-1 text-xs text-ink-light">Nhấn để áp dụng nhanh, hoặc nhập số khác bên dưới.</p>
-        <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <button type="button" data-preset-amount="50000" class="preset-btn rounded-xl border-2 border-gray-100 bg-gray-50/50 px-3 py-3 text-center text-sm font-semibold text-ink transition hover:border-brand/40 hover:bg-brand/5">50.000₫</button>
-          <button type="button" data-preset-amount="100000" class="preset-btn preset-btn-active rounded-xl border-2 border-brand bg-brand/5 px-3 py-3 text-center text-sm font-semibold text-brand transition">100.000₫</button>
-          <button type="button" data-preset-amount="200000" class="preset-btn rounded-xl border-2 border-gray-100 bg-gray-50/50 px-3 py-3 text-center text-sm font-semibold text-ink transition hover:border-brand/40 hover:bg-brand/5">200.000₫</button>
-          <button type="button" data-preset-amount="500000" class="preset-btn rounded-xl border-2 border-gray-100 bg-gray-50/50 px-3 py-3 text-center text-sm font-semibold text-ink transition hover:border-brand/40 hover:bg-brand/5">500.000₫</button>
-        </div>
-      </div>
-
-      <div>
-        <label for="deposit-amount" class="block text-sm font-bold text-ink">Số tiền nạp (₫)</label>
-        <input id="deposit-amount" name="amount" type="number" inputmode="numeric" min="10000" max="50000000" step="1000" value="100000" required class="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base font-semibold text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20" />
-        <p class="mt-2 text-xs text-ink-light">Tối thiểu 10.000₫. Trang tĩnh demo, không gửi tiền thật.</p>
-      </div>
-
-      <fieldset>
-        <legend class="text-sm font-bold text-ink">Phương thức thanh toán</legend>
-        <p class="mt-1 text-xs text-ink-light">Chọn kênh bạn muốn dùng ở bước xác nhận.</p>
-        <div class="mt-4 space-y-3">
-          <label class="flex cursor-pointer items-start gap-3 rounded-2xl border-2 border-gray-100 bg-white p-4 transition has-[:checked]:border-brand has-[:checked]:bg-brand/5">
-            <input type="radio" name="method" value="bank" checked class="mt-1 h-4 w-4 shrink-0 border-gray-300 text-brand focus:ring-brand" />
-            <span>
-              <span class="block text-sm font-semibold text-ink">Chuyển khoản ngân hàng</span>
-              <span class="mt-0.5 block text-xs text-ink-light">Quét QR hoặc chuyển theo nội dung gợi ý (demo).</span>
-            </span>
-          </label>
-
-          <label class="flex cursor-pointer items-start gap-3 rounded-2xl border-2 border-gray-100 bg-white p-4 transition has-[:checked]:border-brand has-[:checked]:bg-brand/5">
-            <input type="radio" name="method" value="ewallet" class="mt-1 h-4 w-4 shrink-0 border-gray-300 text-brand focus:ring-brand" />
-            <span>
-              <span class="block text-sm font-semibold text-ink">Ví điện tử</span>
-              <span class="mt-0.5 block text-xs text-ink-light">MoMo, ZaloPay… (giao diện mẫu).</span>
-            </span>
-          </label>
-        </div>
-      </fieldset>
-
-      <div class="flex border-t border-gray-100 pt-6 sm:justify-end">
-        <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-hover sm:w-auto">Tiếp tục thanh toán</button>
-      </div>
-    </form>
+    <div class="mt-8">
+      <button 
+        type="button"
+        (click)="openDepositModal()"
+        class="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-hover"
+      >
+        Mở cửa sổ nạp tiền
+      </button>
+    </div>
   </section>
 </div>
-

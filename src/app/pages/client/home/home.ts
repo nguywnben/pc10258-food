@@ -4,7 +4,10 @@ import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 import { MenuService } from '../../../core/services/menu.service';
+import { CartService } from '../../../services/cart.service';
 import { Category, Product, ProductQuery } from '../../../core/models/menu.model';
+import { ClientProductModalComponent } from '../../../components/client/product-modal/client-product-modal.component';
+import { ToastService } from '../../../components/toast/toast.service';
 
 @Component({
   selector: 'app-home',
@@ -16,7 +19,9 @@ import { Category, Product, ProductQuery } from '../../../core/models/menu.model
 export class Home implements AfterViewInit, OnInit, OnDestroy {
   private readonly menuService = inject(MenuService);
   private readonly authService = inject(AuthService);
+  private readonly cartService = inject(CartService);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
 
   readonly categoriesLoading = signal(true);
   readonly productsLoading = signal(true);
@@ -30,6 +35,35 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
   readonly selectedCategoryId = signal<number | null>(null);
   readonly selectedSort = signal<'popular' | 'price-asc' | 'price-desc' | 'new'>('popular');
   readonly selectedPriceRange = signal<string>('');
+  
+  readonly isProductModalOpen = signal(false);
+  readonly selectedProduct = signal<Product | null>(null);
+
+  openProductModal(product: Product) {
+    void this.router.navigate(['/product', product.id]);
+  }
+
+  // Obsolete - kept to prevent template errors before HTML update
+  closeProductModal() {
+    this.isProductModalOpen.set(false);
+  }
+
+  onAddToCart(product: Product) {
+    if (!this.authService.isAuthenticated()) {
+      void this.router.navigate(['/login']);
+      return;
+    }
+    
+    this.cartService.addToCart(product.id, 1).subscribe({
+      next: () => {
+        this.toast.success(`Đã thêm ${product.name} vào giỏ hàng thành công!`);
+        this.closeProductModal();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.toast.error(err.error?.message || 'Có lỗi khi thêm giỏ hàng. Thử lại sau.');
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.loadCategories();
@@ -88,12 +122,16 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
       next: () => {
         if (isFavorite) {
           this.favoriteProductIds.set(this.favoriteProductIds().filter((id) => id !== product.id));
+          this.toast.success(`Đã bỏ ${product.name} khỏi danh sách yêu thích.`);
         } else {
           this.favoriteProductIds.set([...new Set([...this.favoriteProductIds(), product.id])]);
+          this.toast.success(`Đã thêm ${product.name} vào danh sách yêu thích.`);
         }
       },
       error: (errorResponse: HttpErrorResponse) => {
-        this.errorMessage.set(this.resolveErrorMessage(errorResponse, 'Không cập nhật được yêu thích.'));
+        const message = this.resolveErrorMessage(errorResponse, 'Không cập nhật được yêu thích.');
+        this.errorMessage.set(message);
+        this.toast.error(message);
       },
     });
   }

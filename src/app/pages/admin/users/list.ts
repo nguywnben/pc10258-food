@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DeleteModalComponent } from '../../../components/delete-modal/delete-modal.component';
 import { PaginationComponent } from '../../../components/pagination/pagination.component';
 import { User, UsersService } from '../../../services/users.service';
+import { ToastService } from '../../../components/toast/toast.service';
 
 @Component({
   selector: 'app-admin-users-list',
@@ -19,16 +20,12 @@ export class AdminUsersList {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+  private readonly toast = inject(ToastService);
   private readonly itemsPerPage = 10;
-  private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly users = signal<User[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  readonly showSuccessToast = signal(false);
-  readonly successToastMessage = signal('Xóa người dùng thành công');
-  readonly showErrorToast = signal(false);
-  readonly errorToastMessage = signal('Không thể khóa người dùng.');
   readonly showDeleteModal = signal(false);
   readonly selectedUser = signal<User | null>(null);
   readonly showEditModal = signal(false);
@@ -129,8 +126,7 @@ export class AdminUsersList {
     setTimeout(() => {
       const updatedData = this.editForm.value;
       this.users.update(items => items.map(item => item.id === user.id ? { ...item, ...updatedData } : item));
-      this.successToastMessage.set('Cập nhật người dùng thành công (Local)');
-      this.openSuccessToast();
+      this.toast.success('Cập nhật người dùng thành công');
       this.savingUserId.set(null);
       this.closeEditModal();
     }, 500);
@@ -162,14 +158,12 @@ export class AdminUsersList {
       next: () => {
         this.users.update((items) => items.filter((item) => item.id !== user.id));
         this.ensureCurrentPageInRange();
-        this.successToastMessage.set('Xóa người dùng thành công');
-        this.openSuccessToast();
+        this.toast.success('Xóa người dùng thành công');
         this.deletingUserId.set(null);
         this.selectedUser.set(null);
       },
       error: (err: unknown) => {
-        this.errorToastMessage.set(this.parseDeleteError(err));
-        this.openErrorToast();
+        this.toast.error(this.parseDeleteError(err));
         this.deletingUserId.set(null);
         this.selectedUser.set(null);
       },
@@ -183,34 +177,6 @@ export class AdminUsersList {
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
-  }
-
-  dismissSuccessToast(): void {
-    this.showSuccessToast.set(false);
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-      this.toastTimer = null;
-    }
-  }
-
-  dismissErrorToast(): void {
-    this.showErrorToast.set(false);
-  }
-
-  private openSuccessToast(): void {
-    this.showSuccessToast.set(true);
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-    }
-    this.toastTimer = setTimeout(() => this.dismissSuccessToast(), 3000);
-  }
-
-  private openErrorToast(): void {
-    this.showErrorToast.set(true);
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-    }
-    this.toastTimer = setTimeout(() => this.dismissErrorToast(), 3500);
   }
 
   private ensureCurrentPageInRange(): void {

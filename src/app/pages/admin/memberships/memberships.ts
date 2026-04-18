@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { AdminMembershipService, MembershipPlan } from '../../../services/admin-membership.service';
+import { ToastService } from '../../../components/toast/toast.service';
 import { MembershipModalComponent, MembershipModalSaveEvent } from '../../../components/membership-modal/membership-modal.component';
 import { DeleteModalComponent } from '../../../components/delete-modal/delete-modal.component';
 import { PaginationComponent } from '../../../components/pagination/pagination.component';
@@ -17,16 +18,12 @@ export class AdminMemberships {
   private readonly membershipService = inject(AdminMembershipService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly toast = inject(ToastService);
   private readonly itemsPerPage = 10;
 
   readonly plans = signal<MembershipPlan[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  readonly showSuccessToast = signal(false);
-  readonly successToastMessage = signal('Thêm hạng thành công');
-  readonly showErrorToast = signal(false);
-  readonly errorToastMessage = signal('Không thể xóa hạng.');
   readonly deletingPlanId = signal<number | null>(null);
   readonly showDeleteModal = signal(false);
   readonly selectedPlan = signal<MembershipPlan | null>(null);
@@ -117,21 +114,19 @@ export class AdminMemberships {
           this.plans.update((items) =>
             items.map((item) => (item.id === savedPlan.id ? savedPlan : item)),
           );
-          this.successToastMessage.set('Cập nhật hạng thành công');
+          this.toast.success('Cập nhật hạng thành công');
         } else {
           this.plans.update((items) => [savedPlan, ...items]);
-          this.successToastMessage.set('Thêm hạng thành công');
+          this.toast.success('Thêm hạng thành công');
           this.goToPage(1);
         }
 
         this.savingPlan.set(false);
         this.closeMembershipModal();
-        this.openSuccessToast();
       },
       error: (err: unknown) => {
-        this.errorToastMessage.set(this.parseSaveError(err, !!plan));
+        this.toast.error(this.parseSaveError(err, !!plan));
         this.savingPlan.set(false);
-        this.openErrorToast();
       },
     });
   }
@@ -151,13 +146,11 @@ export class AdminMemberships {
         this.plans.update((items) => items.filter((p) => p.id !== plan.id));
         this.deletingPlanId.set(null);
         this.closeDeleteModal();
-        this.successToastMessage.set('Xóa hạng thành công');
-        this.openSuccessToast();
+        this.toast.success('Xóa hạng thành công');
       },
       error: (err: unknown) => {
-        this.errorToastMessage.set(this.parseDeleteError(err));
+        this.toast.error(this.parseDeleteError(err));
         this.deletingPlanId.set(null);
-        this.openErrorToast();
       },
     });
   }
@@ -169,26 +162,6 @@ export class AdminMemberships {
 
   goToPage(page: number): void {
     this.currentPage.set(page);
-  }
-
-  private openSuccessToast(): void {
-    this.showSuccessToast.set(true);
-    if (this.toastTimer) clearTimeout(this.toastTimer);
-    this.toastTimer = setTimeout(() => this.dismissSuccessToast(), 3000);
-  }
-
-  dismissSuccessToast(): void {
-    this.showSuccessToast.set(false);
-  }
-
-  private openErrorToast(): void {
-    this.showErrorToast.set(true);
-    if (this.toastTimer) clearTimeout(this.toastTimer);
-    this.toastTimer = setTimeout(() => this.dismissErrorToast(), 4000);
-  }
-
-  dismissErrorToast(): void {
-    this.showErrorToast.set(false);
   }
 
   private parseSaveError(err: unknown, isUpdate: boolean): string {

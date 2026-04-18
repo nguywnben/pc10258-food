@@ -7,6 +7,7 @@ import {
   FavoriteMutationResponse,
   ProductListResponse,
   ProductQuery,
+  Product
 } from '../models/menu.model';
 
 @Injectable({ providedIn: 'root' })
@@ -40,6 +41,10 @@ export class MenuService {
     }
 
     return this.http.get<ProductListResponse>(this.productsApiUrl, { params });
+  }
+
+  getProductById(id: number | string): Observable<{ success: boolean; data: Product }> {
+    return this.http.get<{ success: boolean; data: Product }>(`${this.productsApiUrl}/${id}`);
   }
 
   getFavorites(): Observable<FavoriteListResponse> {

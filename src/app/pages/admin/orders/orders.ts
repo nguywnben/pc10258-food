@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminOrderService } from '../../../services/admin-order.service';
 import { DeleteModalComponent } from '../../../components/delete-modal/delete-modal.component';
+import { ToastService } from '../../../components/toast/toast.service';
 
 import { PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -18,8 +19,7 @@ export class AdminOrders implements OnInit {
   private readonly adminOrderService = inject(AdminOrderService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly destroyRef = inject(DestroyRef);
-  private toastTimer: ReturnType<typeof setTimeout> | null = null;
-
+  private readonly toastSvc = inject(ToastService);
   readonly orders = signal<any[]>([]);
   readonly searchQuery = signal<string>('');
   
@@ -36,10 +36,6 @@ export class AdminOrders implements OnInit {
 
   readonly selectedOrder = signal<any | null>(null);
   readonly isModalOpen = signal<boolean>(false);
-  readonly showSuccessToast = signal(false);
-  readonly successToastMessage = signal('Cập nhật trạng thái thành công!');
-  readonly showErrorToast = signal(false);
-  readonly errorToastMessage = signal('Không thể cập nhật trạng thái đơn hàng.');
   readonly showStatusUpdateModal = signal(false);
   readonly statusUpdateOrder = signal<any | null>(null);
   readonly statusUpdateToValue = signal<string>('');
@@ -57,7 +53,7 @@ export class AdminOrders implements OnInit {
       error: (err: any) => {
         console.error('Lỗi khi tải danh sách đơn hàng:', err);
         if (typeof window !== 'undefined') {
-          alert(err.error?.message || 'Không thể lấy danh sách đơn hàng. Bạn đã đăng nhập Admin chưa?');
+          this.toastSvc.error(err.error?.message || 'Không thể lấy danh sách đơn hàng. Bạn đã đăng nhập Admin chưa?');
         }
       }
     });
@@ -96,14 +92,12 @@ export class AdminOrders implements OnInit {
     this.adminOrderService.updateOrderStatus(order.id, newStatus).subscribe({
       next: () => {
         order.status = newStatus;
-        this.successToastMessage.set(`Cập nhật trạng thái thành: ${statusLabel}`);
-        this.openSuccessToast();
+        this.toastSvc.success(`Cập nhật trạng thái thành: ${statusLabel}`);
         this.updatingOrderStatus.set(false);
         this.loadOrders();
       },
       error: (err: any) => {
-        this.errorToastMessage.set(err.error?.message || 'Không thể cập nhật trạng thái đơn hàng.');
-        this.openErrorToast();
+        this.toastSvc.error(err.error?.message || 'Không thể cập nhật trạng thái đơn hàng.');
         this.updatingOrderStatus.set(false);
       }
     });
@@ -116,38 +110,6 @@ export class AdminOrders implements OnInit {
     this.showStatusUpdateModal.set(false);
     this.statusUpdateOrder.set(null);
     this.statusUpdateToValue.set('');
-  }
-
-  openSuccessToast(): void {
-    this.showSuccessToast.set(true);
-    if (this.toastTimer) clearTimeout(this.toastTimer);
-    this.toastTimer = setTimeout(() => {
-      this.dismissSuccessToast();
-    }, 5000);
-  }
-
-  dismissSuccessToast(): void {
-    this.showSuccessToast.set(false);
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-      this.toastTimer = null;
-    }
-  }
-
-  openErrorToast(): void {
-    this.showErrorToast.set(true);
-    if (this.toastTimer) clearTimeout(this.toastTimer);
-    this.toastTimer = setTimeout(() => {
-      this.dismissErrorToast();
-    }, 5000);
-  }
-
-  dismissErrorToast(): void {
-    this.showErrorToast.set(false);
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-      this.toastTimer = null;
-    }
   }
 
   private getStatusLabel(status: string): string {

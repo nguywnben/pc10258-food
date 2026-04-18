@@ -4,6 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { AccountService } from '../../../core/services/account.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../components/toast/toast.service';
 import { AddressListResponse, AddressRecord } from '../../../core/models/account.model';
 
 const passwordMatchValidator = (control: AbstractControl): ValidationErrors | null => {
@@ -28,6 +29,7 @@ export class Account implements AfterViewInit, OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly accountService = inject(AccountService);
   private readonly authService = inject(AuthService);
+  private readonly toast = inject(ToastService);
 
   readonly profileLoading = signal(true);
   readonly profileSaving = signal(false);
@@ -110,6 +112,7 @@ export class Account implements AfterViewInit, OnInit {
       .subscribe({
         next: (response) => {
           this.profileMessage.set(response.message);
+          this.toast.success(response.message || 'Cập nhật thông tin thành công!');
           this.authService.updateUser({
             id: response.user.id,
             full_name: response.user.full_name,
@@ -121,7 +124,9 @@ export class Account implements AfterViewInit, OnInit {
           });
         },
         error: (errorResponse: HttpErrorResponse) => {
-          this.profileError.set(this.resolveErrorMessage(errorResponse, 'Cập nhật thông tin thất bại.'));
+          const msg = this.resolveErrorMessage(errorResponse, 'Cập nhật thông tin thất bại.');
+          this.profileError.set(msg);
+          this.toast.error(msg);
         },
       });
   }
@@ -144,10 +149,13 @@ export class Account implements AfterViewInit, OnInit {
       .subscribe({
         next: (response) => {
           this.passwordMessage.set(response.message);
+          this.toast.success(response.message || 'Đổi mật khẩu thành công!');
           this.passwordForm.reset({ current_password: '', new_password: '', confirm_password: '' });
         },
         error: (errorResponse: HttpErrorResponse) => {
-          this.passwordError.set(this.resolveErrorMessage(errorResponse, 'Đổi mật khẩu thất bại.'));
+          const msg = this.resolveErrorMessage(errorResponse, 'Đổi mật khẩu thất bại.');
+          this.passwordError.set(msg);
+          this.toast.error(msg);
         },
       });
   }
@@ -172,11 +180,14 @@ export class Account implements AfterViewInit, OnInit {
       .subscribe({
         next: (response) => {
           this.addressMessage.set(response.message);
+          this.toast.success(response.message || 'Lưu địa chỉ thành công!');
           this.resetAddressForm();
           this.loadAddresses();
         },
         error: (errorResponse: HttpErrorResponse) => {
-          this.addressError.set(this.resolveErrorMessage(errorResponse, 'Lưu địa chỉ thất bại.'));
+          const msg = this.resolveErrorMessage(errorResponse, 'Lưu địa chỉ thất bại.');
+          this.addressError.set(msg);
+          this.toast.error(msg);
         },
       });
   }
@@ -230,13 +241,16 @@ export class Account implements AfterViewInit, OnInit {
       .subscribe({
         next: (response) => {
           this.addressMessage.set(response.message);
+          this.toast.success(response.message || 'Xóa địa chỉ thành công!');
           if (this.editingAddressId() === address.id) {
             this.resetAddressForm();
           }
           this.loadAddresses();
         },
         error: (errorResponse: HttpErrorResponse) => {
-          this.addressError.set(this.resolveErrorMessage(errorResponse, 'Xóa địa chỉ thất bại.'));
+          const msg = this.resolveErrorMessage(errorResponse, 'Xóa địa chỉ thất bại.');
+          this.addressError.set(msg);
+          this.toast.error(msg);
         },
       });
   }

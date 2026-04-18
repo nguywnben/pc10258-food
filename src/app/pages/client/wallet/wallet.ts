@@ -5,16 +5,14 @@ import { FormsModule } from '@angular/forms';
 import { WalletService, WalletTransaction } from '../../../services/wallet.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { WalletDepositModalComponent } from '../../../components/wallet-deposit-modal/wallet-deposit-modal.component';
-import { ToastComponent } from '../../../components/toast/toast.component';
 
 @Component({
   selector: 'app-wallet',
   standalone: true,
-  imports: [CommonModule, FormsModule, WalletDepositModalComponent, ToastComponent],
+  imports: [CommonModule, FormsModule, WalletDepositModalComponent],
   templateUrl: './wallet.html',
 })
 export class Wallet implements OnInit, AfterViewInit {
-  @ViewChild(ToastComponent) toast!: ToastComponent;
   @ViewChild(WalletDepositModalComponent) depositModal!: WalletDepositModalComponent;
 
   private readonly router = inject(Router);

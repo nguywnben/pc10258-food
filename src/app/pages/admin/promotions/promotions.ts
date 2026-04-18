@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { AdminPromotionService, Promotion } from '../../../services/admin-promotion.service';
+import { ToastService } from '../../../components/toast/toast.service';
 import { PromotionModalComponent, PromotionModalSaveEvent } from '../../../components/promotion-modal/promotion-modal.component';
 import { DeleteModalComponent } from '../../../components/delete-modal/delete-modal.component';
 import { PaginationComponent } from '../../../components/pagination/pagination.component';
@@ -18,16 +19,12 @@ export class AdminPromotions implements OnInit {
   private readonly promoService = inject(AdminPromotionService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly toast = inject(ToastService);
   private readonly itemsPerPage = 10;
 
   readonly promotions = signal<Promotion[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  readonly showSuccessToast = signal(false);
-  readonly successToastMessage = signal('Thành công');
-  readonly showErrorToast = signal(false);
-  readonly errorToastMessage = signal('Có lỗi xảy ra');
   readonly deletingPromotionId = signal<number | null>(null);
   readonly showDeleteModal = signal(false);
   readonly selectedPromotion = signal<Promotion | null>(null);
@@ -126,21 +123,19 @@ export class AdminPromotions implements OnInit {
           this.promotions.update((items) =>
             items.map((item) => (item.id === savedPromo.id ? savedPromo : item))
           );
-          this.successToastMessage.set('Cập nhật khuyến mãi thành công');
+          this.toast.success('Cập nhật khuyến mãi thành công');
         } else {
           this.promotions.update((items) => [savedPromo, ...items]);
-          this.successToastMessage.set('Tạo khuyến mãi thành công');
+          this.toast.success('Tạo khuyến mãi thành công');
           this.goToPage(1);
         }
 
         this.savingPromotion.set(false);
         this.closePromotionModal();
-        this.openSuccessToast();
       },
       error: (err: unknown) => {
-        this.errorToastMessage.set(this.parseSaveError(err, !!promo));
+        this.toast.error(this.parseSaveError(err, !!promo));
         this.savingPromotion.set(false);
-        this.openErrorToast();
       }
     });
   }
@@ -160,13 +155,11 @@ export class AdminPromotions implements OnInit {
         this.promotions.update((items) => items.filter((p) => p.id !== promo.id));
         this.deletingPromotionId.set(null);
         this.closeDeleteModal();
-        this.successToastMessage.set('Xóa khuyến mãi thành công');
-        this.openSuccessToast();
+        this.toast.success('Xóa khuyến mãi thành công');
       },
       error: (err: unknown) => {
-        this.errorToastMessage.set(this.parseDeleteError(err));
+        this.toast.error(this.parseDeleteError(err));
         this.deletingPromotionId.set(null);
-        this.openErrorToast();
       }
     });
   }
@@ -178,26 +171,6 @@ export class AdminPromotions implements OnInit {
 
   goToPage(page: number): void {
     this.currentPage.set(page);
-  }
-
-  private openSuccessToast(): void {
-    this.showSuccessToast.set(true);
-    if (this.toastTimer) clearTimeout(this.toastTimer);
-    this.toastTimer = setTimeout(() => this.dismissSuccessToast(), 3000);
-  }
-
-  dismissSuccessToast(): void {
-    this.showSuccessToast.set(false);
-  }
-
-  private openErrorToast(): void {
-    this.showErrorToast.set(true);
-    if (this.toastTimer) clearTimeout(this.toastTimer);
-    this.toastTimer = setTimeout(() => this.dismissErrorToast(), 4000);
-  }
-
-  dismissErrorToast(): void {
-    this.showErrorToast.set(false);
   }
 
   private parseSaveError(err: unknown, isUpdate: boolean): string {

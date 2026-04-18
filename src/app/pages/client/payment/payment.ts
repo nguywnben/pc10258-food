@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, signal, inject, computed, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, signal, inject, computed } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,16 +6,17 @@ import { MembershipService, MembershipPlan } from '../../../services/membership.
 import { PaymentService } from '../../../services/payment.service';
 import { WalletService } from '../../../services/wallet.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { ToastComponent } from '../../../components/toast/toast.component';
+import { OrderService } from '../../../services/order.service';
+import { ToastService } from '../../../components/toast/toast.service';
 
 @Component({
   selector: 'app-payment',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ToastComponent],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './payment.html',
 })
 export class PaymentComponent implements OnInit, AfterViewInit {
-  @ViewChild(ToastComponent) toast!: ToastComponent;
+  private readonly toast = inject(ToastService);
 
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -23,8 +24,9 @@ export class PaymentComponent implements OnInit, AfterViewInit {
   private readonly paymentSvc = inject(PaymentService);
   private readonly walletSvc = inject(WalletService);
   private readonly authSvc = inject(AuthService);
+  private readonly orderSvc = inject(OrderService);
 
-  paymentType = signal<'wallet' | 'membership-upgrade'>('wallet');
+  paymentType = signal<'wallet' | 'membership-upgrade' | 'order'>('wallet');
   membershipPlan = signal<MembershipPlan | null>(null);
   isProcessing = signal(false);
   agreeConfirm = signal(false);
@@ -33,6 +35,7 @@ export class PaymentComponent implements OnInit, AfterViewInit {
   paymentAmount = signal<number>(0);
   paymentId = signal<number | null>(null);
   checkoutUrl = signal<string | null>(null);
+  orderId = signal<number | null>(null);
 
   // Wallet balance & payment method
   walletBalance = signal<number>(0);
@@ -48,26 +51,31 @@ export class PaymentComponent implements OnInit, AfterViewInit {
     // Check authentication first
     if (!this.authSvc.isAuthenticated()) {
       console.error('❌ User not authenticated');
-      this.toast.displayToast('Vui lòng đăng nhập để tiếp tục', 'error');
+      this.toast.error('Vui lòng đăng nhập để tiếp tục');
       this.router.navigate(['/login']);
       return;
     }
     
-    // Check sessionStorage first (more reliable than router state)
-    const storedPlan = sessionStorage.getItem('upgrade_plan');
-    const storedAmount = sessionStorage.getItem('upgrade_amount');
-    
-    if (storedPlan) {
-      const plan = JSON.parse(storedPlan);
-      this.membershipPlan.set(plan);
-      this.paymentType.set('membership-upgrade');
-      this.paymentAmount.set(parseInt(storedAmount || '0', 10));
+    // Check sessionStorage first (more reliable than router state) - Browser only
+    let loadedFromStorage = false;
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      const storedPlan = sessionStorage.getItem('upgrade_plan');
+      const storedAmount = sessionStorage.getItem('upgrade_amount');
       
-      // Clean up sessionStorage
-      sessionStorage.removeItem('upgrade_plan');
-      sessionStorage.removeItem('upgrade_amount');
-      // Continue to load wallet balance below
-    } else if (navigation?.extras.state) {
+      if (storedPlan) {
+        const plan = JSON.parse(storedPlan);
+        this.membershipPlan.set(plan);
+        this.paymentType.set('membership-upgrade');
+        this.paymentAmount.set(parseInt(storedAmount || '0', 10));
+        
+        // Clean up sessionStorage
+        sessionStorage.removeItem('upgrade_plan');
+        sessionStorage.removeItem('upgrade_amount');
+        loadedFromStorage = true;
+      }
+    }
+
+    if (!loadedFromStorage && navigation?.extras.state) {
       const state = navigation?.extras.state;
       this.paymentType.set(state['type'] || 'wallet');
       
@@ -91,6 +99,10 @@ export class PaymentComponent implements OnInit, AfterViewInit {
       if (state['checkout_url']) {
         this.checkoutUrl.set(state['checkout_url']);
       }
+      
+      if (state['order_id']) {
+        this.orderId.set(state['order_id']);
+      }
     }
 
     // Load wallet balance
@@ -98,6 +110,12 @@ export class PaymentComponent implements OnInit, AfterViewInit {
 
     // Additional route params handling
     this.route.queryParams.subscribe(params => {
+      if (params['type']) {
+        this.paymentType.set(params['type'] as any);
+      }
+      if (params['order_id']) {
+        this.orderId.set(parseInt(params['order_id'], 10));
+      }
       if (params['amount'] && !this.paymentAmount()) {
         this.paymentAmount.set(parseInt(params['amount'], 10));
       }
@@ -106,7 +124,7 @@ export class PaymentComponent implements OnInit, AfterViewInit {
 
   confirmPayment(): void {
     if (!this.agreeConfirm()) {
-      this.toast.displayToast('Vui lòng xác nhận thông tin thanh toán', 'error');
+      this.toast.warning('Vui lòng xác nhận thông tin thanh toán');
       return;
     }
 
@@ -123,6 +141,12 @@ export class PaymentComponent implements OnInit, AfterViewInit {
         this.processMembershipUpgradeWithWallet();
       } else {
         this.processMembershipPayment();
+      }
+    } else if (this.paymentType() === 'order') {
+      if (this.selectedPaymentMethod() === 'wallet') {
+        this.processWalletBalancePayment();
+      } else {
+        this.processOrderPayment();
       }
     }
   }
@@ -165,10 +189,9 @@ export class PaymentComponent implements OnInit, AfterViewInit {
    */
   private processWalletPayment(): void {
     const amount = this.paymentAmount();
-    const paymentId = this.paymentId();
 
-    if (!amount || !paymentId) {
-      this.toast.displayToast('Thông tin thanh toán không hợp lệ', 'error');
+    if (!amount) {
+      this.toast.error('Thông tin thanh toán không hợp lệ');
       return;
     }
 
@@ -183,14 +206,14 @@ export class PaymentComponent implements OnInit, AfterViewInit {
     }
 
     // Otherwise create new payment
-    const returnUrl = `${window.location.origin}/payment/callback?payment_id=${paymentId}`;
-    const cancelUrl = `${window.location.origin}/wallet#nap-tien`;
+    const cancelUrl = `${window.location.origin}/payment/cancel`;
 
     this.paymentSvc.createPayment({
       amount,
+      type: 'deposit',
       description: `Nạp tiền vào ví - ${amount.toLocaleString('vi-VN')} VNĐ`,
-      return_url: returnUrl,
-      cancel_url: cancelUrl
+      cancel_url: cancelUrl,
+      return_url: `${window.location.origin}/payment/callback`
     }).subscribe({
       next: (response) => {
         if (response.data.checkout_url) {
@@ -198,7 +221,7 @@ export class PaymentComponent implements OnInit, AfterViewInit {
           window.location.href = response.data.checkout_url;
         } else {
           this.isProcessing.set(false);
-          this.toast.displayToast('Lỗi: Không nhận được đường link thanh toán', 'error');
+          this.toast.error('Lỗi: Không nhận được đường link thanh toán');
         }
       },
       error: (err: any) => {
@@ -212,7 +235,7 @@ export class PaymentComponent implements OnInit, AfterViewInit {
           return;
         }
         
-        this.toast.displayToast('Lỗi tạo payment: ' + (err.error?.message || 'Vui lòng thử lại'), 'error');
+        this.toast.error('Lỗi tạo payment: ' + (err.error?.message || 'Vui lòng thử lại'));
       }
     });
   }
@@ -223,7 +246,7 @@ export class PaymentComponent implements OnInit, AfterViewInit {
   private processMembershipPayment(): void {
     if (!this.membershipPlan()) {
       console.error('❌ No membership plan!');
-      this.toast.displayToast('Thông tin gói nâng cấp không hợp lệ', 'error');
+      this.toast.error('Thông tin gói nâng cấp không hợp lệ');
       return;
     }
 
@@ -250,7 +273,7 @@ export class PaymentComponent implements OnInit, AfterViewInit {
           window.location.href = response.data.checkout_url;
         } else {
           this.isProcessing.set(false);
-          this.toast.displayToast('Lỗi: Không nhận được đường link thanh toán', 'error');
+          this.toast.error('Lỗi: Không nhận được đường link thanh toán');
         }
       },
       error: (err: any) => {
@@ -264,7 +287,57 @@ export class PaymentComponent implements OnInit, AfterViewInit {
           return;
         }
         
-        this.toast.displayToast('Lỗi tạo payment: ' + (err.error?.message || 'Vui lòng thử lại'), 'error');
+        this.toast.error('Lỗi tạo payment: ' + (err.error?.message || 'Vui lòng thử lại'));
+      }
+    });
+  }
+
+  /**
+   * Process order payment via PayOS
+   */
+  private processOrderPayment(): void {
+    const amount = this.paymentAmount();
+    const orderId = this.orderId();
+
+    if (!amount || !orderId) {
+      this.toast.error('Thông tin đơn hàng không hợp lệ');
+      return;
+    }
+
+    this.isProcessing.set(true);
+
+    const returnUrl = `${window.location.origin}/payment/callback`;
+    const cancelUrl = `${window.location.origin}/payment/callback`;
+
+    this.paymentSvc.createPayment({
+      amount,
+      type: 'order',
+      order_id: orderId,
+      description: `Thanh toan don so ${orderId}`,
+      return_url: returnUrl,
+      cancel_url: cancelUrl
+    }).subscribe({
+      next: (response) => {
+        if (response.data.checkout_url) {
+          sessionStorage.setItem('order_payment_id', response.data.id.toString());
+          // Redirect to PayOS checkout
+          window.location.href = response.data.checkout_url;
+        } else {
+          this.isProcessing.set(false);
+          this.toast.error('Lỗi: Không nhận được đường link thanh toán');
+        }
+      },
+      error: (err: any) => {
+        this.isProcessing.set(false);
+        console.error('Payment creation failed:', err);
+        
+        if (err.status === 401) {
+          this.authSvc.logout();
+          this.router.navigate(['/login']);
+          return;
+        }
+        
+        this.toast.error('Lỗi tạo payment: ' + (err.error?.message || 'Vui lòng thử lại'));
       }
     });
   }
@@ -278,12 +351,12 @@ export class PaymentComponent implements OnInit, AfterViewInit {
 
     if (!planId || !amount) {
       console.error('❌ Missing plan ID or amount!');
-      this.toast.displayToast('Thông tin gói không hợp lệ', 'error');
+      this.toast.error('Thông tin gói không hợp lệ');
       return;
     }
 
     if (this.walletBalance() < amount) {
-      this.toast.displayToast(`Số dư không đủ. Hiện có: ${this.formatPrice(this.walletBalance())}, Cần: ${this.formatPrice(amount)}`, 'error');
+      this.toast.error(`Số dư không đủ. Hiện có: ${this.formatPrice(this.walletBalance())}, Cần: ${this.formatPrice(amount)}`);
       return;
     }
 
@@ -311,7 +384,7 @@ export class PaymentComponent implements OnInit, AfterViewInit {
           error: (upgradeErr: any) => {
             this.isProcessing.set(false);
             console.error('❌ Membership upgrade API failed:', upgradeErr);
-            this.toast.displayToast('Lỗi nâng cấp gói: ' + (upgradeErr.error?.message || 'Vui lòng thử lại'), 'error');
+            this.toast.error('Lỗi nâng cấp gói: ' + (upgradeErr.error?.message || 'Vui lòng thử lại'));
           }
         });
       },
@@ -326,7 +399,7 @@ export class PaymentComponent implements OnInit, AfterViewInit {
           return;
         }
 
-        this.toast.displayToast('Lỗi thanh toán: ' + (err.error?.message || 'Vui lòng thử lại'), 'error');
+        this.toast.error('Lỗi thanh toán: ' + (err.error?.message || 'Vui lòng thử lại'));
       }
     });
   }
@@ -339,22 +412,29 @@ export class PaymentComponent implements OnInit, AfterViewInit {
 
     if (!amount) {
       console.error('❌ Amount is invalid:', amount);
-      this.toast.displayToast('Số tiền không hợp lệ', 'error');
+      this.toast.error('Số tiền không hợp lệ');
       return;
     }
 
     if (this.walletBalance() < amount) {
-      this.toast.displayToast(`Số dư không đủ. Hiện có: ${this.formatPrice(this.walletBalance())}, Cần: ${this.formatPrice(amount)}`, 'error');
+      this.toast.error(`Số dư không đủ. Hiện có: ${this.formatPrice(this.walletBalance())}, Cần: ${this.formatPrice(amount)}`);
       return;
     }
 
     this.isProcessing.set(true);
 
-    this.paymentSvc.payWithWallet({
+    const isOrder = this.paymentType() === 'order';
+    const payload: any = {
       amount,
-      type: 'order',
-      description: `Nạp tiền vào ví - ${amount.toLocaleString('vi-VN')} VNĐ`
-    }).subscribe({
+      type: isOrder ? 'order' : 'payment',
+      description: isOrder ? `Thanh toán hoá đơn ${this.orderId() || ''}` : `Thanh toán ${amount.toLocaleString('vi-VN')} VNĐ`
+    };
+
+    if (isOrder && this.orderId()) {
+      payload.order_id = this.orderId();
+    }
+
+    this.paymentSvc.payWithWallet(payload).subscribe({
       next: (response) => {
         this.isProcessing.set(false);
         // Store payment info and redirect to success page
@@ -380,11 +460,11 @@ export class PaymentComponent implements OnInit, AfterViewInit {
 
         // Handle insufficient balance
         if (err.status === 400 && err.error?.error?.includes('không đủ')) {
-          this.toast.displayToast(err.error.error, 'error');
+          this.toast.error(err.error.error);
           return;
         }
 
-        this.toast.displayToast('Lỗi thanh toán: ' + (err.error?.error || 'Vui lòng thử lại'), 'error');
+        this.toast.error('Lỗi thanh toán: ' + (err.error?.error || 'Vui lòng thử lại'));
       }
     });
   }

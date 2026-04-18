@@ -42,6 +42,9 @@ export class LeftSidebar {
   }
 
   exact(p: string): boolean {
+    if (p === '/' && this.path().startsWith('/product/')) {
+        return true;
+    }
     return this.path() === p;
   }
 

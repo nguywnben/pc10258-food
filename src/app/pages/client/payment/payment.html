@@ -1,5 +1,3 @@
-<app-toast #toast></app-toast>
-
 <div class="mx-auto w-full max-w-2xl space-y-6">
   <!-- Breadcrumb for Wallet -->
   <nav *ngIf="paymentType() === 'wallet'" id="pay-breadcrumb" class="text-sm text-ink-light" aria-label="Breadcrumb">
@@ -23,10 +21,12 @@
         <h1 id="pay-title" class="text-xl font-bold text-ink sm:text-2xl">
           <span *ngIf="paymentType() === 'wallet'">Xác nhận thanh toán</span>
           <span *ngIf="paymentType() === 'membership-upgrade'">Xác nhận nâng cấp Membership</span>
+          <span *ngIf="paymentType() === 'order'">Xác nhận thanh toán đơn hàng</span>
         </h1>
         <p id="pay-subtitle" class="mt-1 text-sm text-ink-light">
           <span *ngIf="paymentType() === 'wallet'">Kiểm tra thông tin trước khi hoàn tất (demo).</span>
           <span *ngIf="paymentType() === 'membership-upgrade'">Kiểm tra gói cần nâng cấp trước khi thanh toán.</span>
+          <span *ngIf="paymentType() === 'order'">Kiểm tra thông tin đơn hàng trước khi thanh toán.</span>
         </p>
       </div>
       <div class="rounded-xl bg-gray-50 px-3 py-2 text-right ring-1 ring-gray-100">
@@ -64,15 +64,16 @@
       <span class="text-sm font-medium text-ink">
         <span *ngIf="paymentType() === 'wallet'">Số tiền thanh toán</span>
         <span *ngIf="paymentType() === 'membership-upgrade'">Giá tiền gói</span>
+        <span *ngIf="paymentType() === 'order'">Tổng hóa đơn thanh toán</span>
       </span>
       <span id="pay-amount" class="text-xl font-extrabold text-brand tabular-nums">
-        <span *ngIf="paymentType() === 'wallet'">{{ formatPrice(paymentAmount() || 0) }}</span>
+        <span *ngIf="paymentType() === 'wallet' || paymentType() === 'order'">{{ formatPrice(paymentAmount() || 0) }}</span>
         <span *ngIf="paymentType() === 'membership-upgrade'">{{ formatPrice(membershipPlan()?.price || 0) }}</span>
       </span>
     </div>
 
-    <!-- Payment Method Selection for Wallet & Membership Upgrade -->
-    <div *ngIf="paymentType() === 'wallet' || paymentType() === 'membership-upgrade'" class="mt-6 space-y-4">
+    <!-- Payment Method Selection -->
+    <div *ngIf="paymentType() === 'wallet' || paymentType() === 'membership-upgrade' || paymentType() === 'order'" class="mt-6 space-y-4">
       <!-- Wallet Load Error Alert -->
       <div *ngIf="walletLoadError()" class="rounded-xl border border-red-200 bg-red-50 p-4">
         <p class="text-sm font-semibold text-red-800">⚠️ Lỗi tải số dư ví</p>
@@ -139,8 +140,8 @@
       </label>
     </div>
 
-    <!-- PayOS Info Block for Wallet & Membership -->
-    <div *ngIf="(paymentType() === 'wallet' || paymentType() === 'membership-upgrade') && selectedPaymentMethod() === 'payos'" id="pay-info-block" class="mt-6 rounded-2xl border border-gray-100 bg-gray-50/50 p-6">
+    <!-- PayOS Info Block -->
+    <div *ngIf="(paymentType() === 'wallet' || paymentType() === 'membership-upgrade' || paymentType() === 'order') && selectedPaymentMethod() === 'payos'" id="pay-info-block" class="mt-6 rounded-2xl border border-gray-100 bg-gray-50/50 p-6">
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <p class="text-sm text-ink-light">Phương thức thanh toán</p>
@@ -150,16 +151,18 @@
           <p class="text-sm text-ink-light">
             <span *ngIf="paymentType() === 'wallet'">Loại giao dịch</span>
             <span *ngIf="paymentType() === 'membership-upgrade'">Gói nâng cấp</span>
+            <span *ngIf="paymentType() === 'order'">Đơn hàng số</span>
           </p>
           <p class="text-sm font-semibold text-ink">
             <span *ngIf="paymentType() === 'wallet'">Nạp tiền vào ví</span>
             <span *ngIf="paymentType() === 'membership-upgrade'">{{ membershipPlan()?.name }}</span>
+            <span *ngIf="paymentType() === 'order'">#{{ orderId() }}</span>
           </p>
         </div>
         <div class="flex items-center justify-between border-t border-gray-200 pt-3">
           <p class="text-sm text-ink-light">Tổng thanh toán</p>
           <p class="text-sm font-bold text-brand">
-            <span *ngIf="paymentType() === 'wallet'">{{ formatPrice(paymentAmount() || 0) }}</span>
+            <span *ngIf="paymentType() === 'wallet' || paymentType() === 'order'">{{ formatPrice(paymentAmount() || 0) }}</span>
             <span *ngIf="paymentType() === 'membership-upgrade'">{{ formatPrice(membershipPlan()?.price || 0) }}</span>
           </p>
         </div>
@@ -167,8 +170,8 @@
       <p class="mt-3 text-xs text-ink-light">Hệ thống sẽ chuyển hướng bạn đến cổng PayOS để xác nhận thanh toán.</p>
     </div>
 
-    <!-- Wallet Payment Info for Wallet & Membership -->
-    <div *ngIf="(paymentType() === 'wallet' || paymentType() === 'membership-upgrade') && selectedPaymentMethod() === 'wallet'" id="pay-wallet-info" class="mt-6 rounded-2xl border border-gray-100 bg-gray-50/50 p-6">
+    <!-- Wallet Payment Info -->
+    <div *ngIf="(paymentType() === 'wallet' || paymentType() === 'membership-upgrade' || paymentType() === 'order') && selectedPaymentMethod() === 'wallet'" id="pay-wallet-info" class="mt-6 rounded-2xl border border-gray-100 bg-gray-50/50 p-6">
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <p class="text-sm text-ink-light">Phương thức thanh toán</p>
@@ -181,7 +184,7 @@
         <div class="flex items-center justify-between border-t border-gray-200 pt-3">
           <p class="text-sm text-ink-light">Tổng thanh toán</p>
           <p class="text-sm font-bold text-brand">
-            <span *ngIf="paymentType() === 'wallet'">{{ formatPrice(paymentAmount() || 0) }}</span>
+            <span *ngIf="paymentType() === 'wallet' || paymentType() === 'order'">{{ formatPrice(paymentAmount() || 0) }}</span>
             <span *ngIf="paymentType() === 'membership-upgrade'">{{ formatPrice(membershipPlan()?.price || 0) }}</span>
           </p>
         </div>
@@ -193,8 +196,9 @@
         </div>
       </div>
       <p class="mt-3 text-xs text-ink-light">
-        <span *ngIf="paymentType() === 'wallet'">Tiền sẽ được trừ trực tiếp từ ví của bạn ngay khi xác nhận.</span>
+        <span *ngIf="paymentType() === 'wallet'">Tiền sẽ được nạp trực tiếp vào ví hệ thống ngay khi xác nhận từ cổng Online.</span>
         <span *ngIf="paymentType() === 'membership-upgrade'">Tiền nâng cấp sẽ được trừ từ ví. Tài khoản sẽ được nâng cấp ngay.</span>
+        <span *ngIf="paymentType() === 'order'">Tiền sẽ được trừ thẳng từ Ví của bạn. Đơn hàng sẽ xác nhận thành công ngay lập tức!</span>
       </p>
     </div>
 
@@ -218,8 +222,9 @@
         class="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-brand focus:ring-brand" 
       />
       <span class="text-sm text-ink-light">
-        <span *ngIf="paymentType() === 'wallet'">Tôi xác nhận đã kiểm tra số tiền và phương thức. Đây là luồng demo, không trừ tiền thật.</span>
-        <span *ngIf="paymentType() === 'membership-upgrade'">Tôi xác nhận đã kiểm tra gói nâng cấp. Sau khi thanh toán, tài khoản sẽ được nâng cấp ngay.</span>
+        <span *ngIf="paymentType() === 'wallet'">Tôi xác nhận giao dịch này và đồng ý với các điều khoản thanh toán.</span>
+        <span *ngIf="paymentType() === 'membership-upgrade'">Tôi xác nhận gói nâng cấp. Sau khi thanh toán, tài khoản sẽ được nâng cấp ngay.</span>
+        <span *ngIf="paymentType() === 'order'">Tôi chắc chắn muốn thanh toán cho đơn hàng này.</span>
       </span>
     </label>
 

@@ -115,15 +115,26 @@
           type="text"
           [(ngModel)]="promoCodeInput"
           placeholder="Nhập mã ưu đãi"
-          class="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+          class="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:bg-gray-100 disabled:text-gray-400"
           maxlength="20"
+          [disabled]="appliedPromo !== null"
         />
-        <button type="button" (click)="applyPromo()" class="shrink-0 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">
+        <button 
+          type="button" 
+          (click)="applyPromo()" 
+          class="shrink-0 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:bg-gray-300 disabled:cursor-not-allowed"
+          [disabled]="appliedPromo !== null || !promoCodeInput"
+        >
           Áp dụng
         </button>
       </div>
       @if (appliedPromo) {
-        <p class="mt-1 text-xs text-green-500">Mã {{ appliedPromo.code }} đang áp dụng!</p>
+        <div class="mt-2 flex items-center justify-between rounded-lg bg-green-50 px-3 py-2 border border-green-100">
+          <span class="text-xs font-semibold text-green-600">Đang giảm: {{ appliedPromo.code }}</span>
+          <button type="button" (click)="removePromo()" class="flex h-6 w-6 items-center justify-center rounded-full text-red-400 transition hover:bg-red-100 hover:text-red-600" aria-label="Hủy mã">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
       }
     </div>
 

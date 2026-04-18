@@ -50,7 +50,7 @@ export class ClientLayout {
    */
   showRightSidebar(): boolean {
     const p = this.currentPath();
-    return p === '/' || p === '/favorites';
+    return p === '/' || p === '/favorites' || p.startsWith('/product/');
   }
 
   /** Padding `<main>` khớp các trang HTML tĩnh. */

@@ -147,7 +147,7 @@
 } @else {
   <section class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3" aria-label="Lưới sản phẩm">
     @for (product of products(); track product.id) {
-      <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white" [class.is-in-favorites]="isFavorite(product.id)">
+      <article class="card-hover cursor-pointer overflow-hidden rounded-2xl bg-white" [class.is-in-favorites]="isFavorite(product.id)" (click)="openProductModal(product)">
         <div class="relative h-44 overflow-hidden">
           <img
             [src]="product.image_url || 'assets/images/user_avatar.png'"

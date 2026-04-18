@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../components/toast/toast.service';
 
 @Component({
   selector: 'app-register',
@@ -15,6 +16,7 @@ export class Register implements AfterViewInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
 
   readonly isSubmitting = signal(false);
   readonly submitError = signal<string | null>(null);
@@ -71,18 +73,21 @@ export class Register implements AfterViewInit {
       )
       .subscribe({
         next: () => {
+          this.toast.success('Đăng ký thành công! Chào mừng bạn.');
           void this.router.navigate(['/']);
         },
         error: (errorResponse: HttpErrorResponse) => {
           const apiMessage = errorResponse.error?.message;
           if (typeof apiMessage === 'string' && apiMessage.toLowerCase().includes('email')) {
-            this.submitError.set('Email đã tồn tại, vui lòng dùng email khác.');
+            const msg = 'Email đã tồn tại, vui lòng dùng email khác.';
+            this.submitError.set(msg);
+            this.toast.error(msg);
             return;
           }
 
-          this.submitError.set(
-            typeof apiMessage === 'string' ? apiMessage : 'Đăng ký thất bại, vui lòng thử lại.'
-          );
+          const errorMsg = typeof apiMessage === 'string' ? apiMessage : 'Đăng ký thất bại, vui lòng thử lại.';
+          this.submitError.set(errorMsg);
+          this.toast.error(errorMsg);
         },
       });
   }

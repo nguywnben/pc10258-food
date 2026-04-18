@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../components/toast/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -15,6 +16,7 @@ export class Login implements AfterViewInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
 
   readonly isSubmitting = signal(false);
   readonly submitError = signal<string | null>(null);
@@ -57,6 +59,7 @@ export class Login implements AfterViewInit {
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: () => {
+          this.toast.success('Đăng nhập thành công!');
           void this.router.navigate(['/']);
         },
         error: (errorResponse: HttpErrorResponse) => {
@@ -69,13 +72,15 @@ export class Login implements AfterViewInit {
             null;
 
           if (!apiMessage && errorResponse.status === 400) {
-            this.submitError.set('Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.');
+            const msg = 'Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.';
+            this.submitError.set(msg);
+            this.toast.error(msg);
             return;
           }
 
-          this.submitError.set(
-            typeof apiMessage === 'string' ? apiMessage : `Đăng nhập thất bại (HTTP ${errorResponse.status || 0}).`
-          );
+          const errorMsg = typeof apiMessage === 'string' ? apiMessage : `Đăng nhập thất bại (HTTP ${errorResponse.status || 0}).`;
+          this.submitError.set(errorMsg);
+          this.toast.error(errorMsg);
         },
       });
   }

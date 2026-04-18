@@ -114,6 +114,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/client/payment/payment-cancel/payment-cancel.component').then(m => m.PaymentCancelComponent),
       },
       {
+        path: 'product/:id',
+        loadComponent: () => import('./pages/client/product-detail/product-detail.component').then(m => m.ProductDetailComponent),
+      },
+      {
         path: 'orders',
         canActivate: [authGuard],
         loadComponent: () => import('./pages/client/orders/orders').then(m => m.Orders),

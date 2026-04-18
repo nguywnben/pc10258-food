@@ -7,11 +7,12 @@ import { MenuService } from '../../../core/services/menu.service';
 import { CartService } from '../../../services/cart.service';
 import { Category, Product, ProductQuery } from '../../../core/models/menu.model';
 import { ClientProductModalComponent } from '../../../components/client/product-modal/client-product-modal.component';
+import { ToastService } from '../../../components/toast/toast.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, ClientProductModalComponent],
+  imports: [RouterLink],
   templateUrl: './home.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -20,6 +21,7 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
 
   readonly categoriesLoading = signal(true);
   readonly productsLoading = signal(true);
@@ -38,10 +40,10 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
   readonly selectedProduct = signal<Product | null>(null);
 
   openProductModal(product: Product) {
-    this.selectedProduct.set(product);
-    this.isProductModalOpen.set(true);
+    void this.router.navigate(['/product', product.id]);
   }
 
+  // Obsolete - kept to prevent template errors before HTML update
   closeProductModal() {
     this.isProductModalOpen.set(false);
   }
@@ -54,11 +56,11 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
     
     this.cartService.addToCart(product.id, 1).subscribe({
       next: () => {
-        alert(`Đã thêm ${product.name} vào giỏ hàng thành công!`);
+        this.toast.success(`Đã thêm ${product.name} vào giỏ hàng thành công!`);
         this.closeProductModal();
       },
       error: (err: HttpErrorResponse) => {
-        alert(err.error?.message || 'Có lỗi khi thêm giỏ hàng. Thử lại sau.');
+        this.toast.error(err.error?.message || 'Có lỗi khi thêm giỏ hàng. Thử lại sau.');
       }
     });
   }
@@ -120,12 +122,16 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
       next: () => {
         if (isFavorite) {
           this.favoriteProductIds.set(this.favoriteProductIds().filter((id) => id !== product.id));
+          this.toast.success(`Đã bỏ ${product.name} khỏi danh sách yêu thích.`);
         } else {
           this.favoriteProductIds.set([...new Set([...this.favoriteProductIds(), product.id])]);
+          this.toast.success(`Đã thêm ${product.name} vào danh sách yêu thích.`);
         }
       },
       error: (errorResponse: HttpErrorResponse) => {
-        this.errorMessage.set(this.resolveErrorMessage(errorResponse, 'Không cập nhật được yêu thích.'));
+        const message = this.resolveErrorMessage(errorResponse, 'Không cập nhật được yêu thích.');
+        this.errorMessage.set(message);
+        this.toast.error(message);
       },
     });
   }

@@ -6,6 +6,7 @@ import { DeleteModalComponent } from '../../../components/delete-modal/delete-mo
 import { PaginationComponent } from '../../../components/pagination/pagination.component';
 import { ProductModalComponent, ProductModalSaveEvent } from '../../../components/product-modal/product-modal.component';
 import { ProductsService, Product, CreateProductPayload, UpdateProductPayload } from '../../../services/products.service';
+import { ToastService } from '../../../components/toast/toast.service';
 import { CategoriesService, Category } from '../../../services/categories.service';
 
 @Component({
@@ -13,64 +14,6 @@ import { CategoriesService, Category } from '../../../services/categories.servic
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [DecimalPipe, DeleteModalComponent, PaginationComponent, ProductModalComponent],
   template: `
-@if (showSuccessToast()) {
-  <div class="fixed right-6 top-6 z-50 w-[min(92vw,420px)] rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-emerald-800 shadow-xl">
-    <div class="flex items-start justify-between gap-3">
-      <div class="flex items-start gap-3">
-        <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </div>
-        <div>
-          <p class="text-lg font-semibold leading-6">Thành công</p>
-          <p class="text-sm">{{ successToastMessage() }}</p>
-        </div>
-      </div>
-
-      <button
-        type="button"
-        class="rounded-md p-1 text-emerald-700 transition hover:bg-emerald-100"
-        (click)="dismissSuccessToast()"
-        aria-label="Đóng thông báo"
-      >
-        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </button>
-    </div>
-  </div>
-}
-
-@if (showErrorToast()) {
-  <div class="fixed right-6 top-24 z-50 w-[min(92vw,420px)] rounded-2xl border border-red-100 bg-red-50 p-4 text-red-800 shadow-xl">
-    <div class="flex items-start justify-between gap-3">
-      <div class="flex items-start gap-3">
-        <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </div>
-        <div>
-          <p class="text-lg font-semibold leading-6">Không thể thực hiện</p>
-          <p class="text-sm">{{ errorToastMessage() }}</p>
-        </div>
-      </div>
-
-      <button
-        type="button"
-        class="rounded-md p-1 text-red-700 transition hover:bg-red-100"
-        (click)="dismissErrorToast()"
-        aria-label="Đóng thông báo lỗi"
-      >
-        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </button>
-    </div>
-  </div>
-}
-
 <section class="card-admin overflow-hidden">
   <div class="flex items-center justify-between gap-4 px-5 py-4">
     <div>
@@ -216,17 +159,13 @@ export class AdminProductsList {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly toast = inject(ToastService);
   private readonly itemsPerPage = 10;
 
   readonly products = signal<Product[]>([]);
   readonly categories = signal<Category[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  readonly showSuccessToast = signal(false);
-  readonly successToastMessage = signal('Thêm sản phẩm thành công');
-  readonly showErrorToast = signal(false);
-  readonly errorToastMessage = signal('Không thể xóa sản phẩm.');
   readonly deletingProductId = signal<number | null>(null);
   readonly showDeleteModal = signal(false);
   readonly selectedProduct = signal<Product | null>(null);
@@ -329,21 +268,19 @@ export class AdminProductsList {
       next: (savedProduct) => {
         if (product) {
           this.products.update((items) => items.map((item) => (item.id === savedProduct.id ? savedProduct : item)));
-          this.successToastMessage.set('Cập nhật sản phẩm thành công');
+          this.toast.success('Cập nhật sản phẩm thành công');
         } else {
           this.products.update((items) => [savedProduct, ...items]);
-          this.successToastMessage.set('Thêm sản phẩm thành công');
+          this.toast.success('Thêm sản phẩm thành công');
           this.goToPage(1);
         }
 
         this.savingProduct.set(false);
         this.closeProductModal();
-        this.openSuccessToast();
       },
       error: (err: unknown) => {
-        this.errorToastMessage.set(this.parseSaveError(err, !!product));
+        this.toast.error(this.parseSaveError(err, !!product));
         this.savingProduct.set(false);
-        this.openErrorToast();
       },
     });
   }
@@ -364,14 +301,12 @@ export class AdminProductsList {
       next: () => {
         this.products.update((items) => items.filter((item) => item.id !== product.id));
         this.ensureCurrentPageInRange();
-        this.successToastMessage.set('Xóa sản phẩm thành công');
-        this.openSuccessToast();
+        this.toast.success('Xóa sản phẩm thành công');
         this.deletingProductId.set(null);
         this.selectedProduct.set(null);
       },
       error: (err: unknown) => {
-        this.errorToastMessage.set(this.parseDeleteError(err));
-        this.openErrorToast();
+        this.toast.error(this.parseDeleteError(err));
         this.deletingProductId.set(null);
         this.selectedProduct.set(null);
       },
@@ -390,42 +325,6 @@ export class AdminProductsList {
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
-  }
-
-  dismissSuccessToast(): void {
-    this.showSuccessToast.set(false);
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-      this.toastTimer = null;
-    }
-  }
-
-  dismissErrorToast(): void {
-    this.showErrorToast.set(false);
-  }
-
-  private openSuccessToast(): void {
-    this.showSuccessToast.set(true);
-
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-    }
-
-    this.toastTimer = setTimeout(() => {
-      this.dismissSuccessToast();
-    }, 3000);
-  }
-
-  private openErrorToast(): void {
-    this.showErrorToast.set(true);
-
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-    }
-
-    this.toastTimer = setTimeout(() => {
-      this.dismissErrorToast();
-    }, 3500);
   }
 
   private ensureCurrentPageInRange(): void {

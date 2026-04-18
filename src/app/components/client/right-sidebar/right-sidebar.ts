@@ -11,6 +11,7 @@ import { WalletService, Wallet } from '../../../services/wallet.service';
 import { AddressService, Address } from '../../../services/address.service';
 import { PromotionService, Promotion } from '../../../services/promotion.service';
 import { OrderService } from '../../../services/order.service';
+import { ToastService } from '../../toast/toast.service';
 
 @Component({
   selector: 'app-right-sidebar',
@@ -30,6 +31,7 @@ export class RightSidebar implements OnDestroy {
   private readonly promoService = inject(PromotionService);
   private readonly orderService = inject(OrderService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly toast = inject(ToastService);
 
   private destroy$ = new Subject<void>();
 
@@ -132,7 +134,7 @@ export class RightSidebar implements OnDestroy {
         this.subtotal = res.data.subtotal || 0;
         this.cartCount = res.data.count || 0;
         this.recalculateDiscount();
-        this.cdr.detectChanges(); // Ép cập nhật giao diện ngay lập tức
+        this.cdr.detectChanges(); // Use detectChanges to force synchronous render instead of markForCheck
       },
       error: () => console.warn('Cần đăng nhập để xem giỏ hàng'),
     });
@@ -142,7 +144,7 @@ export class RightSidebar implements OnDestroy {
     const newQty = currentQty + change;
     this.cartService.updateQuantity(id, newQty).subscribe({
       next: () => this.loadCart(),
-      error: (err: any) => alert(err.error?.message || 'Lỗi cập nhật')
+      error: (err: any) => this.toast.error(err.error?.message || 'Lỗi cập nhật')
     });
   }
 
@@ -150,21 +152,21 @@ export class RightSidebar implements OnDestroy {
     if (!this.promoCodeInput.trim()) {
       this.appliedPromo = null;
       this.recalculateDiscount();
-      this.cdr.detectChanges();
+      this.cdr.markForCheck();
       return;
     }
     this.promoService.validatePromo(this.promoCodeInput, this.subtotal).subscribe({
       next: (res: any) => {
         this.appliedPromo = res.data;
         this.recalculateDiscount();
-        this.cdr.detectChanges();
-        alert('Áp dụng mã giảm giá thành công!');
+        this.cdr.markForCheck();
+        this.toast.success('Áp dụng mã giảm giá thành công!');
       },
       error: (err: any) => {
-        alert(err.error?.message || 'Mã giảm giá không hợp lệ');
+        this.toast.error(err.error?.message || 'Mã giảm giá không hợp lệ');
         this.appliedPromo = null;
         this.recalculateDiscount();
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       }
     });
   }
@@ -173,7 +175,7 @@ export class RightSidebar implements OnDestroy {
     this.appliedPromo = null;
     this.promoCodeInput = '';
     this.recalculateDiscount();
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
   recalculateDiscount() {
@@ -197,7 +199,7 @@ export class RightSidebar implements OnDestroy {
 
   checkout() {
     if (this.cartItems.length === 0) {
-      alert('Giỏ hàng đang trống!');
+      this.toast.warning('Giỏ hàng đang trống!');
       return;
     }
 
@@ -209,17 +211,22 @@ export class RightSidebar implements OnDestroy {
 
     this.orderService.createOrder(payload).subscribe({
       next: (res: any) => {
-        alert('Đặt hàng thành công!');
         this.loadCart();
         this.router.navigate(['/payment'], { 
+          state: {
+            type: 'order',
+            amount: res.data.order.total,
+            order_id: res.data.order.id
+          },
           queryParams: { 
             type: 'order', 
             amount: res.data.order.total, 
+            order_id: res.data.order.id,
             label: `Thanh toán hoá đơn ${res.data.order.order_code}` 
           } 
         });
       },
-      error: (err: any) => alert(err.error?.message || 'Lỗi đặt hàng')
+      error: (err: any) => this.toast.error(err.error?.message || 'Lỗi đặt hàng')
     });
   }
 }

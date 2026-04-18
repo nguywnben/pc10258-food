@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PaymentService, PaymentCheckoutResponse } from '../../services/payment.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../toast/toast.service';
 
 @Component({
   selector: 'app-wallet-deposit-modal',
@@ -112,6 +113,7 @@ export class WalletDepositModalComponent {
   private readonly router = inject(Router);
   private readonly paymentSvc = inject(PaymentService);
   private readonly authSvc = inject(AuthService);
+  private readonly toast = inject(ToastService);
 
   isOpen = signal(false);
   presets = [50000, 100000, 200000, 500000];
@@ -147,7 +149,7 @@ export class WalletDepositModalComponent {
   onSubmit(): void {
     const amount = this.finalAmount();
     if (!amount) {
-      alert('Vui lòng chọn mệnh giá hoặc nhập số tiền');
+      this.toast.warning('Vui lòng chọn mệnh giá hoặc nhập số tiền');
       return;
     }
 
@@ -177,7 +179,7 @@ export class WalletDepositModalComponent {
         if (response.data.checkout_url) {
           window.location.href = response.data.checkout_url;
         } else {
-          alert('Lỗi: Không nhận được đường link thanh toán');
+          this.toast.error('Không nhận được đường link thanh toán');
         }
       },
       error: (err: any) => {
@@ -192,7 +194,7 @@ export class WalletDepositModalComponent {
           return;
         }
         
-        alert('Lỗi: ' + (err.error?.message || 'Không thể tạo giao dịch thanh toán'));
+        this.toast.error(err.error?.message || 'Không thể tạo giao dịch thanh toán');
       }
     });
   }

@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { PaymentService, PaymentResponse } from '../../../../services/payment.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -7,7 +7,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 @Component({
   selector: 'app-payment-callback',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="mx-auto w-full max-w-2xl space-y-6 py-12">
       <section class="rounded-3xl border border-gray-100 bg-white p-6 sm:p-7 text-center">
@@ -27,10 +27,10 @@ import { AuthService } from '../../../../core/services/auth.service';
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
             </svg>
           </div>
-          <h2 class="text-xl font-bold text-ink">Thanh toán thành công!</h2>
-          <p class="text-sm text-ink-light">Số dư ví của bạn đã được cập nhật. Chuyển hướng đến trang chủ...</p>
+          <h2 class="text-xl font-bold text-ink">Giao dịch thành công!</h2>
+          <p class="text-sm text-ink-light">Thanh toán của bạn đã được ghi nhận. Hệ thống đang chuyển hướng...</p>
           <div class="mt-6">
-            <a href="/wallet" class="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-brand-hover">
+            <a [routerLink]="['/wallet']" class="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-brand-hover">
               Quay lại ví
             </a>
           </div>
@@ -45,16 +45,12 @@ import { AuthService } from '../../../../core/services/auth.service';
           <h2 class="text-xl font-bold text-ink">Thanh toán không thành công</h2>
           <p class="text-sm text-ink-light">{{ errorMessage() || 'Có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại.' }}</p>
           <div class="mt-6 flex gap-3 justify-center">
-            <a href="/wallet" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-ink hover:bg-gray-50">
-              Quay lại ví
+            <a [routerLink]="['/orders']" class="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-brand-hover">
+              Đến danh sách đơn hàng
             </a>
-            <button 
-              type="button"
-              (click)="retryPayment()"
-              class="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-brand-hover"
-            >
-              Thử lại
-            </button>
+            <a [routerLink]="['/']" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-ink hover:bg-gray-50">
+              Về trang chủ
+            </a>
           </div>
         </div>
       </section>
@@ -73,15 +69,19 @@ export class PaymentCallbackComponent implements OnInit {
   paymentId: number | null = null;
 
   ngOnInit(): void {
-    // Get payment_id from query params
     this.route.queryParams.subscribe(params => {
-      this.paymentId = params['payment_id'] ? parseInt(params['payment_id'], 10) : null;
-      const status = params['status']; // 'success' or 'cancel'
+      // PayOS passes orderCode which corresponds to the Payment ID
+      this.paymentId = (params['payment_id'] ? parseInt(params['payment_id'], 10) : null) 
+                     || (params['orderCode'] ? parseInt(params['orderCode'], 10) : null);
+      
+      const isCancelled = params['cancel'] === 'true';
+      const status = params['status']; // PAID or CANCELLED from PayOS
 
-      if (this.paymentId && status === 'success') {
+      // ALWAYS submit to backend so backend updates payment status properly
+      if (this.paymentId) {
         this.confirmPayment();
       } else {
-        this.handleError('Thanh toán bị hủy hoặc có lỗi.');
+        this.handleError('Không tìm thấy mã giao dịch.');
       }
     });
   }
@@ -95,14 +95,24 @@ export class PaymentCallbackComponent implements OnInit {
     this.paymentSvc.confirmPayment(this.paymentId, {
       transaction_code: `PAYOS-${this.paymentId}`
     }).subscribe({
-      next: (response: PaymentResponse) => {
+      next: (response: any) => {
         this.isProcessing.set(false);
-        this.isSuccess.set(true);
-        
-        // Redirect to wallet after 3 seconds
-        setTimeout(() => {
-          this.router.navigate(['/wallet']);
-        }, 3000);
+
+        const status = response.data?.status;
+        if (status === 'failed' || status === 'cancelled') {
+          this.isSuccess.set(false);
+          this.errorMessage.set(
+            response.data?.order_cancelled
+              ? 'Giao dịch bị hủy. Đơn hàng đã được tự động hủy.'
+              : 'Giao dịch bị hủy.'
+          );
+        } else {
+          this.isSuccess.set(true);
+          // Redirect to wallet after 3 seconds
+          setTimeout(() => {
+            this.router.navigate(['/wallet']);
+          }, 3000);
+        }
       },
       error: (err: any) => {
         // Handle 401 Unauthorized

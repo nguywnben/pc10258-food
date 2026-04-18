@@ -192,12 +192,3 @@
     </p>
   }
 }
-
-<app-client-product-modal
-  [isOpen]="isProductModalOpen()"
-  [product]="selectedProduct()"
-  [isFav]="selectedProduct() ? isFavorite(selectedProduct()!.id) : false"
-  (close)="closeProductModal()"
-  (toggleFavorite)="toggleFavorite($event)"
-  (addToCart)="onAddToCart($event)"
-></app-client-product-modal>

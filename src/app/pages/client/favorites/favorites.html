@@ -31,7 +31,7 @@
   } @else {
     <section class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3" aria-label="Danh sách món yêu thích">
       @for (item of favorites(); track item.id) {
-        <article class="card-hover is-in-favorites cursor-pointer overflow-hidden rounded-2xl bg-white">
+        <article class="card-hover is-in-favorites cursor-pointer overflow-hidden rounded-2xl bg-white" [routerLink]="['/product', item.product.id]">
           <div class="relative h-44 overflow-hidden">
             <img
               [src]="item.product.image_url || 'assets/images/user_avatar.png'"

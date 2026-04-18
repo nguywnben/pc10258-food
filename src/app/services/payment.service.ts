@@ -8,6 +8,8 @@ export interface PaymentPayload {
   description: string;
   return_url: string;
   cancel_url: string;
+  type?: 'deposit' | 'order' | 'upgrade';
+  order_id?: number | null;
 }
 
 export interface WalletPaymentPayload {
@@ -60,6 +62,22 @@ export interface PaymentCheckoutResponse {
   message?: string;
 }
 
+export interface ActivePaymentResponse {
+  status: number;
+  data:
+    | {
+        active: true;
+        payment_id: number;
+        reference_code: string;
+        checkout_url: string;
+        expires_at: string;
+      }
+    | {
+        active: false;
+        reason: 'no_payment' | 'expired' | 'order_not_pending';
+      };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -105,5 +123,15 @@ export class PaymentService {
    */
   payWithWallet(payload: WalletPaymentPayload): Observable<WalletPaymentResponse> {
     return this.http.post<WalletPaymentResponse>(`${this.baseUrl}/wallet`, payload);
+  }
+
+  /**
+   * Check whether the given order still has an active PayOS checkout link.
+   * Returns { active: true, checkout_url } when the user can resume payment,
+   * otherwise { active: false, reason }.
+   * GET /api/payments/active/order/:orderId
+   */
+  getActiveForOrder(orderId: number): Observable<ActivePaymentResponse> {
+    return this.http.get<ActivePaymentResponse>(`${this.baseUrl}/active/order/${orderId}`);
   }
 }

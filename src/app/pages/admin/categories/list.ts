@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CategoriesService, Category, CreateCategoryPayload, UpdateCategoryPayload } from '../../../services/categories.service';
+import { ToastService } from '../../../components/toast/toast.service';
 import { CategoryModalComponent, CategoryModalSaveEvent } from '../../../components/category-modal/category-modal.component';
 import { DeleteModalComponent } from '../../../components/delete-modal/delete-modal.component';
 import { PaginationComponent } from '../../../components/pagination/pagination.component';
@@ -18,16 +19,12 @@ export class AdminCategoriesList {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly toast = inject(ToastService);
   private readonly itemsPerPage = 10;
 
   readonly categories = signal<Category[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  readonly showSuccessToast = signal(false);
-  readonly successToastMessage = signal('Thêm danh mục thành công');
-  readonly showErrorToast = signal(false);
-  readonly errorToastMessage = signal('Không thể xóa danh mục.');
   readonly deletingCategoryId = signal<number | null>(null);
   readonly showDeleteModal = signal(false);
   readonly selectedCategory = signal<Category | null>(null);
@@ -121,21 +118,19 @@ export class AdminCategoriesList {
           this.categories.update((items) =>
             items.map((item) => (item.id === savedCategory.id ? savedCategory : item)),
           );
-          this.successToastMessage.set('Cập nhật danh mục thành công');
+          this.toast.success('Cập nhật danh mục thành công');
         } else {
           this.categories.update((items) => [savedCategory, ...items]);
-          this.successToastMessage.set('Thêm danh mục thành công');
+          this.toast.success('Thêm danh mục thành công');
           this.goToPage(1);
         }
 
         this.savingCategory.set(false);
         this.closeCategoryModal();
-        this.openSuccessToast();
       },
       error: (err: unknown) => {
-        this.errorToastMessage.set(this.parseSaveError(err, !!category));
+        this.toast.error(this.parseSaveError(err, !!category));
         this.savingCategory.set(false);
-        this.openErrorToast();
       },
     });
   }
@@ -156,14 +151,12 @@ export class AdminCategoriesList {
       next: () => {
         this.categories.update((items) => items.filter((item) => item.id !== category.id));
         this.ensureCurrentPageInRange();
-        this.successToastMessage.set('Xóa danh mục thành công');
-        this.openSuccessToast();
+        this.toast.success('Xóa danh mục thành công');
         this.deletingCategoryId.set(null);
         this.selectedCategory.set(null);
       },
       error: (err: unknown) => {
-        this.errorToastMessage.set(this.parseDeleteError(err));
-        this.openErrorToast();
+        this.toast.error(this.parseDeleteError(err));
         this.deletingCategoryId.set(null);
         this.selectedCategory.set(null);
       },
@@ -182,49 +175,6 @@ export class AdminCategoriesList {
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
-  }
-
-  dismissSuccessToast(): void {
-    this.showSuccessToast.set(false);
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-      this.toastTimer = null;
-    }
-
-    void this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { page: this.activePage() },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
-  }
-
-  dismissErrorToast(): void {
-    this.showErrorToast.set(false);
-  }
-
-  private openSuccessToast(): void {
-    this.showSuccessToast.set(true);
-
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-    }
-
-    this.toastTimer = setTimeout(() => {
-      this.dismissSuccessToast();
-    }, 3000);
-  }
-
-  private openErrorToast(): void {
-    this.showErrorToast.set(true);
-
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-    }
-
-    this.toastTimer = setTimeout(() => {
-      this.dismissErrorToast();
-    }, 3500);
   }
 
   private ensureCurrentPageInRange(): void {

@@ -4,18 +4,21 @@ import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 import { MenuService } from '../../../core/services/menu.service';
+import { CartService } from '../../../services/cart.service';
 import { Category, Product, ProductQuery } from '../../../core/models/menu.model';
+import { ClientProductModalComponent } from '../../../components/client/product-modal/client-product-modal.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, ClientProductModalComponent],
   templateUrl: './home.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Home implements AfterViewInit, OnInit, OnDestroy {
   private readonly menuService = inject(MenuService);
   private readonly authService = inject(AuthService);
+  private readonly cartService = inject(CartService);
   private readonly router = inject(Router);
 
   readonly categoriesLoading = signal(true);
@@ -30,6 +33,35 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
   readonly selectedCategoryId = signal<number | null>(null);
   readonly selectedSort = signal<'popular' | 'price-asc' | 'price-desc' | 'new'>('popular');
   readonly selectedPriceRange = signal<string>('');
+  
+  readonly isProductModalOpen = signal(false);
+  readonly selectedProduct = signal<Product | null>(null);
+
+  openProductModal(product: Product) {
+    this.selectedProduct.set(product);
+    this.isProductModalOpen.set(true);
+  }
+
+  closeProductModal() {
+    this.isProductModalOpen.set(false);
+  }
+
+  onAddToCart(product: Product) {
+    if (!this.authService.isAuthenticated()) {
+      void this.router.navigate(['/login']);
+      return;
+    }
+    
+    this.cartService.addToCart(product.id, 1).subscribe({
+      next: () => {
+        alert(`Đã thêm ${product.name} vào giỏ hàng thành công!`);
+        this.closeProductModal();
+      },
+      error: (err: HttpErrorResponse) => {
+        alert(err.error?.message || 'Có lỗi khi thêm giỏ hàng. Thử lại sau.');
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.loadCategories();

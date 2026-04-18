@@ -56,11 +56,14 @@
   </div>
 }
 
-<section class="card-admin mb-8 overflow-hidden">
-  <div class="flex items-center justify-between px-5 py-4">
-    <div><h2 class="text-sm font-bold text-ink">Danh sách đơn hàng</h2><p class="text-xs text-ink-light">Cập nhật trạng thái để shipper và khách hàng theo dõi đơn hàng kịp thời.</p></div>
+<section class="card-admin mb-8 overflow-hidden animate-fade-in-up">
+  <div class="flex items-center justify-between gap-4 px-5 py-4">
+    <div>
+      <h2 class="text-sm font-bold text-ink">Bảng đơn hàng</h2>
+      <p class="text-xs text-ink-light">Tổng cộng {{ orders().length }} đơn hàng chờ kiểm duyệt.</p>
+    </div>
     <div class="flex items-center gap-2">
-      <input type="search" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Tìm tên khách..." class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 w-44" />
+      <input type="search" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Tìm tên khách, mã đơn..." class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 w-[200px]" />
     </div>
   </div>
   <div class="overflow-x-auto min-h-[300px]">

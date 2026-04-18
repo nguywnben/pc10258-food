@@ -1,4 +1,4 @@
-import { afterNextRender, Component, effect, inject, OnDestroy, signal } from '@angular/core';
+import { afterNextRender, Component, effect, inject, OnDestroy, signal, ChangeDetectorRef } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -29,6 +29,7 @@ export class RightSidebar implements OnDestroy {
   private readonly addressService = inject(AddressService);
   private readonly promoService = inject(PromotionService);
   private readonly orderService = inject(OrderService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   private destroy$ = new Subject<void>();
 
@@ -126,13 +127,13 @@ export class RightSidebar implements OnDestroy {
 
   loadCart() {
     this.cartService.getCart().subscribe({
-      next: (res: any) =>
-        this.scheduleViewUpdate(() => {
-          this.cartItems = res.data.items || [];
-          this.subtotal = res.data.subtotal || 0;
-          this.cartCount = res.data.count || 0;
-          this.recalculateDiscount();
-        }),
+      next: (res: any) => {
+        this.cartItems = res.data.items || [];
+        this.subtotal = res.data.subtotal || 0;
+        this.cartCount = res.data.count || 0;
+        this.recalculateDiscount();
+        this.cdr.detectChanges(); // Ép cập nhật giao diện ngay lập tức
+      },
       error: () => console.warn('Cần đăng nhập để xem giỏ hàng'),
     });
   }
@@ -149,20 +150,30 @@ export class RightSidebar implements OnDestroy {
     if (!this.promoCodeInput.trim()) {
       this.appliedPromo = null;
       this.recalculateDiscount();
+      this.cdr.detectChanges();
       return;
     }
     this.promoService.validatePromo(this.promoCodeInput, this.subtotal).subscribe({
       next: (res: any) => {
         this.appliedPromo = res.data;
         this.recalculateDiscount();
+        this.cdr.detectChanges();
         alert('Áp dụng mã giảm giá thành công!');
       },
       error: (err: any) => {
         alert(err.error?.message || 'Mã giảm giá không hợp lệ');
         this.appliedPromo = null;
         this.recalculateDiscount();
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  removePromo() {
+    this.appliedPromo = null;
+    this.promoCodeInput = '';
+    this.recalculateDiscount();
+    this.cdr.detectChanges();
   }
 
   recalculateDiscount() {

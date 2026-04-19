@@ -116,6 +116,25 @@
         </div>
       </div>
 
+      <!-- Thông tin khách hàng -->
+      <div>
+        <p class="mb-3 text-sm font-semibold text-ink">Thông tin khách hàng</p>
+        <div class="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm text-ink">
+          <div *ngIf="selectedOrder()?.user?.full_name" class="flex justify-between">
+            <span class="text-ink-light">Tên khách hàng:</span>
+            <span class="font-semibold">{{ selectedOrder()?.user?.full_name }}</span>
+          </div>
+          <div *ngIf="selectedOrder()?.user?.email" class="flex justify-between">
+            <span class="text-ink-light">Email:</span>
+            <span class="font-mono text-xs">{{ selectedOrder()?.user?.email }}</span>
+          </div>
+          <div *ngIf="selectedOrder()?.user?.phone" class="flex justify-between">
+            <span class="text-ink-light">Điện thoại:</span>
+            <span class="font-mono font-medium">{{ selectedOrder()?.user?.phone }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Địa chỉ giao hàng -->
       <div>
         <p class="mb-3 text-sm font-semibold text-ink">Địa chỉ giao hàng</p>

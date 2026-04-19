@@ -34,6 +34,12 @@ export interface Order {
     label: string;
     full_address: string;
   };
+  user?: {
+    id: number;
+    full_name: string;
+    email: string;
+    phone?: string;
+  };
 }
 
 export interface OrderCreatePayload {

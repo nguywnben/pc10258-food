@@ -121,6 +121,7 @@ export class Account implements AfterViewInit, OnInit {
             avatar_url: response.user.avatar_url ?? null,
             role: response.user.role,
             membership: response.user.membership,
+            membership_plan: response.user.membership_plan,
           });
         },
         error: (errorResponse: HttpErrorResponse) => {
@@ -280,6 +281,7 @@ export class Account implements AfterViewInit, OnInit {
             avatar_url: profile.avatar_url ?? null,
             role: profile.role,
             membership: profile.membership,
+            membership_plan: profile.membership_plan,
           });
         },
         error: (errorResponse: HttpErrorResponse) => {

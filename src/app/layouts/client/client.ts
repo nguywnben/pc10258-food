@@ -44,13 +44,13 @@ export class ClientLayout {
   }
 
   /**
-   * Trang chủ & Yêu thích luôn có cột phải:
+   * Trang chủ & Chi tiết sản phẩm luôn có cột phải:
    * — chưa đăng nhập: nội dung gợi ý đăng nhập;
    * — đã đăng nhập: giỏ / ví / địa chỉ như hiện tại.
    */
   showRightSidebar(): boolean {
     const p = this.currentPath();
-    return p === '/' || p === '/favorites' || p.startsWith('/product/');
+    return p === '/' || p.startsWith('/product/');
   }
 
   /** Padding `<main>` khớp các trang HTML tĩnh. */

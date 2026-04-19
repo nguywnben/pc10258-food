@@ -19,15 +19,15 @@
       >
         <div class="relative shrink-0">
           @if (conv.avatar_text) {
-            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-light text-sm font-bold text-brand shadow-sm">
+            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-light text-sm font-bold text-brand">
               {{ conv.avatar_text }}
             </span>
           } @else if (conv.type === 'shipper') {
-            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-xl shadow-sm">🛵</span>
+            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-xl">🛵</span>
           } @else if (conv.type === 'promotion') {
-            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-xl shadow-sm">🎁</span>
+            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-xl">🎁</span>
           } @else {
-            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-xl shadow-sm">💬</span>
+            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-xl">💬</span>
           }
           
           @if (selectedConversation?.id === conv.id) {
@@ -59,7 +59,7 @@
   @if (selectedConversation) {
     <section class="flex min-w-0 flex-1 flex-col bg-slate-50/50" aria-label="Nội dung chat">
       <!-- Header hội thoại -->
-      <div class="flex shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-6 py-3 shadow-sm">
+      <div class="flex shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-6 py-3">
         @if (selectedConversation.avatar_text) {
           <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-light text-sm font-bold text-brand">
             {{ selectedConversation.avatar_text }}
@@ -87,11 +87,12 @@
               [class.bg-brand]="msg.sender_type === 'user'"
               [class.text-white]="msg.sender_type === 'user'"
               [class.rounded-tr-none]="msg.sender_type === 'user'"
+              [class.border-brand/30]="msg.sender_type === 'user'"
               [class.bg-white]="msg.sender_type !== 'user'"
               [class.text-slate-800]="msg.sender_type !== 'user'"
               [class.rounded-tl-none]="msg.sender_type !== 'user'"
-              [class.shadow-md]="msg.sender_type !== 'user'"
-              class="max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm"
+              [class.border-slate-200]="msg.sender_type !== 'user'"
+              class="max-w-[80%] rounded-2xl px-4 py-3 text-sm border"
             >
               <p class="whitespace-pre-wrap leading-relaxed">{{ msg.content }}</p>
               <span 
@@ -106,7 +107,7 @@
         } @empty {
           <div class="flex h-full items-center justify-center">
             <div class="text-center">
-              <div class="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center text-3xl mx-auto mb-4">💬</div>
+              <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center text-3xl mx-auto mb-4">💬</div>
               <p class="text-sm font-medium text-slate-400">Hãy gửi tin nhắn đầu tiên</p>
             </div>
           </div>
@@ -114,7 +115,7 @@
       </div>
 
       <!-- Ô nhập tin nhắn -->
-      <div class="shrink-0 border-t border-gray-100 bg-white px-6 py-4 shadow-[0_-4px_10px_-5px_rgba(0,0,0,0.05)]">
+      <div class="shrink-0 border-t border-gray-100 bg-white px-6 py-4">
         <form (submit)="sendMessage(); $event.preventDefault()" class="flex items-end gap-3">
           <div class="relative flex-1">
             <textarea
@@ -130,7 +131,7 @@
           <button
             type="submit"
             [disabled]="!newMessageContent.trim()"
-            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand font-bold text-white shadow-lg shadow-brand/20 transition-all hover:bg-brand-hover hover:scale-105 active:scale-95 disabled:opacity-40 disabled:grayscale disabled:pointer-events-none"
+            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand font-bold text-white transition-all hover:bg-brand-hover hover:scale-105 active:scale-95 disabled:opacity-40 disabled:grayscale disabled:pointer-events-none"
           >
             <svg class="w-6 h-6 rotate-90" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
@@ -146,8 +147,8 @@
     <!-- Trạng thái trống -->
     <section class="flex min-w-0 flex-1 flex-col items-center justify-center bg-slate-50 p-8 text-center" aria-label="Chưa chọn hội thoại">
       <div class="relative mb-6">
-        <div class="h-24 w-24 rounded-[2.5rem] bg-white shadow-xl flex items-center justify-center text-5xl">💬</div>
-        <div class="absolute -bottom-2 -right-2 h-10 w-10 rounded-2xl bg-brand flex items-center justify-center text-white shadow-lg animate-bounce">✨</div>
+        <div class="h-24 w-24 rounded-[2.5rem] bg-white flex items-center justify-center text-5xl">💬</div>
+        <div class="absolute -bottom-2 -right-2 h-10 w-10 rounded-2xl bg-brand flex items-center justify-center text-white animate-bounce">✨</div>
       </div>
       <h3 class="text-xl font-black text-slate-800">Kênh hỗ trợ khách hàng</h3>
       <p class="mt-2 max-w-sm text-sm font-medium text-slate-500 leading-relaxed">

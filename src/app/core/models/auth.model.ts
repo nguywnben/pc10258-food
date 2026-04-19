@@ -1,3 +1,9 @@
+export interface MembershipPlanInfo {
+  id: number;
+  name: string;
+  price: number;
+}
+
 export interface AuthUser {
   id: number;
   full_name: string;
@@ -6,6 +12,7 @@ export interface AuthUser {
   avatar_url?: string | null;
   role?: string;
   membership?: string;
+  membership_plan?: MembershipPlanInfo | null;
 }
 
 export interface LoginRequest {

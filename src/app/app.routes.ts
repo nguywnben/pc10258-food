@@ -72,6 +72,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/admin/products/list').then(m => m.AdminProductsList),
       },
+      {
+        path: 'messages',
+        loadComponent: () =>
+          import('./pages/admin/messages/messages').then(m => m.AdminMessages),
+      },
     ],
   },
   {

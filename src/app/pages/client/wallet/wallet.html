@@ -4,9 +4,25 @@
   
 
   <nav class="flex flex-wrap gap-2 border-b border-gray-200 pb-6" aria-label="Chuyển nhanh trong trang ví">
-    <a href="/wallet#so-du-lich-su" class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-ink transition hover:border-brand/40 hover:bg-brand-light/30">Số dư &amp; lịch sử</a>
     <a href="/wallet#nap-tien" class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-ink transition hover:border-brand/40 hover:bg-brand-light/30">Nạp tiền</a>
+    <a href="/wallet#so-du-lich-su" class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-ink transition hover:border-brand/40 hover:bg-brand-light/30">Số dư &amp; lịch sử</a>
   </nav>
+
+  <!-- Deposit Section -->
+  <section id="nap-tien" class="scroll-mt-6 rounded-3xl border border-gray-100 bg-white p-6 sm:p-7" aria-labelledby="wallet-deposit-title">
+    <h2 id="wallet-deposit-title" class="text-xl font-bold text-ink">Nạp tiền vào ví</h2>
+    <p class="mt-1 text-sm text-ink-light">Chọn mệnh giá và phương thức thanh toán để nạp thêm tiền.</p>
+
+    <div class="mt-8">
+      <button 
+        type="button"
+        (click)="openDepositModal()"
+        class="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-hover"
+      >
+        Mở cửa sổ nạp tiền
+      </button>
+    </div>
+  </section>
 
   <!-- Wallet Balance & Transaction History Section -->
   <section id="so-du-lich-su" class="scroll-mt-6 rounded-3xl border border-gray-100 bg-white p-6 sm:p-7" aria-labelledby="wallet-history-heading">
@@ -137,22 +153,6 @@
           </div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Deposit Section -->
-  <section id="nap-tien" class="scroll-mt-6 rounded-3xl border border-gray-100 bg-white p-6 sm:p-7" aria-labelledby="wallet-deposit-title">
-    <h2 id="wallet-deposit-title" class="text-xl font-bold text-ink">Nạp tiền vào ví</h2>
-    <p class="mt-1 text-sm text-ink-light">Chọn mệnh giá và phương thức thanh toán để nạp thêm tiền.</p>
-
-    <div class="mt-8">
-      <button 
-        type="button"
-        (click)="openDepositModal()"
-        class="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-hover"
-      >
-        Mở cửa sổ nạp tiền
-      </button>
     </div>
   </section>
 </div>

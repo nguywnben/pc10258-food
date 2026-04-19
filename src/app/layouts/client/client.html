@@ -14,12 +14,12 @@
         >
             <main
               id="main-content"
-              class="custom-scroll min-h-0 overflow-y-auto bg-surface-muted"
+              class="custom-scroll min-h-0 overflow-y-auto bg-surface-muted flex flex-col"
               [ngClass]="mainPaddingClass()"
             >
                 <router-outlet></router-outlet>
                 @if (!isAuthLayoutRoute()) {
-                  <app-footer></app-footer>
+                  <app-footer class="mt-auto"></app-footer>
                 }
             </main>
             @if (showRightSidebar()) {

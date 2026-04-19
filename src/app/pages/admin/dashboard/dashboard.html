@@ -4,17 +4,13 @@
     <h1 class="text-xl font-bold text-ink">Bảng điều khiển</h1>
     <p class="mt-0.5 text-sm text-ink-light">Tổng quan hoạt động kinh doanh hôm nay.</p>
   </div>
-  <div class="flex items-center gap-3">
-    <select class="form-select max-w-[160px] !py-2 !text-xs">
-      <option>Hôm nay</option>
-      <option>7 ngày qua</option>
-      <option>30 ngày qua</option>
-      <option>Quý này</option>
-    </select>
-    <button type="button" class="btn btn-brand">
-      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-      Xuất báo cáo
-    </button>
+</div>
+
+<!-- ═══ Loading State ═══ -->
+<div *ngIf="isLoading()" class="flex items-center justify-center py-12">
+  <div class="text-center">
+    <div class="inline-flex h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-brand"></div>
+    <p class="mt-4 text-sm text-ink-light">Đang tải dữ liệu...</p>
   </div>
 </div>
 
@@ -22,76 +18,72 @@
 <section
   class="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4"
   aria-label="Thống kê tổng quan"
->
+  *ngIf="!isLoading()">
 
   <!-- Card 1 — Doanh thu -->
-  <div class="card-admin p-5 animate-fade-in-up">
+  <div class="card-admin p-5">
     <div class="flex items-center gap-3.5">
       <div class="stat-icon bg-brand/10 text-brand">
         <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       </div>
       <div>
         <p class="text-xs font-medium text-ink-light">Doanh thu</p>
-        <p class="text-xl font-extrabold text-ink">12.580.000₫</p>
+        <p class="text-xl font-extrabold text-ink">{{ formatPrice(stats().totalRevenue) }}</p>
       </div>
     </div>
     <div class="mt-3 flex items-center gap-1.5 text-xs">
-      <span class="font-semibold text-green-600">↑ 12.5%</span>
-      <span class="text-ink-lighter">so với hôm qua</span>
+      <span class="text-ink-lighter">Từ các đơn đã giao hàng</span>
     </div>
     <div class="mt-2 progress-bar"><div class="progress-fill bg-brand" style="width:72%"></div></div>
   </div>
 
   <!-- Card 2 — Đơn hàng -->
-  <div class="card-admin p-5 animate-fade-in-up animate-delay-1">
+  <div class="card-admin p-5">
     <div class="flex items-center gap-3.5">
       <div class="stat-icon bg-blue-50 text-blue-500">
         <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
       </div>
       <div>
         <p class="text-xs font-medium text-ink-light">Đơn hàng</p>
-        <p class="text-xl font-extrabold text-ink">284</p>
+        <p class="text-xl font-extrabold text-ink">{{ stats().totalOrders }}</p>
       </div>
     </div>
     <div class="mt-3 flex items-center gap-1.5 text-xs">
-      <span class="font-semibold text-green-600">↑ 8.2%</span>
-      <span class="text-ink-lighter">so với hôm qua</span>
+      <span class="text-ink-lighter">Tất cả trạng thái đơn hàng</span>
     </div>
     <div class="mt-2 progress-bar"><div class="progress-fill bg-blue-500" style="width:65%"></div></div>
   </div>
 
   <!-- Card 3 — Khách hàng mới -->
-  <div class="card-admin p-5 animate-fade-in-up animate-delay-2">
+  <div class="card-admin p-5">
     <div class="flex items-center gap-3.5">
       <div class="stat-icon bg-emerald-50 text-emerald-500">
         <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
       </div>
       <div>
         <p class="text-xs font-medium text-ink-light">Khách hàng mới</p>
-        <p class="text-xl font-extrabold text-ink">52</p>
+        <p class="text-xl font-extrabold text-ink">{{ stats().newUsers }}</p>
       </div>
     </div>
     <div class="mt-3 flex items-center gap-1.5 text-xs">
-      <span class="font-semibold text-green-600">↑ 3.1%</span>
-      <span class="text-ink-lighter">so với hôm qua</span>
+      <span class="text-ink-lighter">Người dùng mới hôm nay</span>
     </div>
     <div class="mt-2 progress-bar"><div class="progress-fill bg-emerald-500" style="width:45%"></div></div>
   </div>
 
   <!-- Card 4 — Món bán chạy -->
-  <div class="card-admin p-5 animate-fade-in-up animate-delay-3">
+  <div class="card-admin p-5" *ngIf="stats().topProduct">
     <div class="flex items-center gap-3.5">
       <div class="stat-icon bg-amber-50 text-amber-500">
         <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
       </div>
       <div>
         <p class="text-xs font-medium text-ink-light">Món bán chạy</p>
-        <p class="text-lg font-extrabold text-ink">Pizza Neapolitan</p>
+        <p class="text-lg font-extrabold text-ink">{{ stats().topProduct?.name || 'N/A' }}</p>
       </div>
     </div>
-    <div class="mt-3 flex items-center gap-1.5 text-xs">
-      <span class="font-semibold text-amber-600">⭐ 4.5</span>
-      <span class="text-ink-lighter">· 127 đơn hàng</span>
+    <div class="mt-3 flex items-center gap-1.5 text-xs" *ngIf="stats().topProduct">
+      <span class="text-ink-lighter">{{ stats().topProduct?.review_count }} lượt đánh giá · ⭐ {{ ((stats().topProduct?.rating | number:'1.1-1') || '0.0') }}</span>
     </div>
     <div class="mt-2 progress-bar"><div class="progress-fill bg-amber-400" style="width:88%"></div></div>
   </div>
@@ -99,114 +91,77 @@
 </section>
 
 <!-- ═══ Charts Row ═══ -->
-<section class="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-3">
+<section class="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-2" *ngIf="!isLoading()">
 
-  <!-- Chart — Doanh thu theo ngày -->
-  <div class="card-admin p-5 lg:col-span-2">
-    <div class="mb-4 flex items-center justify-between">
-      <div>
-        <h2 class="text-sm font-bold text-ink">Doanh thu theo ngày</h2>
-        <p class="text-xs text-ink-light">7 ngày gần nhất</p>
+  <!-- Order Status Breakdown -->
+  <div class="card-admin p-5">
+    <h2 class="mb-1 text-sm font-bold text-ink">Phân bổ trạng thái đơn hàng</h2>
+    <p class="mb-4 text-xs text-ink-light">Dựa trên tất cả đơn hàng</p>
+    <div class="space-y-3">
+      <div class="flex items-center justify-between text-xs">
+        <span class="flex items-center gap-2">
+          <span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-500"></span> 
+          Chờ xác nhận
+        </span>
+        <span class="font-semibold">{{ stats().ordersByStatus['pending'] || 0 }} đơn</span>
       </div>
-      <div class="flex items-center gap-4 text-xs">
-        <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full bg-brand"></span> Doanh thu</span>
-        <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-400"></span> Đơn hàng</span>
+      <div class="flex items-center justify-between text-xs">
+        <span class="flex items-center gap-2">
+          <span class="inline-block h-2.5 w-2.5 rounded-full bg-amber-500"></span> 
+          Đang nấu
+        </span>
+        <span class="font-semibold">{{ stats().ordersByStatus['preparing'] || 0 }} đơn</span>
       </div>
-    </div>
-    <!-- Fake chart using bars -->
-    <div class="flex items-end gap-3 justify-around" style="height:180px">
-      <div class="flex flex-col items-center gap-1 flex-1">
-        <div class="w-full flex justify-center gap-1">
-          <div class="w-5 rounded-t-md bg-brand/80" style="height:90px"></div>
-          <div class="w-5 rounded-t-md bg-blue-400/80" style="height:60px"></div>
-        </div>
-        <span class="text-[10px] text-ink-lighter">T2</span>
+      <div class="flex items-center justify-between text-xs">
+        <span class="flex items-center gap-2">
+          <span class="inline-block h-2.5 w-2.5 rounded-full bg-brand"></span> 
+          Đang giao
+        </span>
+        <span class="font-semibold">{{ stats().ordersByStatus['delivering'] || 0 }} đơn</span>
       </div>
-      <div class="flex flex-col items-center gap-1 flex-1">
-        <div class="w-full flex justify-center gap-1">
-          <div class="w-5 rounded-t-md bg-brand/80" style="height:120px"></div>
-          <div class="w-5 rounded-t-md bg-blue-400/80" style="height:80px"></div>
-        </div>
-        <span class="text-[10px] text-ink-lighter">T3</span>
+      <div class="flex items-center justify-between text-xs">
+        <span class="flex items-center gap-2">
+          <span class="inline-block h-2.5 w-2.5 rounded-full bg-green-500"></span> 
+          Hoàn thành
+        </span>
+        <span class="font-semibold">{{ stats().ordersByStatus['delivered'] || 0 }} đơn</span>
       </div>
-      <div class="flex flex-col items-center gap-1 flex-1">
-        <div class="w-full flex justify-center gap-1">
-          <div class="w-5 rounded-t-md bg-brand/80" style="height:100px"></div>
-          <div class="w-5 rounded-t-md bg-blue-400/80" style="height:70px"></div>
-        </div>
-        <span class="text-[10px] text-ink-lighter">T4</span>
-      </div>
-      <div class="flex flex-col items-center gap-1 flex-1">
-        <div class="w-full flex justify-center gap-1">
-          <div class="w-5 rounded-t-md bg-brand/80" style="height:150px"></div>
-          <div class="w-5 rounded-t-md bg-blue-400/80" style="height:100px"></div>
-        </div>
-        <span class="text-[10px] text-ink-lighter">T5</span>
-      </div>
-      <div class="flex flex-col items-center gap-1 flex-1">
-        <div class="w-full flex justify-center gap-1">
-          <div class="w-5 rounded-t-md bg-brand/80" style="height:130px"></div>
-          <div class="w-5 rounded-t-md bg-blue-400/80" style="height:85px"></div>
-        </div>
-        <span class="text-[10px] text-ink-lighter">T6</span>
-      </div>
-      <div class="flex flex-col items-center gap-1 flex-1">
-        <div class="w-full flex justify-center gap-1">
-          <div class="w-5 rounded-t-md bg-brand" style="height:170px"></div>
-          <div class="w-5 rounded-t-md bg-blue-400" style="height:110px"></div>
-        </div>
-        <span class="text-[10px] text-ink-lighter">T7</span>
-      </div>
-      <div class="flex flex-col items-center gap-1 flex-1">
-        <div class="w-full flex justify-center gap-1">
-          <div class="w-5 rounded-t-md bg-brand/60" style="height:80px"></div>
-          <div class="w-5 rounded-t-md bg-blue-400/60" style="height:55px"></div>
-        </div>
-        <span class="text-[10px] text-ink-lighter">CN</span>
+      <div class="flex items-center justify-between text-xs">
+        <span class="flex items-center gap-2">
+          <span class="inline-block h-2.5 w-2.5 rounded-full bg-red-500"></span> 
+          Đã huỷ
+        </span>
+        <span class="font-semibold">{{ stats().ordersByStatus['cancelled'] || 0 }} đơn</span>
       </div>
     </div>
   </div>
 
-  <!-- Pie Breakdown -->
+  <!-- Top Products -->
   <div class="card-admin p-5">
-    <h2 class="mb-1 text-sm font-bold text-ink">Phân bổ danh mục</h2>
-    <p class="mb-4 text-xs text-ink-light">Dựa trên doanh thu tháng này</p>
-    <!-- Donut-like circles -->
-    <div class="flex items-center justify-center py-4">
-      <div class="relative flex h-36 w-36 items-center justify-center">
-        <svg viewBox="0 0 36 36" class="h-full w-full -rotate-90">
-          <circle cx="18" cy="18" r="15.9" fill="none" stroke="#F3F4F6" stroke-width="3"/>
-          <circle cx="18" cy="18" r="15.9" fill="none" stroke="#F4623A" stroke-width="3"
-                  stroke-dasharray="35 65" stroke-dashoffset="0"/>
-          <circle cx="18" cy="18" r="15.9" fill="none" stroke="#3B82F6" stroke-width="3"
-                  stroke-dasharray="25 75" stroke-dashoffset="-35"/>
-          <circle cx="18" cy="18" r="15.9" fill="none" stroke="#10B981" stroke-width="3"
-                  stroke-dasharray="20 80" stroke-dashoffset="-60"/>
-          <circle cx="18" cy="18" r="15.9" fill="none" stroke="#F59E0B" stroke-width="3"
-                  stroke-dasharray="12 88" stroke-dashoffset="-80"/>
-        </svg>
-        <div class="absolute text-center">
-          <p class="text-lg font-extrabold text-ink">100%</p>
-          <p class="text-[10px] text-ink-lighter">Tổng</p>
+    <h2 class="mb-1 text-sm font-bold text-ink">Top 5 sản phẩm bán chạy</h2>
+    <p class="mb-4 text-xs text-ink-light">Dựa trên đánh giá</p>
+    <div class="space-y-4">
+      <div class="flex items-center gap-3" *ngFor="let product of stats().topProducts; let i = index">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/10 text-sm font-bold text-brand" [ngClass]="{
+          'bg-blue-50 text-blue-500': i % 5 === 1,
+          'bg-emerald-50 text-emerald-500': i % 5 === 2,
+          'bg-amber-50 text-amber-500': i % 5 === 3,
+          'bg-purple-50 text-purple-500': i % 5 === 4
+        }">{{ i + 1 }}</span>
+        <div class="flex-1">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-semibold">{{ product.name }}</span>
+            <span class="text-xs font-semibold text-ink-light">{{ product.review_count }} đánh giá</span>
+          </div>
+          <div class="mt-1 progress-bar">
+            <div class="progress-fill bg-brand" [style.width.%]="(product.review_count / 50) * 100" [ngClass]="{
+              'bg-blue-500': i % 5 === 1,
+              'bg-emerald-500': i % 5 === 2,
+              'bg-amber-400': i % 5 === 3,
+              'bg-purple-500': i % 5 === 4
+            }"></div>
+          </div>
         </div>
-      </div>
-    </div>
-    <div class="space-y-2.5">
-      <div class="flex items-center justify-between text-xs">
-        <span class="flex items-center gap-2"><span class="inline-block h-2.5 w-2.5 rounded-full bg-brand"></span> Pizza</span>
-        <span class="font-semibold">35%</span>
-      </div>
-      <div class="flex items-center justify-between text-xs">
-        <span class="flex items-center gap-2"><span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-500"></span> Burger</span>
-        <span class="font-semibold">25%</span>
-      </div>
-      <div class="flex items-center justify-between text-xs">
-        <span class="flex items-center gap-2"><span class="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500"></span> Món Á</span>
-        <span class="font-semibold">20%</span>
-      </div>
-      <div class="flex items-center justify-between text-xs">
-        <span class="flex items-center gap-2"><span class="inline-block h-2.5 w-2.5 rounded-full bg-amber-400"></span> Khác</span>
-        <span class="font-semibold">20%</span>
       </div>
     </div>
   </div>
@@ -214,16 +169,15 @@
 </section>
 
 <!-- ═══ Recent Orders Table ═══ -->
-<section class="card-admin mb-8 overflow-hidden">
+<section class="card-admin mb-8 overflow-hidden" *ngIf="!isLoading()">
   <div class="flex items-center justify-between px-5 py-4">
     <div>
       <h2 class="text-sm font-bold text-ink">Đơn hàng gần đây</h2>
       <p class="text-xs text-ink-light">Cập nhật liên tục</p>
     </div>
     <a
-      href="#"
+      routerLink="/admin/orders"
       class="text-xs font-semibold text-brand transition hover:text-brand-hover"
-      (click)="$event.preventDefault()"
       >Xem tất cả ›</a>
   </div>
   <div class="overflow-x-auto">
@@ -231,174 +185,23 @@
       <thead>
         <tr>
           <th>Mã đơn</th>
-          <th>Khách hàng</th>
-          <th>Món</th>
           <th>Tổng tiền</th>
           <th>Trạng thái</th>
           <th>Thời gian</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td class="font-semibold text-brand">#FD-1024</td>
-          <td>
-            <div class="flex items-center gap-2.5">
-              <div class="flex h-7 w-7 items-center justify-center rounded-full bg-brand/10 text-[10px] font-bold text-brand">NT</div>
-              <span>Nguyễn Thảo</span>
-            </div>
-          </td>
-          <td>Pizza Neapolitan × 2</td>
-          <td class="font-semibold">290.000₫</td>
-          <td><span class="badge badge-success">Hoàn thành</span></td>
-          <td class="text-ink-light">5 phút trước</td>
+        <tr *ngFor="let order of stats().recentOrders">
+          <td class="font-semibold text-brand">{{ order.order_code }}</td>
+          <td class="font-semibold">{{ formatPrice(order.total) }}</td>
+          <td><span [class]="'badge ' + getStatusBadgeClass(order.status)">{{ getStatusLabel(order.status) }}</span></td>
+          <td class="text-ink-light">{{ formatDate(order.created_at) }}</td>
         </tr>
-        <tr>
-          <td class="font-semibold text-brand">#FD-1023</td>
-          <td>
-            <div class="flex items-center gap-2.5">
-              <div class="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-500">TH</div>
-              <span>Trần Hùng</span>
-            </div>
-          </td>
-          <td>Burger bò phô mai × 1, Phở bò × 1</td>
-          <td class="font-semibold">144.000₫</td>
-          <td><span class="badge badge-warning">Đang giao</span></td>
-          <td class="text-ink-light">12 phút trước</td>
-        </tr>
-        <tr>
-          <td class="font-semibold text-brand">#FD-1022</td>
-          <td>
-            <div class="flex items-center gap-2.5">
-              <div class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-500">LH</div>
-              <span>Lê Hoa</span>
-            </div>
-          </td>
-          <td>Donut socola × 3</td>
-          <td class="font-semibold">126.000₫</td>
-          <td><span class="badge badge-info">Đang nấu</span></td>
-          <td class="text-ink-light">18 phút trước</td>
-        </tr>
-        <tr>
-          <td class="font-semibold text-brand">#FD-1021</td>
-          <td>
-            <div class="flex items-center gap-2.5">
-              <div class="flex h-7 w-7 items-center justify-center rounded-full bg-amber-50 text-[10px] font-bold text-amber-500">PD</div>
-              <span>Phạm Dũng</span>
-            </div>
-          </td>
-          <td>Taco thịt bò × 2, Kem vani × 1</td>
-          <td class="font-semibold">135.000₫</td>
-          <td><span class="badge badge-success">Hoàn thành</span></td>
-          <td class="text-ink-light">25 phút trước</td>
-        </tr>
-        <tr>
-          <td class="font-semibold text-brand">#FD-1020</td>
-          <td>
-            <div class="flex items-center gap-2.5">
-              <div class="flex h-7 w-7 items-center justify-center rounded-full bg-red-50 text-[10px] font-bold text-red-500">VL</div>
-              <span>Vũ Linh</span>
-            </div>
-          </td>
-          <td>Bún bò Huế × 1</td>
-          <td class="font-semibold">50.000₫</td>
-          <td><span class="badge badge-danger">Đã huỷ</span></td>
-          <td class="text-ink-light">32 phút trước</td>
+        <tr *ngIf="stats().recentOrders.length === 0">
+          <td colspan="4" class="py-8 text-center text-sm text-ink-light">Không có đơn hàng</td>
         </tr>
       </tbody>
     </table>
   </div>
 </section>
-
-<!-- ═══ Bottom row: Top Products + Activity ═══ -->
-<section class="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-
-  <!-- Top 5 sản phẩm -->
-  <div class="card-admin p-5">
-    <h2 class="mb-1 text-sm font-bold text-ink">Top 5 sản phẩm bán chạy</h2>
-    <p class="mb-4 text-xs text-ink-light">Tháng này</p>
-    <div class="space-y-4">
-      <div class="flex items-center gap-3">
-        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/10 text-sm font-bold text-brand">1</span>
-        <div class="flex-1">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-semibold">Pizza Neapolitan</span>
-            <span class="text-xs font-semibold text-ink-light">127 đơn</span>
-          </div>
-          <div class="mt-1 progress-bar"><div class="progress-fill bg-brand" style="width:92%"></div></div>
-        </div>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-sm font-bold text-blue-500">2</span>
-        <div class="flex-1">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-semibold">Burger bò phô mai</span>
-            <span class="text-xs font-semibold text-ink-light">98 đơn</span>
-          </div>
-          <div class="mt-1 progress-bar"><div class="progress-fill bg-blue-500" style="width:75%"></div></div>
-        </div>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-sm font-bold text-emerald-500">3</span>
-        <div class="flex-1">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-semibold">Phở bò</span>
-            <span class="text-xs font-semibold text-ink-light">85 đơn</span>
-          </div>
-          <div class="mt-1 progress-bar"><div class="progress-fill bg-emerald-500" style="width:65%"></div></div>
-        </div>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-sm font-bold text-amber-500">4</span>
-        <div class="flex-1">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-semibold">Donut socola</span>
-            <span class="text-xs font-semibold text-ink-light">72 đơn</span>
-          </div>
-          <div class="mt-1 progress-bar"><div class="progress-fill bg-amber-400" style="width:55%"></div></div>
-        </div>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 text-sm font-bold text-purple-500">5</span>
-        <div class="flex-1">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-semibold">Bún bò Huế</span>
-            <span class="text-xs font-semibold text-ink-light">64 đơn</span>
-          </div>
-          <div class="mt-1 progress-bar"><div class="progress-fill bg-purple-500" style="width:48%"></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Hoạt động gần đây -->
-  <div class="card-admin p-5">
-    <h2 class="mb-1 text-sm font-bold text-ink">Hoạt động gần đây</h2>
-    <p class="mb-4 text-xs text-ink-light">Dòng thời gian cập nhật</p>
-    <div class="relative space-y-5 pl-6 before:absolute before:left-[9px] before:top-1 before:h-[calc(100%-8px)] before:w-px before:bg-gray-200">
-      <div class="relative">
-        <span class="absolute -left-6 top-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-green-100 ring-4 ring-white"><span class="h-2 w-2 rounded-full bg-green-500"></span></span>
-        <p class="text-sm font-medium text-ink">Đơn <span class="text-brand font-semibold">#FD-1024</span> đã hoàn thành</p>
-        <p class="text-xs text-ink-lighter">5 phút trước</p>
-      </div>
-      <div class="relative">
-        <span class="absolute -left-6 top-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-blue-100 ring-4 ring-white"><span class="h-2 w-2 rounded-full bg-blue-500"></span></span>
-        <p class="text-sm font-medium text-ink">Khách hàng mới <span class="font-semibold">Lê Hoa</span> đã đăng ký</p>
-        <p class="text-xs text-ink-lighter">15 phút trước</p>
-      </div>
-      <div class="relative">
-        <span class="absolute -left-6 top-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-amber-100 ring-4 ring-white"><span class="h-2 w-2 rounded-full bg-amber-500"></span></span>
-        <p class="text-sm font-medium text-ink">Sản phẩm <span class="font-semibold">Burger đôi</span> sắp hết nguyên liệu</p>
-        <p class="text-xs text-ink-lighter">28 phút trước</p>
-      </div>
-      <div class="relative">
-        <span class="absolute -left-6 top-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-red-100 ring-4 ring-white"><span class="h-2 w-2 rounded-full bg-red-500"></span></span>
-        <p class="text-sm font-medium text-ink">Đơn <span class="text-brand font-semibold">#FD-1020</span> đã bị huỷ bởi khách</p>
-        <p class="text-xs text-ink-lighter">32 phút trước</p>
-      </div>
-      <div class="relative">
-        <span class="absolute -left-6 top-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-brand/10 ring-4 ring-white"><span class="h-2 w-2 rounded-full bg-brand"></span></span>
-        <p class="text-sm font-medium text-ink">Khuyến mãi <span class="font-semibold">"Giảm 20%"</span> đã được kích hoạt</p>
-        <p class="text-xs text-ink-lighter">1 giờ trước</p>
-      </div>
-    </div>
-  </div>
+<!-- All dynamic sections rendered above -->

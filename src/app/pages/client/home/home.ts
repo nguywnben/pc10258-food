@@ -1,9 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs/operators';
+import { finalize, Subscription } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { MenuService } from '../../../core/services/menu.service';
+import { SearchService } from '../../../core/services/search.service';
 import { CartService } from '../../../services/cart.service';
 import { Category, Product, ProductQuery } from '../../../core/models/menu.model';
 import { ClientProductModalComponent } from '../../../components/client/product-modal/client-product-modal.component';
@@ -22,6 +23,8 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
   private readonly cartService = inject(CartService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  private readonly searchService = inject(SearchService);
+  private subscriptions = new Subscription();
 
   readonly categoriesLoading = signal(true);
   readonly productsLoading = signal(true);
@@ -35,6 +38,7 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
   readonly selectedCategoryId = signal<number | null>(null);
   readonly selectedSort = signal<'popular' | 'price-asc' | 'price-desc' | 'new'>('popular');
   readonly selectedPriceRange = signal<string>('');
+  readonly searchTerm = signal<string>('');
   
   readonly isProductModalOpen = signal(false);
   readonly selectedProduct = signal<Product | null>(null);
@@ -69,9 +73,17 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
     this.loadCategories();
     this.loadProducts(this.buildProductQuery());
     this.loadFavorites();
+
+    // Subscribe to search term changes
+    const searchSub = this.searchService.searchTerm$.subscribe((term) => {
+      this.searchTerm.set(term);
+      this.loadProducts(this.buildProductQuery());
+    });
+    this.subscriptions.add(searchSub);
   }
 
   ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   ngAfterViewInit(): void {
@@ -108,11 +120,6 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
   }
 
   toggleFavorite(product: Product): void {
-    if (!this.authService.isAuthenticated()) {
-      void this.router.navigate(['/login']);
-      return;
-    }
-
     const isFavorite = this.isFavorite(product.id);
     const request$ = isFavorite
       ? this.menuService.removeFavorite(product.id)
@@ -129,9 +136,13 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
         }
       },
       error: (errorResponse: HttpErrorResponse) => {
-        const message = this.resolveErrorMessage(errorResponse, 'Không cập nhật được yêu thích.');
-        this.errorMessage.set(message);
-        this.toast.error(message);
+        if (errorResponse.status === 401) {
+          this.toast.warning('Vui lòng đăng nhập để thực hiện chức năng này.');
+        } else {
+          const message = this.resolveErrorMessage(errorResponse, 'Không cập nhật được yêu thích.');
+          this.errorMessage.set(message);
+          this.toast.error(message);
+        }
       },
     });
   }
@@ -199,6 +210,11 @@ export class Home implements AfterViewInit, OnInit, OnDestroy {
       query.max_price = 200000;
     } else if (range === '200000+') {
       query.min_price = 200000;
+    }
+
+    const search = this.searchTerm().trim();
+    if (search) {
+      query.search = search;
     }
 
     return query;

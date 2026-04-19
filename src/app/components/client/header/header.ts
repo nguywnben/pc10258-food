@@ -1,6 +1,7 @@
 import { NgClass } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { SearchService } from '../../../core/services/search.service';
 
 @Component({
   selector: 'app-header',
@@ -10,6 +11,7 @@ import { Router, RouterLink } from '@angular/router';
 })
 export class Header {
   private readonly router = inject(Router);
+  private readonly searchService = inject(SearchService);
 
   private path(): string {
     return this.router.url.split(/[?#]/)[0];
@@ -92,5 +94,10 @@ export class Header {
       !this.isLoginRoute() &&
       !this.isRegisterRoute()
     );
+  }
+
+  onSearchInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchService.setSearchTerm(input.value);
   }
 }

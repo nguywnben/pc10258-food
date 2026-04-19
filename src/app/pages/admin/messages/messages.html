@@ -1,0 +1,120 @@
+<div class="flex h-[605px] bg-gray-50">
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="flex items-center justify-center flex-1">
+    <div class="text-center">
+      <div class="inline-flex h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-brand"></div>
+      <p class="mt-4 text-sm text-ink-light">Đang tải cuộc hội thoại...</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading()" class="flex w-full">
+    <!-- Conversations List -->
+    <div class="w-80 flex flex-col bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
+      <!-- Header -->
+      <div class="border-b border-gray-100 p-4">
+        <h2 class="text-base font-bold text-ink">Tin nhắn hỗ trợ</h2>
+        <p class="text-xs text-ink-light mt-1">{{ conversations().length }} cuộc hội thoại</p>
+      </div>
+
+      <!-- Conversations -->
+      <div class="flex-1 overflow-y-auto custom-scroll">
+        <div *ngIf="conversations().length === 0" class="p-4 text-center text-sm text-ink-light">
+          Không có cuộc hội thoại nào
+        </div>
+
+        <button
+          *ngFor="let conv of conversations()"
+          (click)="selectConversation(conv)"
+          [class.bg-blue-50]="selectedConversation()?.id === conv.id"
+          class="w-full p-3 border-b border-gray-100 text-left transition hover:bg-gray-50 focus:outline-none"
+        >
+          <!-- User Info -->
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-ink truncate">{{ conv.user?.full_name || 'Khách hàng' }}</p>
+              <p class="text-xs text-ink-light truncate mt-0.5">{{ conv.user?.email || '---' }}</p>
+              <p class="text-xs text-ink-lighter mt-1">{{ getLastMessagePreview(conv) }}</p>
+            </div>
+            <span class="text-xs font-semibold text-brand whitespace-nowrap">{{ getStatusBadge(conv) }}</span>
+          </div>
+
+          <!-- Time -->
+          <p class="text-xs text-ink-lighter mt-2">{{ getTimeAgo(conv.updated_at) }}</p>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="flex-1 flex flex-col bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
+      <!-- Header -->
+      <div *ngIf="selectedConversation()" class="border-b border-gray-100 p-4 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-ink">{{ selectedUser()?.full_name || 'Khách hàng' }}</h2>
+          <p class="text-xs text-ink-light mt-0.5">{{ selectedUser()?.email }} • {{ selectedUser()?.phone }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="!selectedConversation()" class="flex-1 flex items-center justify-center">
+        <p class="text-ink-light">Chọn một cuộc hội thoại để bắt đầu</p>
+      </div>
+
+      <!-- Messages -->
+      <div *ngIf="selectedConversation()" class="flex-1 overflow-y-auto custom-scroll messages-container p-4 space-y-4">
+        <div *ngFor="let msg of selectedMessages()" [class.ml-auto]="!isUserMessage(msg)" class="flex gap-2 max-w-md">
+          <!-- User/Agent Avatar -->
+          <div *ngIf="isUserMessage(msg)" class="flex-shrink-0">
+            <div class="h-8 w-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
+              {{ selectedUser()?.full_name?.charAt(0) || 'K' }}
+            </div>
+          </div>
+
+          <!-- Message -->
+          <div [class.ml-auto]="!isUserMessage(msg)" class="flex flex-col gap-1">
+            <div
+              [class.bg-blue-100]="isUserMessage(msg)"
+              [class.text-blue-900]="isUserMessage(msg)"
+              [class.bg-brand]="!isUserMessage(msg)"
+              [class.text-white]="!isUserMessage(msg)"
+              class="rounded-lg px-3 py-2 text-sm break-words"
+            >
+              {{ msg.content }}
+            </div>
+            <p class="text-xs text-ink-lighter px-1">{{ formatTime(msg.created_at) }}</p>
+          </div>
+
+          <!-- Admin Avatar -->
+          <div *ngIf="!isUserMessage(msg)" class="flex-shrink-0">
+            <div class="h-8 w-8 rounded-full bg-brand/20 text-brand flex items-center justify-center text-xs font-bold">
+              A
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reply Input -->
+      <div *ngIf="selectedConversation()" class="border-t border-gray-100 p-4 bg-gray-50">
+        <form (ngSubmit)="sendReply()" class="flex gap-2">
+          <textarea
+            [(ngModel)]="replyContent"
+            name="reply"
+            placeholder="Gửi tin nhắn hỗ trợ..."
+            rows="3"
+            class="flex-1 rounded-lg border border-gray-200 bg-white p-3 text-sm resize-none outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+          ></textarea>
+          <button
+            type="submit"
+            [disabled]="isSending() || !replyContent().trim()"
+            class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed h-fit"
+          >
+            <span *ngIf="!isSending()">Gửi</span>
+            <span *ngIf="isSending()" class="flex items-center gap-2">
+              <span class="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              Đang gửi...
+            </span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

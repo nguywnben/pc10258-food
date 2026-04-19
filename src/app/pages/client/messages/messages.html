@@ -1,118 +1,160 @@
-<div class="flex h-full min-h-0 min-w-0 flex-1">
+<div class="flex h-[calc(100vh-70px)] min-h-0 min-w-0 flex-1 overflow-hidden bg-white">
   <!-- Danh sách hội thoại -->
   <nav
-    class="custom-scroll flex w-full max-w-[300px] shrink-0 flex-col overflow-y-auto border-r border-gray-100 bg-gray-50/60"
+    class="custom-scroll flex w-full max-w-[300px] shrink-0 flex-col overflow-y-auto border-r border-gray-100 bg-white"
     aria-label="Danh sách hội thoại"
   >
-    <button
-      type="button"
-      class="conv-row-active flex w-full items-start gap-3 border-b border-gray-100 border-l-4 border-l-brand/45 bg-brand/5 px-4 py-3 text-left"
-      aria-current="true"
-    >
-      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-light text-sm font-bold text-brand">CS</span>
-      <span class="min-w-0 flex-1">
-        <span class="flex items-center justify-between gap-2">
-          <span class="font-semibold text-ink">Hỗ trợ PC10258</span>
-          <span id="conv-active-time" class="shrink-0 text-[11px] text-ink-lighter">Vừa xong</span>
-        </span>
-        <span id="conv-active-preview" class="mt-0.5 line-clamp-2 text-xs text-ink-light">Dạ em cảm ơn chị!</span>
-      </span>
-    </button>
-    <button
-      type="button"
-      class="flex w-full items-start gap-3 border-b border-gray-100 bg-white px-4 py-3 text-left transition duration-200 hover:bg-gray-50"
-    >
-      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-200 text-lg" aria-hidden="true">🛵</span>
-      <span class="min-w-0 flex-1">
-        <span class="flex items-center justify-between gap-2">
-          <span class="font-medium text-ink">Shipper Minh</span>
-          <span class="shrink-0 text-[11px] text-ink-lighter">Hôm qua</span>
-        </span>
-        <span class="mt-0.5 line-clamp-1 text-xs text-ink-light">Em đã giao xong, chúc bạn ngon miệng ạ!</span>
-      </span>
-    </button>
-    <button
-      type="button"
-      class="flex w-full items-start gap-3 border-b border-gray-100 bg-white px-4 py-3 text-left transition duration-200 hover:bg-gray-50"
-    >
-      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-lg" aria-hidden="true">🎁</span>
-      <span class="min-w-0 flex-1">
-        <span class="flex items-center justify-between gap-2">
-          <span class="font-medium text-ink">Khuyến mãi</span>
-          <span class="shrink-0 rounded-full bg-brand-light px-1.5 py-0.5 text-[10px] font-bold text-brand ring-1 ring-brand/20">Mới</span>
-        </span>
-        <span class="mt-0.5 line-clamp-1 text-xs text-ink-light">Combo cuối tuần giảm thêm 15% cho đơn từ 250k</span>
-      </span>
-    </button>
-  </nav>
-
-  <!-- Khung chat -->
-  <section class="flex min-w-0 flex-1 flex-col bg-surface-muted" aria-label="Nội dung chat">
-    <div class="flex shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-4 py-3">
-      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-light text-sm font-bold text-brand">CS</span>
-      <div>
-        <p class="font-semibold text-ink">Hỗ trợ PC10258</p>
-        <p class="text-xs text-green-600">Đang trả lời — thường phản hồi trong vài phút</p>
-      </div>
+    <div class="p-4 border-b border-gray-50 bg-gray-50/30">
+      <h2 class="text-lg font-bold text-slate-800">Tin nhắn</h2>
     </div>
 
-    <div id="chat-thread" class="custom-scroll flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-4">
-      <p class="text-center text-[11px] text-ink-lighter">Hôm nay</p>
-
-      <div class="flex justify-start">
-        <div
-          class="chat-msg max-w-[85%] cursor-default rounded-2xl rounded-tl-md bg-white px-4 py-2.5 text-sm text-ink shadow-sm ring-1 ring-gray-100 transition-colors duration-200 hover:bg-gray-50"
-        >
-          <p>Xin chào anh/chị! Đơn <strong>#PC-5821</strong> của mình đang được bếp chuẩn bị ạ.</p>
+    @for (conv of conversations; track conv.id) {
+      <button
+        type="button"
+        [class.bg-brand/5]="selectedConversation?.id === conv.id"
+        [class.border-l-brand]="selectedConversation?.id === conv.id"
+        [class.border-l-4]="selectedConversation?.id === conv.id"
+        class="flex w-full items-start gap-3 border-b border-gray-50 px-4 py-4 text-left transition-all duration-200 hover:bg-gray-50"
+        (click)="selectConversation(conv)"
+      >
+        <div class="relative shrink-0">
+          @if (conv.avatar_text) {
+            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-light text-sm font-bold text-brand shadow-sm">
+              {{ conv.avatar_text }}
+            </span>
+          } @else if (conv.type === 'shipper') {
+            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-xl shadow-sm">🛵</span>
+          } @else if (conv.type === 'promotion') {
+            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-xl shadow-sm">🎁</span>
+          } @else {
+            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-xl shadow-sm">💬</span>
+          }
+          
+          @if (selectedConversation?.id === conv.id) {
+            <span class="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-green-500"></span>
+          }
         </div>
-      </div>
 
-      <div class="flex justify-end">
-        <div
-          class="chat-msg max-w-[85%] cursor-default rounded-2xl rounded-tr-md border border-brand/20 bg-brand-light px-4 py-2.5 text-sm text-ink transition-colors duration-200 hover:bg-gray-100"
-        >
-          <p>Cho em hỏi giao khoảng mấy giờ ạ?</p>
-        </div>
-      </div>
-
-      <div class="flex justify-start">
-        <div
-          class="chat-msg max-w-[85%] cursor-default rounded-2xl rounded-tl-md bg-white px-4 py-2.5 text-sm text-ink shadow-sm ring-1 ring-gray-100 transition-colors duration-200 hover:bg-gray-50"
-        >
-          <p>
-            Dự kiến shipper lấy món lúc <strong>11:20</strong>, tới tay mình khoảng <strong>11:45–12:00</strong> hôm nay ạ. Cảm ơn mình đã đợi!
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="truncate text-sm font-bold text-slate-800">{{ conv.title }}</h3>
+            <span class="shrink-0 text-[10px] font-medium text-slate-400">
+              {{ (conv.messages && conv.messages[0] ? (conv.messages[0].created_at | date:'HH:mm') : (conv.updated_at | date:'HH:mm')) }}
+            </span>
+          </div>
+          <p class="mt-1 line-clamp-1 text-xs text-slate-500">
+            {{ conv.messages && conv.messages[0] ? conv.messages[0].content : 'Bắt đầu trò chuyện ngay' }}
           </p>
         </div>
+      </button>
+    } @empty {
+      <div class="flex flex-col items-center justify-center p-8 text-center">
+        <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-2xl mb-3">📭</div>
+        <p class="text-sm text-slate-400">Chưa có hội thoại nào</p>
       </div>
+    }
+  </nav>
 
-      <div class="flex justify-end">
-        <div
-          class="chat-msg max-w-[85%] cursor-default rounded-2xl rounded-tr-md border border-brand/20 bg-brand-light px-4 py-2.5 text-sm text-ink transition-colors duration-200 hover:bg-gray-100"
-          data-preview-time="Vừa xong"
-        >
-          <p>Dạ em cảm ơn chị!</p>
+  <!-- Khung chat chính -->
+  @if (selectedConversation) {
+    <section class="flex min-w-0 flex-1 flex-col bg-slate-50/50" aria-label="Nội dung chat">
+      <!-- Header hội thoại -->
+      <div class="flex shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-6 py-3 shadow-sm">
+        @if (selectedConversation.avatar_text) {
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-light text-sm font-bold text-brand">
+            {{ selectedConversation.avatar_text }}
+          </span>
+        } @else if (selectedConversation.type === 'shipper') {
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xl">🛵</span>
+        } @else {
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xl text-brand">💬</span>
+        }
+        
+        <div>
+          <h2 class="text-base font-bold text-slate-800">{{ selectedConversation.title }}</h2>
+          <div class="flex items-center gap-1.5">
+            <span class="h-2 w-2 rounded-full bg-green-500"></span>
+            <span class="text-xs font-medium text-green-600">Trực tuyến</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="shrink-0 border-t border-gray-100 bg-white p-3">
-      <div class="flex items-end gap-2">
-        <label class="sr-only" for="msg-input">Nhập tin nhắn</label>
-        <textarea
-          id="msg-input"
-          rows="1"
-          placeholder="Nhập tin nhắn..."
-          class="custom-scroll max-h-28 min-h-[44px] min-w-0 flex-1 resize-y rounded-2xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-ink outline-none transition focus:border-brand/50 focus:bg-white focus:ring-2 focus:ring-brand/10"
-        ></textarea>
-        <button
-          type="button"
-          class="shrink-0 rounded-2xl border border-brand/25 bg-brand-light px-5 py-2.5 text-sm font-bold text-brand transition hover:bg-[#ffe4d9]"
-        >
-          Gửi
-        </button>
+      <!-- Luồng tin nhắn -->
+      <div id="chat-thread" class="custom-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 py-6 overscroll-contain">
+        @for (msg of messages; track msg.id) {
+          <div [class.justify-end]="msg.sender_type === 'user'" class="flex w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div
+              [class.bg-brand]="msg.sender_type === 'user'"
+              [class.text-white]="msg.sender_type === 'user'"
+              [class.rounded-tr-none]="msg.sender_type === 'user'"
+              [class.bg-white]="msg.sender_type !== 'user'"
+              [class.text-slate-800]="msg.sender_type !== 'user'"
+              [class.rounded-tl-none]="msg.sender_type !== 'user'"
+              [class.shadow-md]="msg.sender_type !== 'user'"
+              class="max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm"
+            >
+              <p class="whitespace-pre-wrap leading-relaxed">{{ msg.content }}</p>
+              <span 
+                [class.text-white/70]="msg.sender_type === 'user'" 
+                [class.text-slate-400]="msg.sender_type !== 'user'" 
+                class="block mt-1.5 text-[10px] text-right font-medium"
+              >
+                {{ msg.created_at | date:'HH:mm' }}
+              </span>
+            </div>
+          </div>
+        } @empty {
+          <div class="flex h-full items-center justify-center">
+            <div class="text-center">
+              <div class="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center text-3xl mx-auto mb-4">💬</div>
+              <p class="text-sm font-medium text-slate-400">Hãy gửi tin nhắn đầu tiên</p>
+            </div>
+          </div>
+        }
       </div>
-      <p class="mt-2 text-center text-[11px] text-ink-lighter">Tin nhắn mẫu — bản demo chưa kết nối máy chủ.</p>
-    </div>
-  </section>
+
+      <!-- Ô nhập tin nhắn -->
+      <div class="shrink-0 border-t border-gray-100 bg-white px-6 py-4 shadow-[0_-4px_10px_-5px_rgba(0,0,0,0.05)]">
+        <form (submit)="sendMessage(); $event.preventDefault()" class="flex items-end gap-3">
+          <div class="relative flex-1">
+            <textarea
+              id="msg-input"
+              name="newMessageContent"
+              [(ngModel)]="newMessageContent"
+              (keydown)="handleKeydown($event)"
+              rows="1"
+              placeholder="Nhập nội dung tin nhắn..."
+              class="custom-scroll max-h-32 min-h-[48px] w-full resize-none rounded-2xl border border-slate-100 bg-slate-50 px-5 py-3 text-sm text-slate-700 outline-none transition-all focus:border-brand/40 focus:bg-white focus:ring-4 focus:ring-brand/5"
+            ></textarea>
+          </div>
+          <button
+            type="submit"
+            [disabled]="!newMessageContent.trim()"
+            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand font-bold text-white shadow-lg shadow-brand/20 transition-all hover:bg-brand-hover hover:scale-105 active:scale-95 disabled:opacity-40 disabled:grayscale disabled:pointer-events-none"
+          >
+            <svg class="w-6 h-6 rotate-90" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
+            </svg>
+          </button>
+        </form>
+        <p class="mt-2 text-center text-[10px] font-medium text-slate-400">
+          Phản hồi của bạn sẽ được gửi đến CSKH PC10258
+        </p>
+      </div>
+    </section>
+  } @else {
+    <!-- Trạng thái trống -->
+    <section class="flex min-w-0 flex-1 flex-col items-center justify-center bg-slate-50 p-8 text-center" aria-label="Chưa chọn hội thoại">
+      <div class="relative mb-6">
+        <div class="h-24 w-24 rounded-[2.5rem] bg-white shadow-xl flex items-center justify-center text-5xl">💬</div>
+        <div class="absolute -bottom-2 -right-2 h-10 w-10 rounded-2xl bg-brand flex items-center justify-center text-white shadow-lg animate-bounce">✨</div>
+      </div>
+      <h3 class="text-xl font-black text-slate-800">Kênh hỗ trợ khách hàng</h3>
+      <p class="mt-2 max-w-sm text-sm font-medium text-slate-500 leading-relaxed">
+        Chọn một đoạn hội thoại bên trái để bắt đầu chat hoặc gửi phản hồi của bạn cho chúng tôi.
+      </p>
+    </section>
+  }
 </div>
+
 

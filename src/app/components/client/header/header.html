@@ -55,6 +55,7 @@
         id="search-input"
         type="search"
         placeholder="Tìm theo mã đơn..."
+        (input)="onSearchInput($event)"
         class="h-10 w-full rounded-full border border-gray-200 bg-gray-50 pl-10 pr-4 text-sm text-ink outline-none transition focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20"
       />
     } @else {
@@ -69,6 +70,7 @@
           id="search-input"
           type="search"
           placeholder="Tìm hội thoại..."
+          (input)="onSearchInput($event)"
           class="h-10 w-full rounded-full border border-gray-200 bg-gray-50 pl-11 pr-4 text-sm text-ink outline-none transition focus:border-brand/50 focus:bg-white focus:ring-2 focus:ring-brand/10"
         />
       } @else {
@@ -76,6 +78,7 @@
           id="search-input"
           type="search"
           [attr.placeholder]="searchPlaceholder()"
+          (input)="onSearchInput($event)"
           class="h-10 w-full rounded-full border border-gray-200 bg-gray-50 pl-11 pr-4 text-sm text-ink outline-none transition focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20"
         />
       }

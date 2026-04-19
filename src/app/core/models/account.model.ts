@@ -1,3 +1,9 @@
+export interface MembershipPlanInfo {
+  id: number;
+  name: string;
+  price: number;
+}
+
 export interface AccountProfile {
   id: number;
   full_name: string;
@@ -6,6 +12,7 @@ export interface AccountProfile {
   avatar_url?: string | null;
   role?: string;
   membership?: string;
+  membership_plan?: MembershipPlanInfo | null;
   created_at?: string;
   updated_at?: string;
 }

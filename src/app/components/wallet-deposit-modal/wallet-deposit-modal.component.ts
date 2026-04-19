@@ -10,9 +10,14 @@ import { ToastService } from '../toast/toast.service';
   selector: 'app-wallet-deposit-modal',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  styles: [`
+    :host ::ng-deep input[type="radio"] {
+      accent-color: #F4623A;
+    }
+  `],
   template: `
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" *ngIf="isOpen()">
-      <div class="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-6 sm:p-7">
+    <div class="fixed inset-0 z-[9998] flex items-center justify-center bg-black/35 p-4 backdrop-blur-sm animate-in fade-in duration-200" *ngIf="isOpen()">
+      <div class="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-6 sm:p-7 shadow-2xl animate-in zoom-in-95 duration-200">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-bold text-ink">Nạp tiền vào ví</h2>
           <button 
@@ -57,6 +62,7 @@ import { ToastService } from '../toast/toast.service';
               min="2000"
               max="50000000"
               step="1000"
+              placeholder="Nhập số tiền (tối thiểu 2.000₫)"
               [(ngModel)]="customAmount"
               (ngModelChange)="onAmountChange($event)"
               class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base font-semibold text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"

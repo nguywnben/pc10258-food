@@ -9,59 +9,117 @@ import { AuthService } from '../../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-brand/5 to-brand/10 flex items-center justify-center p-4">
-      <div class="w-full max-w-md rounded-3xl bg-white shadow-xl p-8 text-center">
+    <div class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div class="w-full max-w-md rounded-3xl bg-white shadow-2xl p-8 text-center border border-gray-100 animate-in fade-in zoom-in duration-500">
         <!-- Success Icon -->
-        <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
-          <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
-          </svg>
-        </div>
-
-        <!-- Status Message -->
-        <h1 class="text-2xl font-bold text-ink mb-2">Nạp tiền thành công!</h1>
-        <p class="text-ink-light mb-6">{{ statusMessage() }}</p>
-
-        <!-- Amount Display -->
-        <div class="bg-brand/10 rounded-2xl p-4 mb-6" *ngIf="amount()">
-          <p class="text-sm text-ink-light mb-1">Số tiền nạp</p>
-          <p class="text-3xl font-bold text-brand">{{ formatPrice(amount()) }}</p>
-        </div>
-
-        <!-- Transaction Details -->
-        <div class="bg-gray-50 rounded-2xl p-4 mb-6 text-left text-sm">
-          <div class="flex justify-between mb-3" *ngIf="paymentId()">
-            <span class="text-ink-light">ID giao dịch:</span>
-            <span class="font-mono text-ink">{{ paymentId() }}</span>
-          </div>
-          <div class="flex justify-between" *ngIf="confirmTime()">
-            <span class="text-ink-light">Thời gian:</span>
-            <span class="text-ink">{{ confirmTime() | date: 'HH:mm:ss, dd/MM/yyyy' }}</span>
+        <div class="w-24 h-24 mx-auto mb-8 rounded-full bg-green-50 flex items-center justify-center shadow-inner">
+          <div class="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center text-white shadow-lg shadow-green-200">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+            </svg>
           </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="space-y-3">
-          <button
-            type="button"
-            (click)="goToWallet()"
-            class="w-full rounded-xl bg-brand px-6 py-4 text-sm font-bold text-white shadow-sm transition hover:bg-brand-hover"
-          >
-            Về trang ví
-          </button>
-          <button
-            type="button"
-            (click)="goToHome()"
-            class="w-full rounded-xl border border-gray-200 bg-white px-6 py-4 text-sm font-semibold text-ink transition hover:bg-gray-50"
-          >
-            Quay về trang chủ
-          </button>
-        </div>
+        @if (!isConfirming() || paymentType()) {
+          <!-- Status Message -->
+          <h1 class="text-3xl font-extrabold text-slate-900 mb-2">
+            @switch (paymentType()) {
+              @case ('order') {
+                Thanh toán thành công!
+              }
+              @case ('upgrade') {
+                Nâng cấp thành công!
+              }
+              @case ('deposit') {
+                Nạp tiền thành công!
+              }
+              @default {
+                Giao dịch thành công!
+              }
+            }
+          </h1>
+          <p class="text-slate-500 mb-8 font-medium">{{ statusMessage() }}</p>
 
-        <!-- Loading State -->
-        <div *ngIf="isConfirming()" class="mt-4 text-center">
-          <p class="text-sm text-ink-light">{{ confirmMessage() }}</p>
-        </div>
+          <!-- Amount Display -->
+          @if (amount()) {
+            <div class="bg-slate-50 rounded-3xl p-6 mb-8 border border-slate-100">
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                {{ paymentType() === 'order' ? 'Tổng thanh toán' : 'Số tiền giao dịch' }}
+              </p>
+              <p class="text-4xl font-black text-slate-900">{{ formatPrice(amount()) }}</p>
+            </div>
+          }
+
+          <!-- Transaction Details -->
+          <div class="bg-slate-50/50 rounded-2xl p-5 mb-8 text-left text-sm border border-slate-100 space-y-4">
+            @if (paymentId()) {
+              <div class="flex justify-between items-center">
+                <span class="text-slate-500 font-medium">Mã giao dịch</span>
+                <span class="font-bold text-slate-700">#{{ paymentId() }}</span>
+              </div>
+            }
+            
+            @if (paymentType() === 'order' && orderId()) {
+              <div class="flex justify-between items-center">
+                <span class="text-slate-500 font-medium">Mã đơn hàng</span>
+                <span class="font-bold text-blue-600">#{{ orderId() }}</span>
+              </div>
+            }
+
+            @if (paymentType() === 'deposit' && walletBalance() !== null) {
+              <div class="flex justify-between items-center">
+                <span class="text-slate-500 font-medium">Số dư hiện tại</span>
+                <span class="font-bold text-green-600">{{ formatPrice(walletBalance()) }}</span>
+              </div>
+            }
+
+            @if (confirmTime()) {
+              <div class="flex justify-between items-center">
+                <span class="text-slate-500 font-medium">Thời gian</span>
+                <span class="font-bold text-slate-700">{{ confirmTime() | date: 'HH:mm, dd/MM/yyyy' }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="grid gap-4">
+            @if (paymentType() === 'order') {
+              <button
+                type="button"
+                (click)="goToOrders()"
+                class="w-full rounded-2xl bg-slate-900 px-6 py-4 text-base font-bold text-white shadow-lg shadow-slate-200 transition-all hover:bg-slate-800 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Theo dõi đơn hàng
+              </button>
+            } @else {
+              <button
+                type="button"
+                (click)="goToWallet()"
+                class="w-full rounded-2xl bg-brand px-6 py-4 text-base font-bold text-white shadow-lg shadow-brand/20 transition-all hover:bg-brand-hover hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Về ví của tôi
+              </button>
+            }
+
+            <button
+              type="button"
+              (click)="goToHome()"
+              class="w-full rounded-2xl border border-slate-200 bg-white px-6 py-4 text-base font-bold text-slate-700 transition-all hover:bg-slate-50 hover:border-slate-300"
+            >
+              Về trang chủ
+            </button>
+          </div>
+        } @else {
+          <!-- Loading State -->
+          <div class="py-12 flex flex-col items-center justify-center">
+            <div class="flex gap-2 mb-4">
+              <div class="w-2 h-2 rounded-full bg-brand animate-bounce"></div>
+              <div class="w-2 h-2 rounded-full bg-brand animate-bounce [animation-delay:0.2s]"></div>
+              <div class="w-2 h-2 rounded-full bg-brand animate-bounce [animation-delay:0.4s]"></div>
+            </div>
+            <p class="text-base font-bold text-slate-400">{{ confirmMessage() }}</p>
+          </div>
+        }
       </div>
     </div>
   `,
@@ -77,8 +135,11 @@ export class PaymentSuccessComponent implements OnInit {
   amount = signal<number>(0);
   confirmTime = signal<Date | null>(null);
   isConfirming = signal(false);
-  statusMessage = signal<string>('Ví của bạn đã được cập nhật');
-  confirmMessage = signal<string>('Đang xác nhận giao dịch...');
+  paymentType = signal<'deposit' | 'order' | 'upgrade' | null>(null);
+  orderId = signal<number | null>(null);
+  walletBalance = signal<number | null>(null);
+  statusMessage = signal<string>('Vui lòng đợi giây lát...');
+  confirmMessage = signal<string>('Đang xác thực giao dịch...');
 
   ngOnInit(): void {
     // Try to get payment_id from sessionStorage (set by modal)
@@ -134,11 +195,31 @@ export class PaymentSuccessComponent implements OnInit {
         this.confirmTime.set(new Date());
         
         // Update amount from response if available
-        if ('amount' in response.data) {
-          this.amount.set((response.data as any).amount);
+        if (response.data.amount) {
+          this.amount.set(response.data.amount);
         }
 
-        this.statusMessage.set('Tiền đã được cộng vào ví của bạn');
+        if (response.data.type) {
+          this.paymentType.set(response.data.type);
+        }
+
+        if (response.data.order_id) {
+          this.orderId.set(response.data.order_id);
+        }
+
+        if (response.data.wallet_balance !== undefined) {
+          this.walletBalance.set(response.data.wallet_balance);
+        }
+
+        if (this.paymentType() === 'order') {
+          this.statusMessage.set('Đơn hàng của bạn đang được xử lý');
+        } else if (this.paymentType() === 'upgrade') {
+          this.statusMessage.set('Tài khoản của bạn đã được nâng cấp');
+        } else if (this.paymentType() === 'deposit') {
+          this.statusMessage.set('Số dư ví của bạn đã được cập nhật');
+        } else {
+          this.statusMessage.set('Giao dịch của bạn đã hoàn tất');
+        }
         
         // Clean up sessionStorage
         sessionStorage.removeItem('paymentId');
@@ -169,11 +250,16 @@ export class PaymentSuccessComponent implements OnInit {
     this.router.navigate(['/wallet']);
   }
 
+  goToOrders(): void {
+    this.router.navigate(['/account/orders']);
+  }
+
   goToHome(): void {
     this.router.navigate(['/home']);
   }
 
-  formatPrice(price: number): string {
+  formatPrice(price: number | null | undefined): string {
+    if (price === null || price === undefined) return '';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND',

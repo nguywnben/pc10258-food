@@ -30,6 +30,9 @@ export interface Payment {
   amount: number;
   status: 'pending' | 'completed' | 'failed' | 'cancelled';
   payment_method: string;
+  type?: 'deposit' | 'order' | 'upgrade';
+  order_id?: number | null;
+  wallet_balance?: number;
   transaction_code?: string;
   checkout_url?: string;
   created_at: string;

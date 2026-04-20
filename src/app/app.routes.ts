@@ -33,14 +33,8 @@ export const routes: Routes = [
       },
       {
         path: 'users',
-        children: [
-          { path: '', pathMatch: 'full', redirectTo: 'list' },
-          {
-            path: 'list',
-            loadComponent: () =>
-              import('./pages/admin/users/list').then(m => m.AdminUsersList),
-          },
-        ],
+        loadComponent: () =>
+          import('./pages/admin/users/list').then(m => m.AdminUsersList),
       },
       {
         path: 'forms',

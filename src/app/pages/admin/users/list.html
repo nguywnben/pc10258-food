@@ -20,7 +20,7 @@
             <th>ID</th>
             <th>Họ tên</th>
             <th>Email</th>
-            <th>Số điện thoại</th>
+            <th>Trạng thái</th>
             <th>Vai trò</th>
             <th>Hạng thành viên</th>
             <th>Ngày tạo</th>
@@ -33,13 +33,17 @@
               <td class="font-semibold text-brand">#{{ user.id }}</td>
               <td class="font-semibold text-ink">{{ displayUserName(user) }}</td>
               <td>{{ user.email || '—' }}</td>
-              <td>{{ user.phone || '—' }}</td>
+              <td>
+                <span class="badge" [class.badge-danger]="user.is_locked" [class.badge-success]="!user.is_locked">
+                  {{ displayStatus(user) }}
+                </span>
+              </td>
               <td>
                 <span class="badge badge-neutral">{{ displayRole(user.role) }}</span>
               </td>
               <td>
-                <span class="badge" [class.badge-success]="user.membership === 'premium'" [class.badge-neutral]="user.membership !== 'premium'">
-                  {{ displayMembership(user.membership) }}
+                <span class="badge" [class.badge-success]="user.membership === 'premium' || !!user.membership_plan_id" [class.badge-neutral]="user.membership !== 'premium' && !user.membership_plan_id">
+                  {{ displayMembership(user) }}
                 </span>
               </td>
               <td class="text-ink-light">
@@ -58,15 +62,21 @@
                   </svg>
                 </button>
                 <button
-                  class="btn btn-ghost !p-1.5 text-red-500 hover:!text-red-700"
-                  title="Xóa người dùng"
+                  [class]="user.is_locked ? 'btn btn-ghost !p-1.5 text-red-500 hover:!text-red-700' : 'btn btn-ghost !p-1.5 text-green-600 hover:!text-green-800'"
+                  [title]="user.is_locked ? 'Mở khóa người dùng' : 'Khóa người dùng'"
                   type="button"
                   [disabled]="deletingUserId() === user.id"
                   (click)="openLockModal(user)"
                 >
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M12 15v2m6-7V7a6 6 0 10-12 0v3m-1 0h14a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9a1 1 0 011-1z" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
+                  @if (user.is_locked) {
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M12 15v2m6-7V7a6 6 0 10-12 0v3m-1 0h14a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9a1 1 0 011-1z" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  } @else {
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M8 11a4 4 0 0 1 8 0v5a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-5zm4-7a3 3 0 0 1 3 3v2h-6V7a3 3 0 0 1 3-3z" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  }
                 </button>
               </td>
             </tr>
@@ -86,8 +96,8 @@
 <app-delete-modal
   [isOpen]="showDeleteModal()"
   [isLoading]="deletingUserId() !== null"
-  title="Xác nhận xóa người dùng"
-  message="Bạn có chắc chắn muốn xóa tài khoản này không? Hành động này không thể hoàn tác."
+  [title]="isLocking() ? 'Xác nhận khóa người dùng' : 'Xác nhận mở khóa người dùng'"
+  [message]="isLocking() ? 'Bạn có chắc chắn muốn khóa tài khoản này không? Tài khoản sẽ không thể đăng nhập cho đến khi được mở khóa.' : 'Bạn có chắc chắn muốn mở khóa tài khoản này không? Tài khoản sẽ có thể đăng nhập lại.'"
   (confirm)="confirmLockUser()"
   (cancel)="closeLockModal()"
 ></app-delete-modal>
@@ -144,6 +154,16 @@
           <select class="form-input" formControlName="membership">
             <option value="free">Free</option>
             <option value="premium">Premium</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label">Gói thành viên</label>
+          <select class="form-input" formControlName="membership_plan_id">
+            <option [value]="null">Không có gói</option>
+            @for (plan of membershipPlans(); track plan.id) {
+              <option [value]="plan.id">{{ plan.name }}</option>
+            }
           </select>
         </div>
 

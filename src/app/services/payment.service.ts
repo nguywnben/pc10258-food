@@ -22,6 +22,8 @@ export interface WalletPaymentPayload {
 export interface PaymentConfirmPayload {
   transaction_code?: string;  // Optional - backend can generate if not provided
   plan_id?: number;           // Required for membership upgrade payments
+  status?: string | null;     // PayOS return-url status hint (PAID / CANCELLED / ...)
+  cancel?: boolean;           // PayOS return-url cancel hint
 }
 
 export interface Payment {

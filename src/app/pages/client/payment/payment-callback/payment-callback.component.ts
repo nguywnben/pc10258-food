@@ -28,9 +28,21 @@ import { AuthService } from '../../../../core/services/auth.service';
             </svg>
           </div>
           <h2 class="text-xl font-bold text-ink">Giao dịch thành công!</h2>
-          <p class="text-sm text-ink-light">Thanh toán của bạn đã được ghi nhận. Hệ thống đang chuyển hướng...</p>
-          <div class="mt-6">
-            <a [routerLink]="['/wallet']" class="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-brand-hover">
+          <p class="text-sm text-ink-light">
+            {{ paymentType === 'order'
+              ? 'Đơn hàng của bạn đã được thanh toán. Bạn có thể xem chi tiết hoặc tiếp tục mua sắm.'
+              : 'Thanh toán của bạn đã được ghi nhận. Hệ thống đang chuyển hướng...' }}
+          </p>
+          <div class="mt-6 flex gap-3 justify-center">
+            <ng-container *ngIf="paymentType === 'order'">
+              <a [routerLink]="['/orders']" class="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-brand-hover">
+                Xem đơn hàng
+              </a>
+              <a [routerLink]="['/']" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-ink hover:bg-gray-50">
+                Về trang chủ
+              </a>
+            </ng-container>
+            <a *ngIf="paymentType !== 'order'" [routerLink]="['/wallet']" class="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-brand-hover">
               Quay lại ví
             </a>
           </div>
@@ -67,22 +79,29 @@ export class PaymentCallbackComponent implements OnInit {
   isSuccess = signal(false);
   errorMessage = signal<string>('');
   paymentId: number | null = null;
+  paymentType: 'deposit' | 'order' | 'upgrade' | null = null;
+
+  // Raw PayOS return-url params - forwarded to the backend so it has
+  // a second source of truth if the PayOS API call is slow/flaky.
+  private payosStatus: string | null = null;
+  private payosCancel: boolean = false;
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       // PayOS passes orderCode which corresponds to the Payment ID
-      this.paymentId = (params['payment_id'] ? parseInt(params['payment_id'], 10) : null) 
+      this.paymentId = (params['payment_id'] ? parseInt(params['payment_id'], 10) : null)
                      || (params['orderCode'] ? parseInt(params['orderCode'], 10) : null);
-      
-      const isCancelled = params['cancel'] === 'true';
-      const status = params['status']; // PAID or CANCELLED from PayOS
 
-      // ALWAYS submit to backend so backend updates payment status properly
-      if (this.paymentId) {
-        this.confirmPayment();
-      } else {
+      this.payosStatus = (params['status'] || '').toString().toUpperCase() || null;
+      this.payosCancel = params['cancel'] === 'true' || params['cancel'] === true;
+
+      if (!this.paymentId) {
         this.handleError('Không tìm thấy mã giao dịch.');
+        return;
       }
+
+      // Always submit to backend so it can reconcile payment status.
+      this.confirmPayment();
     });
   }
 
@@ -92,37 +111,55 @@ export class PaymentCallbackComponent implements OnInit {
       return;
     }
 
-    this.paymentSvc.confirmPayment(this.paymentId, {
-      transaction_code: `PAYOS-${this.paymentId}`
-    }).subscribe({
+    const payload: any = {
+      transaction_code: `PAYOS-${this.paymentId}`,
+      status: this.payosStatus,
+      cancel: this.payosCancel
+    };
+
+    this.paymentSvc.confirmPayment(this.paymentId, payload).subscribe({
       next: (response: any) => {
         this.isProcessing.set(false);
 
-        const status = response.data?.status;
+        const status = response?.data?.status;
+        const type = response?.data?.type;
+        this.paymentType = type || null;
+
         if (status === 'failed' || status === 'cancelled') {
           this.isSuccess.set(false);
           this.errorMessage.set(
-            response.data?.order_cancelled
+            response?.data?.order_cancelled
               ? 'Giao dịch bị hủy. Đơn hàng đã được tự động hủy.'
               : 'Giao dịch bị hủy.'
           );
-        } else {
-          this.isSuccess.set(true);
-          // Redirect to wallet after 3 seconds
-          setTimeout(() => {
-            this.router.navigate(['/wallet']);
-          }, 3000);
+          return;
         }
+
+        this.isSuccess.set(true);
+        this.redirectAfterSuccess(type);
       },
       error: (err: any) => {
-        // Handle 401 Unauthorized
         if (err.status === 401) {
           this.handleError('Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.');
           return;
         }
-        this.handleError(err.error?.message || 'Lỗi xác nhận thanh toán');
+        const backendMsg = err?.error?.error || err?.error?.message;
+        this.handleError(backendMsg || 'Lỗi xác nhận thanh toán');
       }
     });
+  }
+
+  private redirectAfterSuccess(type: string | null): void {
+    // Thanh toán đơn hàng: không tự chuyển, để user tự bấm nút.
+    if (type === 'order') return;
+
+    setTimeout(() => {
+      if (type === 'upgrade') {
+        this.router.navigate(['/upgrade-success']);
+      } else {
+        this.router.navigate(['/wallet']);
+      }
+    }, 2000);
   }
 
   private handleError(message: string): void {

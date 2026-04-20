@@ -12,6 +12,8 @@ export interface User {
   avatar_url?: string | null;
   role?: string | null;
   membership?: 'free' | 'premium' | null;
+  membership_plan_id?: number | null;
+  is_locked?: number | boolean | null;
   created_at?: string | null;
 }
 
@@ -34,5 +36,17 @@ export class UsersService {
     return this.http
       .delete<{ message?: string }>(`${this.apiBaseUrl}/users/${id}`)
       .pipe(map(() => undefined));
+  }
+
+  lockUser(id: number, isLocked: boolean): Observable<User> {
+    return this.http
+      .put<ApiResponse<User>>(`${this.apiBaseUrl}/users/${id}/lock`, { is_locked: isLocked })
+      .pipe(map((response) => response.data));
+  }
+
+  update(id: number, data: Partial<User>): Observable<User> {
+    return this.http
+      .put<ApiResponse<User>>(`${this.apiBaseUrl}/users/${id}`, data)
+      .pipe(map((response) => response.data));
   }
 }

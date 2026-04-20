@@ -7,6 +7,7 @@ import { DeleteModalComponent } from '../../../components/delete-modal/delete-mo
 import { PaginationComponent } from '../../../components/pagination/pagination.component';
 import { User, UsersService } from '../../../services/users.service';
 import { ToastService } from '../../../components/toast/toast.service';
+import { AdminMembershipService, MembershipPlan } from '../../../services/admin-membership.service';
 
 @Component({
   selector: 'app-admin-users-list',
@@ -16,6 +17,7 @@ import { ToastService } from '../../../components/toast/toast.service';
 })
 export class AdminUsersList {
   private readonly usersService = inject(UsersService);
+  private readonly membershipService = inject(AdminMembershipService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -24,6 +26,7 @@ export class AdminUsersList {
   private readonly itemsPerPage = 10;
 
   readonly users = signal<User[]>([]);
+  readonly membershipPlans = signal<MembershipPlan[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly showDeleteModal = signal(false);
@@ -33,15 +36,26 @@ export class AdminUsersList {
   readonly deletingUserId = signal<number | null>(null);
   readonly savingUserId = signal<number | null>(null);
   readonly currentPage = signal(1);
+  readonly isLocking = signal(true);
 
   readonly editForm = this.fb.nonNullable.group({
     full_name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
     phone: ['', [Validators.pattern(/^[0-9]{9,11}$/)]],
     role: ['client' as 'client' | 'admin', [Validators.required]],
     membership: ['free' as 'free' | 'premium', [Validators.required]],
+    membership_plan_id: [null as number | null],
   });
 
   readonly totalUsers = computed(() => this.users().length);
+  readonly membershipPlanMap = computed(() => {
+    const map: { [key: number]: string } = {};
+    this.membershipPlans().forEach(plan => {
+      if (plan.id) {
+        map[plan.id] = plan.name;
+      }
+    });
+    return map;
+  });
   readonly sortedUsers = computed(() => {
     const items = [...this.users()];
     return items.sort((a, b) => {
@@ -58,6 +72,7 @@ export class AdminUsersList {
   });
 
   constructor() {
+    // Load users
     this.usersService
       .getAll()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -69,6 +84,19 @@ export class AdminUsersList {
         error: (err: unknown) => {
           this.error.set(this.parseLoadError(err));
           this.loading.set(false);
+        },
+      });
+
+    // Load membership plans
+    this.membershipService
+      .getAllPlans()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (plans) => {
+          this.membershipPlans.set(plans);
+        },
+        error: (err: unknown) => {
+          console.error('Failed to load membership plans:', err);
         },
       });
 
@@ -96,8 +124,18 @@ export class AdminUsersList {
     return 'Người dùng';
   }
 
-  displayMembership(membership: User['membership']): string {
-    return membership === 'premium' ? 'Premium' : 'Free';
+  displayMembership(user: User): string {
+    // If user has premium_plan_id, display the plan name
+    if (user.membership_plan_id) {
+      const planName = this.membershipPlanMap()[user.membership_plan_id];
+      return planName || 'Gói khác';
+    }
+    // Fallback to membership field
+    return user.membership === 'premium' ? 'Premium' : 'Free';
+  }
+
+  displayStatus(user: User): string {
+    return user.is_locked ? 'Khóa' : 'Hoạt động';
   }
 
   openEditModal(user: User): void {
@@ -107,6 +145,7 @@ export class AdminUsersList {
       phone: (user.phone || '').trim(),
       role: user.role === 'admin' ? 'admin' : 'client',
       membership: user.membership === 'premium' ? 'premium' : 'free',
+      membership_plan_id: user.membership_plan_id || null,
     });
     this.showEditModal.set(true);
   }
@@ -121,15 +160,20 @@ export class AdminUsersList {
     }
 
     this.savingUserId.set(user.id);
+    const updatedData = this.editForm.value;
     
-    // Giả lập lưu thành công vì backend chưa có API
-    setTimeout(() => {
-      const updatedData = this.editForm.value;
-      this.users.update(items => items.map(item => item.id === user.id ? { ...item, ...updatedData } : item));
-      this.toast.success('Cập nhật người dùng thành công');
-      this.savingUserId.set(null);
-      this.closeEditModal();
-    }, 500);
+    this.usersService.update(user.id, updatedData).subscribe({
+      next: (updated) => {
+        this.users.update(items => items.map(item => item.id === user.id ? { ...item, ...updated } : item));
+        this.toast.success('Cập nhật người dùng thành công');
+        this.savingUserId.set(null);
+        this.closeEditModal();
+      },
+      error: (err: unknown) => {
+        this.toast.error('Không thể cập nhật người dùng');
+        this.savingUserId.set(null);
+      },
+    });
   }
 
   closeEditModal(): void {
@@ -139,6 +183,7 @@ export class AdminUsersList {
 
   openLockModal(user: User): void {
     this.selectedUser.set(user);
+    this.isLocking.set(!user.is_locked);
     this.showDeleteModal.set(true);
   }
 
@@ -153,12 +198,15 @@ export class AdminUsersList {
 
     this.showDeleteModal.set(false);
     this.deletingUserId.set(user.id);
+    const shouldLock = this.isLocking();
 
-    this.usersService.delete(user.id).subscribe({
+    this.usersService.lockUser(user.id, shouldLock).subscribe({
       next: () => {
-        this.users.update((items) => items.filter((item) => item.id !== user.id));
-        this.ensureCurrentPageInRange();
-        this.toast.success('Xóa người dùng thành công');
+        this.users.update((items) => items.map(item => 
+          item.id === user.id ? { ...item, is_locked: shouldLock ? 1 : 0 } : item
+        ));
+        const message = shouldLock ? 'Khóa người dùng thành công' : 'Mở khóa người dùng thành công';
+        this.toast.success(message);
         this.deletingUserId.set(null);
         this.selectedUser.set(null);
       },
